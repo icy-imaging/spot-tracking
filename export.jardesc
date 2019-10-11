@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="SpotTrackingPlugin/SpotTrackingPlugin.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/SpotTrackingPlugin/export.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="true" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="/Icy-Kernel/META-INF/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
+        <folder path="/SpotTrackingPlugin/lib/win32"/>
+        <folder path="/SpotTrackingPlugin/lib/win64"/>
+        <javaElement handleIdentifier="=SpotTrackingPlugin/lib_class"/>
+        <folder path="/SpotTrackingPlugin/lib/mac64"/>
+        <folder path="/SpotTrackingPlugin/lib/unix32"/>
+        <folder path="/SpotTrackingPlugin/lib/unix64"/>
+        <file path="/SpotTrackingPlugin/README"/>
+        <javaElement handleIdentifier="=SpotTrackingPlugin/src"/>
+    </selectedElements>
+</jardesc>
