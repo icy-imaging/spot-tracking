@@ -10,5 +10,6 @@
 	<classpathentry kind="var" path="ICY_PLUGINS/nchenouard/linearprogrammingfullsimplex/LinearProgrammingICYPlugin.jar"/>
 	<classpathentry kind="var" path="ICY_PLUGINS/nchenouard/spot/DetectionResult.jar"/>
 	<classpathentry kind="lib" path="lib"/>
+	<classpathentry kind="var" path="ICY_PLUGINS/stef/library/JamaLibraryPlugin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
