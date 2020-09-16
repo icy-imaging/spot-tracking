@@ -29,13 +29,11 @@ import plugins.nchenouard.particletracking.legacytracker.associationMethod.Track
 import plugins.nchenouard.spot.DetectionResult;
 import plugins.nchenouard.spot.Spot;
 
-public class SpotTracking
-{
+public class SpotTracking {
     public static String ID_CONFIG = "MHTconfiguration";
 
     @SuppressWarnings("unused")
-    synchronized static boolean loadOptimizationLibray()
-    {
+    synchronized static boolean loadOptimizationLibray() {
         if (SpotTrackingPlugin.optimizationLibraryLoaded)
             return true;
 
@@ -47,10 +45,14 @@ public class SpotTracking
 
     /**
      * Computes and return best estimated parameters from given set of Detections objects.
+     * @param detections DetectionResult
+     * @param directedMotion bool
+     * @param singleMotion bool
+     * @param updateMotion bool
+     * @return MHTparameterSet
      */
     public static MHTparameterSet estimateParameters(DetectionResult detections, boolean directedMotion,
-            boolean singleMotion, boolean updateMotion)
-    {
+                                                     boolean singleMotion, boolean updateMotion) {
         final MHTparameterSet parameters = new MHTparameterSet();
 
         estimateParameters(parameters, detections, directedMotion, singleMotion, updateMotion);
@@ -60,10 +62,15 @@ public class SpotTracking
 
     /**
      * Computes and return best estimated parameters from given set of Detections objects.
+     * @param parameters MHTparameterSet
+     * @param detections DectectionResult
+     * @param directedMotion bool
+     * @param singleMotion bool
+     * @param updateMotion bool
+     * @return bool
      */
     public static boolean estimateParameters(MHTparameterSet parameters, DetectionResult detections,
-            boolean directedMotion, boolean singleMotion, boolean updateMotion)
-    {
+                                             boolean directedMotion, boolean singleMotion, boolean updateMotion) {
         parameters.isDirectedMotion = directedMotion;
         parameters.isSingleMotion = singleMotion;
         parameters.isUpdateMotion = updateMotion;
@@ -80,8 +87,7 @@ public class SpotTracking
         int numDetections = 0;
         int numT = 0;
         for (int t = parameters.detectionResults.getFirstFrameTime(); t < parameters.detectionResults
-                .getLastFrameTime(); t++)
-        {
+                .getLastFrameTime(); t++) {
             numDetections += parameters.detectionResults.getDetectionsAtT(t).size();
             numT++;
             if (numDetections > maxNumDetections)
@@ -93,35 +99,29 @@ public class SpotTracking
         int t = parameters.detectionResults.getFirstFrameTime();
         int cntDist = 0;
 
-        while (t < parameters.detectionResults.getFirstFrameTime() + numT)
-        {
+        while (t < parameters.detectionResults.getFirstFrameTime() + numT) {
             final Vector<Spot> dList1 = parameters.detectionResults.getDetectionsAtT(t);
             final Vector<Spot> dList2 = parameters.detectionResults.getDetectionsAtT(t + 1);
 
-            if (!dList1.isEmpty() && !dList2.isEmpty())
-            {
-                for (Spot s1 : dList1)
-                {
+            if (!dList1.isEmpty() && !dList2.isEmpty()) {
+                for (Spot s1 : dList1) {
                     double minDist = Double.MAX_VALUE;
                     Spot minSpot = null;
 
-                    for (Spot s2 : dList2)
-                    {
+                    for (Spot s2 : dList2) {
                         double d = squaredDistance(s1, s2);
-                        if (d < minDist)
-                        {
+                        if (d < minDist) {
                             minDist = d;
                             minSpot = s2;
                         }
                     }
 
-                    if ((minDist < Double.MAX_VALUE) && (minSpot != null))
-                    {
+                    if ((minDist < Double.MAX_VALUE) && (minSpot != null)) {
                         // /distTab[cntDist] = minDist;
                         distTabXY[cntDist] = (s1.mass_center.x - minSpot.mass_center.x)
                                 * (s1.mass_center.x - minSpot.mass_center.x)
                                 + (s1.mass_center.y - minSpot.mass_center.y)
-                                        * (s1.mass_center.y - minSpot.mass_center.y);
+                                * (s1.mass_center.y - minSpot.mass_center.y);
                         distTabZ[cntDist] += (s1.mass_center.z - minSpot.mass_center.z)
                                 * (s1.mass_center.z - minSpot.mass_center.z);
                         cntDist++;
@@ -142,35 +142,30 @@ public class SpotTracking
         int gateFactor = 3;
         boolean gateLikelihood = true;
         Predictor predictor = null;
-        if (singleMotion)
-        {
-            if (varDiffZ > 0)
-            {
+        if (singleMotion) {
+            if (varDiffZ > 0) {
                 if (directedMotion)
                     predictor = new KF3dDirected();
                 else
                     predictor = new KF3dRandomWalk();
-                predictor.setTrackingCovariances(new double[] {varDiffXY, varDiffXY, varDiffZ});
+                predictor.setTrackingCovariances(new double[]{varDiffXY, varDiffXY, varDiffZ});
             }
-            else
-            {
+            else {
                 if (directedMotion)
                     predictor = new KF2dDirected();
                 else
                     predictor = new KF2dRandomWalk();
-                predictor.setTrackingCovariances(new double[] {varDiffXY, varDiffXY});
+                predictor.setTrackingCovariances(new double[]{varDiffXY, varDiffXY});
             }
         }
-        else
-        {
-            if (varDiffZ > 0)
-            {
+        else {
+            if (varDiffZ > 0) {
                 final List<Predictor3D> predictors = new ArrayList<Predictor3D>();
 
                 predictors.add(new KF3dRandomWalk());
                 predictors.add(new KF3dDirected());
-                predictors.get(0).setTrackingCovariances(new double[] {varDiffXY, varDiffXY, varDiffZ});
-                predictors.get(1).setTrackingCovariances(new double[] {varDiffXY, varDiffXY, varDiffZ});
+                predictors.get(0).setTrackingCovariances(new double[]{varDiffXY, varDiffXY, varDiffZ});
+                predictors.get(1).setTrackingCovariances(new double[]{varDiffXY, varDiffXY, varDiffZ});
 
                 if (parameters.useMostLikelyModel)
                     predictor = new IMM3D(IMM3D.LikelihoodTypes.IMM_MAX_LIKELIHOOD, parameters.immInertia, predictors);
@@ -178,14 +173,13 @@ public class SpotTracking
                     predictor = new IMM3D(IMM3D.LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD, parameters.immInertia,
                             predictors);
             }
-            else
-            {
+            else {
                 final List<Predictor2D> predictors = new ArrayList<Predictor2D>();
 
                 predictors.add(new KF2dRandomWalk());
                 predictors.add(new KF2dDirected());
-                predictors.get(0).setTrackingCovariances(new double[] {varDiffXY, varDiffXY});
-                predictors.get(1).setTrackingCovariances(new double[] {varDiffXY, varDiffXY});
+                predictors.get(0).setTrackingCovariances(new double[]{varDiffXY, varDiffXY});
+                predictors.get(1).setTrackingCovariances(new double[]{varDiffXY, varDiffXY});
 
                 if (parameters.useMostLikelyModel)
                     predictor = new IMM2D(IMM2D.LikelihoodTypes.IMM_MAX_LIKELIHOOD, parameters.immInertia, predictors);
@@ -208,8 +202,7 @@ public class SpotTracking
         final List<Track> trueTracks = new ArrayList<Track>();
         final List<Track> falseTracks = new ArrayList<Track>();
 
-        for (Track tr : tracks)
-        {
+        for (Track tr : tracks) {
             if (tr.getLastIndex() - tr.getFirstIndex() > 2)
                 trueTracks.add(tr);
             else
@@ -229,8 +222,7 @@ public class SpotTracking
         // compute number of tracks at first frame, and number of new tracks in other frames
         int numTrackFirstFrame = 0;
         int numNewTracks = 0;
-        for (Track tr : trueTracks)
-        {
+        for (Track tr : trueTracks) {
             if (tr.getFirstIndex() == 0)
                 numTrackFirstFrame++;
             else
@@ -243,10 +235,8 @@ public class SpotTracking
 
         // compute number of false detections per frame
         int numFalseDetections = 0;
-        for (Track tr : falseTracks)
-        {
-            for (int tt = tr.getFirstIndex(); tt < tr.getLastIndex() + 1; tt++)
-            {
+        for (Track tr : falseTracks) {
+            for (int tt = tr.getFirstIndex(); tt < tr.getLastIndex() + 1; tt++) {
                 if (tr.isPredictionAtFrame(tt))
                     numFalseDetections++;
             }
@@ -262,12 +252,9 @@ public class SpotTracking
             double sumDistSq = 0;
             double sumDistSqZ = 0;
             int numDist = 0;
-            for (Track tr : trueTracks)
-            {
-                for (int f = tr.getFirstIndex(); f < tr.getLastIndex(); f++)
-                {
-                    if (!tr.isPredictionAtFrame(f) && !tr.isPredictionAtFrame(f + 1))
-                    {
+            for (Track tr : trueTracks) {
+                for (int f = tr.getFirstIndex(); f < tr.getLastIndex(); f++) {
+                    if (!tr.isPredictionAtFrame(f) && !tr.isPredictionAtFrame(f + 1)) {
                         Spot s1 = tr.getSpotAtFrame(f);
                         Spot s2 = tr.getSpotAtFrame(f + 1);
                         sumDistSq += (s1.mass_center.x - s2.mass_center.x) * (s1.mass_center.x - s2.mass_center.x)
@@ -289,10 +276,8 @@ public class SpotTracking
         // estimate detection rate
         int numTrueDetections = 0;
         int numVirtualDetections = 0;
-        for (Track tr : trueTracks)
-        {
-            for (int f = tr.getFirstIndex(); f < tr.getLastIndex(); f++)
-            {
+        for (Track tr : trueTracks) {
+            for (int f = tr.getFirstIndex(); f < tr.getLastIndex(); f++) {
                 if (tr.isPredictionAtFrame(f))
                     numVirtualDetections++;
                 else
@@ -307,9 +292,10 @@ public class SpotTracking
 
     /**
      * Load parameter from the given file
+     * @param file File
+     * @return MHTparameterSet
      */
-    public static MHTparameterSet loadParameters(File file)
-    {
+    public static MHTparameterSet loadParameters(File file) {
         final Document document = XMLUtil.loadDocument(file);
         final Element root = XMLUtil.getRootElement(document);
 
@@ -325,25 +311,28 @@ public class SpotTracking
 
     /**
      * Load parameter from the given file path
+     * @param path String
+     * @return MHTparameterSet
      */
-    public static MHTparameterSet loadParameters(String path)
-    {
+    public static MHTparameterSet loadParameters(String path) {
         return loadParameters(new File(path));
     }
 
     /**
      * Save parameters into given file path
+     * @param value MHTparameterSet
+     * @param f file
      */
-    public static void saveParameters(MHTparameterSet value, File f)
-    {
+    public static void saveParameters(MHTparameterSet value, File f) {
         saveParameters(value, f.getAbsolutePath());
     }
 
     /**
      * Save parameters into given file path
+     * @param parameters MHTparameterSet
+     * @param path String
      */
-    public static void saveParameters(MHTparameterSet parameters, String path)
-    {
+    public static void saveParameters(MHTparameterSet parameters, String path) {
         final Document document = XMLUtil.createDocument(true);
         final Element root = XMLUtil.getRootElement(document);
         final Element configurationElement = XMLUtil.setElement(root, ID_CONFIG);
@@ -357,10 +346,15 @@ public class SpotTracking
     /**
      * Execute tracking process given a set of detection and tracking parameters and return corresponding TrackGroup
      * result.
+     * @param parameters MHTparameterSet
+     * @param dr DetectionResult
+     * @param useLPSolver bool
+     * @param multiThread bool
+     * @param showProgress bool
+     * @return TrackGroup
      */
     public static TrackGroup executeTracking(MHTparameterSet parameters, DetectionResult dr, boolean useLPSolver,
-            boolean multiThread, boolean showProgress) throws IllegalArgumentException
-    {
+                                             boolean multiThread, boolean showProgress) throws IllegalArgumentException {
         if (dr == null)
             throw new IllegalArgumentException(
                     "Tracking requires to specify a set of detections. You can use the Spot Detector plugin to create some.");
@@ -374,18 +368,15 @@ public class SpotTracking
         final HMMMHTracker mhtracker = buildTracker(parameters, dr, useLPSolver, multiThread);
         final CancelableProgressFrame progress;
 
-        if (showProgress)
-        {
+        if (showProgress) {
             progress = new CancelableProgressFrame("Processing...");
             progress.setLength(dr.getLastFrameTime());
         }
         else
             progress = null;
 
-        for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++)
-        {
-            if (progress != null)
-            {
+        for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++) {
+            if (progress != null) {
                 progress.setMessage("Track extraction at frame " + t);
                 progress.setPosition(t);
 
@@ -414,16 +405,18 @@ public class SpotTracking
     /**
      * Execute tracking process given a set of detection and tracking parameters and return corresponding TrackGroup
      * result.
+     * @param parameters MHTparameterSet
+     * @param dr DetectionResult
+     * @param showProgress bool
+     * @return TrackGroup
      */
     public static TrackGroup executeTracking(MHTparameterSet parameters, DetectionResult dr, boolean showProgress)
-            throws IllegalArgumentException
-    {
+            throws IllegalArgumentException {
         return executeTracking(parameters, dr, true, true, showProgress);
     }
 
     protected static HMMMHTracker buildTracker(MHTparameterSet parameters, DetectionResult dr, final int dim,
-            final double volume, boolean useLPSolve, boolean multithreaded) throws IllegalArgumentException
-    {
+                                               final double volume, boolean useLPSolve, boolean multithreaded) throws IllegalArgumentException {
         final double probaDetect = parameters.detectionRate;
         if (probaDetect < 0 || probaDetect > 1)
             throw new IllegalArgumentException(
@@ -452,13 +445,10 @@ public class SpotTracking
 
         /* build the predictor */
         Predictor pred = null;
-        if (parameters.isSingleMotion)
-        {
+        if (parameters.isSingleMotion) {
             // single motion
-            if (parameters.isDirectedMotion)
-            {
-                if (dim == 3)
-                {
+            if (parameters.isDirectedMotion) {
+                if (dim == 3) {
                     final double[] trackingCovariances = new double[3];
 
                     trackingCovariances[0] = parameters.displacementXY;
@@ -475,8 +465,7 @@ public class SpotTracking
 
                     pred = predictor;
                 }
-                else
-                {
+                else {
                     final double[] trackingCovariances = new double[2];
 
                     trackingCovariances[0] = parameters.displacementXY;
@@ -492,10 +481,8 @@ public class SpotTracking
                     pred = predictor;
                 }
             }
-            else
-            {
-                if (dim == 3)
-                {
+            else {
+                if (dim == 3) {
                     final double[] trackingCovariances = new double[3];
                     final double displacementXY = parameters.displacementXY;
                     final double displacementZ = parameters.displacementZ;
@@ -513,8 +500,7 @@ public class SpotTracking
                     predictor.setUpdateCovariances(parameters.isUpdateMotion);
                     pred = predictor;
                 }
-                else
-                {
+                else {
                     double[] trackingCovariances = new double[2];
                     final double displacementXY = parameters.displacementXY;
 
@@ -532,11 +518,9 @@ public class SpotTracking
                 }
             }
         }
-        else
-        {
+        else {
             // multi motion
-            if (dim == 3)
-            {
+            if (dim == 3) {
                 // 3D
                 final double immInertia = parameters.immInertia;
                 if (immInertia < 0 || immInertia > 1)
@@ -549,8 +533,7 @@ public class SpotTracking
                 final List<Predictor3D> p3DList = new ArrayList<Predictor3D>();
 
                 // first model
-                if (parameters.isDirectedMotion)
-                {
+                if (parameters.isDirectedMotion) {
                     final double[] trackingCovariances = new double[3];
                     final double displacementXY = parameters.displacementXY;
                     final double displacementZ = parameters.displacementZ;
@@ -571,8 +554,7 @@ public class SpotTracking
 
                     p3DList.add(predictor);
                 }
-                else
-                {
+                else {
                     final double[] trackingCovariances = new double[3];
                     final double displacementXY = parameters.displacementXY;
                     final double displacementZ = parameters.displacementZ;
@@ -592,8 +574,7 @@ public class SpotTracking
                     p3DList.add(predictor);
                 }
                 // second model
-                if (parameters.isDirectedMotion2)
-                {
+                if (parameters.isDirectedMotion2) {
                     final double[] trackingCovariances = new double[3];
                     final double displacementXY = parameters.displacementXY2;
                     final double displacementZ = parameters.displacementZ2;
@@ -614,8 +595,7 @@ public class SpotTracking
 
                     p3DList.add(predictor);
                 }
-                else
-                {
+                else {
                     final double[] trackingCovariances = new double[3];
                     final double displacementXY = parameters.displacementXY2;
                     final double displacementZ = parameters.displacementZ2;
@@ -637,8 +617,7 @@ public class SpotTracking
 
                 pred = new IMM3D(predictorType, immInertia, p3DList);
             }
-            else
-            {
+            else {
                 // 2D
                 final double immInertia = parameters.immInertia;
                 if (immInertia < 0 || immInertia > 1)
@@ -651,8 +630,7 @@ public class SpotTracking
                 final List<Predictor2D> p2DList = new ArrayList<Predictor2D>();
 
                 // first model
-                if (parameters.isDirectedMotion)
-                {
+                if (parameters.isDirectedMotion) {
                     final double[] trackingCovariances = new double[2];
                     final double displacementXY = parameters.displacementXY;
 
@@ -671,8 +649,7 @@ public class SpotTracking
 
                     p2DList.add(predictor);
                 }
-                else
-                {
+                else {
                     final double[] trackingCovariances = new double[2];
                     final double displacementXY = parameters.displacementXY;
 
@@ -690,8 +667,7 @@ public class SpotTracking
                     p2DList.add(predictor);
                 }
                 // second model
-                if (parameters.isDirectedMotion2)
-                {
+                if (parameters.isDirectedMotion2) {
                     final double[] trackingCovariances = new double[2];
                     final double displacementXY = parameters.displacementXY2;
 
@@ -710,8 +686,7 @@ public class SpotTracking
 
                     p2DList.add(predictor);
                 }
-                else
-                {
+                else {
                     final double[] trackingCovariances = new double[2];
                     final double displacementXY = parameters.displacementXY2;
 
@@ -733,14 +708,14 @@ public class SpotTracking
             }
         }
 
-        /* build the mht tracker */
+        // build the mht tracker
         final List<Predictor> predictors = new ArrayList<Predictor>();
         predictors.add(pred);
 
         final HMMMHTracker tracker = new HMMMHTracker(predictors, volume, gateFactor, probaDetect,
                 densityFalseDetection, densityInitialTrack, densityNewTrack, treeDepth, dim, multithreaded, useLPSolve);
 
-        /* set the existence parameters */
+        // set the existence parameters
         final double meanTrackLength = parameters.meanTrackLength;
         final double pc = parameters.confirmationThreshold;
         final double pt = parameters.terminationThreshold;
@@ -760,20 +735,17 @@ public class SpotTracking
     }
 
     public static HMMMHTracker buildTracker(MHTparameterSet parameters, DetectionResult dr, boolean useLPSolver,
-            boolean multiThread) throws IllegalArgumentException
-    {
+                                            boolean multiThread) throws IllegalArgumentException {
         int dim = 2;
         double volume = 256 * 256;
 
         // initialize dimension and volume
-        if (dr.getSequence() != null)
-        {
+        if (dr.getSequence() != null) {
             if (dr.getSequence().getSizeZ() > 1)
                 dim = 3;
             volume = dr.getSequence().getSizeX() * dr.getSequence().getSizeY() * dr.getSequence().getSizeZ();
         }
-        else
-        {
+        else {
             // check detections to see if they all have the same z coordinate
             // double minX = Double.MAX_VALUE;
             // double minY = Double.MAX_VALUE;
@@ -785,10 +757,8 @@ public class SpotTracking
             double maxY = 0;
             double maxZ = 0;
 
-            for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++)
-            {
-                for (Spot s : dr.getDetectionsAtT(t))
-                {
+            for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++) {
+                for (Spot s : dr.getDetectionsAtT(t)) {
                     minX = Math.min(minX, s.mass_center.x);
                     minY = Math.min(minY, s.mass_center.y);
                     minZ = Math.min(minZ, s.mass_center.z);
@@ -797,13 +767,11 @@ public class SpotTracking
                     maxZ = Math.max(maxZ, s.mass_center.z);
                 }
             }
-            if (maxZ > minZ)
-            {
+            if (maxZ > minZ) {
                 dim = 3;
                 volume = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
             }
-            else
-            {
+            else {
                 dim = 2;
                 volume = (maxX - minX + 1) * (maxY - minY + 1);
             }
@@ -814,13 +782,11 @@ public class SpotTracking
     }
 
     public static HMMMHTracker buildTracker(MHTparameterSet parameters, DetectionResult dr)
-            throws IllegalArgumentException
-    {
+            throws IllegalArgumentException {
         return buildTracker(parameters, dr, true, true);
     }
 
-    static double squaredDistance(Spot s1, Spot s2)
-    {
+    static double squaredDistance(Spot s1, Spot s2) {
         return (s1.mass_center.x - s2.mass_center.x) * (s1.mass_center.x - s2.mass_center.x)
                 + (s1.mass_center.y - s2.mass_center.y) * (s1.mass_center.y - s2.mass_center.y)
                 + (s1.mass_center.z - s2.mass_center.z) * (s1.mass_center.z - s2.mass_center.z);

@@ -11,8 +11,8 @@ import Jama.Matrix;
  * 
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com)
  * @version 3.1
- * @date 2013-11-13
- * @license gpl v3.0
+ * date 2013-11-13
+ * license gpl v3.0
 */
 
 public class KF2dRandomWalk  extends KalmanFilter implements Predictor2D

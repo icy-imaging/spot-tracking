@@ -7,8 +7,8 @@ package plugins.nchenouard.particletracking.filtering;
  * 
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com)
  * @version 3.1
- * @date 2013-11-13
- * @license gpl v3.0
+ * date 2013-11-13
+ * license gpl v3.0
 */
 
 public enum PredictorTypes {KF_RANDOM_WALK, KF_FIRST_ORDER_LINEAR_EXTRAPOLATION,  KF_SECOND_ORDER_LINEAR_EXTRAPOLATION, IMM_MAX_LIKELIHOOD, IMM_WEIGHTED_LIKELIHOOD, KF2D_DIRECTED, CUSTOM

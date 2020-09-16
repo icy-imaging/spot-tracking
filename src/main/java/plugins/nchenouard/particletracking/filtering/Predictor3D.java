@@ -4,39 +4,86 @@ import Jama.Matrix;
 
 /**
  * Predictor in the 3D case
- * 
+ * <p>
  * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
- * 
+ *
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com)
  * @version 3.1
- * @date 2013-11-13
- * @license gpl v3.0
-*/
+ * date 2013-11-13
+ * license gpl v3.0
+ */
 
-public interface Predictor3D extends Predictor
-{
-	/** get the estimation of the current x coordinate*/
-	public double getXCoordEstimated();
-	/** get the estimation of the current y coordinate*/
-	public double getYCoordEstimated();
-	/** get the estimation of the current z coordinate*/
-	public double getZCoordEstimated();
-	/** get the estimation of the predicted x coordinate*/
-	public double getXCoordPredicted();
-	/** get the estimation of the predicted y coordinate*/
-	public double getYCoordPredicted();
-	/** get the estimation of the predicted z coordinate*/
-	public double getZCoordPredicted();
-	/** set the state error covariance matrix*/
-	public void setCurrentStateErrorCovariance3D(Matrix m);
-	/** set the current state estimate*/
-	public void setCurrentEstimatedState3D(Matrix m);
-	/** get the state error covariance matrix at a given time*/
-	public Matrix getStateErrorCovariance3D(int t);
-	/** get the current state estimate*/
-	public Matrix  getCurrentEstimatedState3D();
-	/** get the current state error covariance matrix*/
-	public Matrix getCurrentStateErrorCovariance3D();
-	/** get the predicted state estimate*/
-	public Matrix getCurrentPredictedState3D();
+public interface Predictor3D extends Predictor {
+    /**
+     * Get the estimation of the current x coordinate
+     * @return double
+     */
+    double getXCoordEstimated();
+
+    /**
+     * Get the estimation of the current y coordinate
+     * @return double
+     */
+    double getYCoordEstimated();
+
+    /**
+     * Get the estimation of the current z coordinate
+     * @return double
+     */
+    double getZCoordEstimated();
+
+    /**
+     * Get the estimation of the predicted x coordinate
+     * @return double
+     */
+    double getXCoordPredicted();
+
+    /**
+     * Get the estimation of the predicted y coordinate
+     * @return double
+     */
+    double getYCoordPredicted();
+
+    /**
+     * Get the estimation of the predicted z coordinate
+     * @return double
+     */
+    double getZCoordPredicted();
+
+    /**
+     * Set the state error covariance matrix
+     * @param m Matrix
+     */
+    void setCurrentStateErrorCovariance3D(Matrix m);
+
+    /**
+     * Set the current state estimate
+     * @param m Matrix
+     */
+    void setCurrentEstimatedState3D(Matrix m);
+
+    /**
+     * Get the state error covariance matrix at a given time
+     * @param t int
+     * @return Matrix
+     */
+    Matrix getStateErrorCovariance3D(int t);
+
+    /**
+     * Get the current state estimate
+     * @return Matrix
+     */
+    Matrix getCurrentEstimatedState3D();
+
+    /**
+     * Get the current state error covariance matrix
+     * @return Matrix
+     */
+    Matrix getCurrentStateErrorCovariance3D();
+
+    /**
+     * Get the predicted state estimate
+     * @return Matrix
+     */
+    Matrix getCurrentPredictedState3D();
 }

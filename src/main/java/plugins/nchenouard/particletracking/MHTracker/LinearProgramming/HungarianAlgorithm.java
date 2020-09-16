@@ -60,10 +60,9 @@ public class HungarianAlgorithm {
   /**
    * Construct an instance of the algorithm.
    * 
-   * @param costMatrix
-   *          the cost matrix, where matrix[i][j] holds the cost of assigning
-   *          worker i to job j, for all i, j. The cost matrix must not be
-   *          irregular in the sense that all rows must be the same length.
+   * @param costMatrix the cost matrix, where matrix[i][j] holds the cost of assigning
+   *                   worker i to job j, for all i, j. The cost matrix must not be
+   *                   irregular in the sense that all rows must be the same length.
    */
   public HungarianAlgorithm(double[][] costMatrix) {
     this.dim = Math.max(costMatrix.length, costMatrix[0].length);
@@ -248,8 +247,7 @@ public class HungarianAlgorithm {
    * workers and jobs sets and by initializing the slack arrays to the values
    * corresponding to the specified root worker.
    * 
-   * @param w
-   *          the worker at which to root the next phase.
+   * @param w the worker at which to root the next phase.
    */
   protected void initializePhase(int w) {
     Arrays.fill(committedWorkers, false);
@@ -264,6 +262,8 @@ public class HungarianAlgorithm {
 
   /**
    * Helper method to record a matching between worker w and job j.
+   * @param w int
+   * @param j int
    */
   protected void match(int w, int j) {
     matchJobByWorker[w] = j;
@@ -310,6 +310,7 @@ public class HungarianAlgorithm {
    * Update labels with the specified slack by adding the slack value for
    * committed workers and by subtracting the slack value for committed jobs. In
    * addition, update the minimum slack values appropriately.
+   * @param slack double
    */
   protected void updateLabeling(double slack) {
     for (int w = 0; w < dim; w++) {
