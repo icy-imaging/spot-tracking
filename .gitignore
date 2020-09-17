@@ -2,6 +2,8 @@
 .settings/
 build/
 target/
+bin/
+*.jar
 *.iml
 .classpath
 .project
