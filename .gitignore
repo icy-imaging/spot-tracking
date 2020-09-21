@@ -7,3 +7,4 @@ bin/
 *.iml
 .classpath
 .project
+export.jardesc
