@@ -7,7 +7,7 @@
     <parent>
         <artifactId>pom-icy</artifactId>
         <groupId>org.bioimageanalysis.icy</groupId>
-        <version>1.0.4</version>
+        <version>1.0.6</version>
     </parent>
 
     <artifactId>spot-tracking</artifactId>
@@ -21,34 +21,21 @@
         Up to version 2 it was known as the ‘Probabilistic particle tracker’ plugin.
     </description>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdk.version>1.8</jdk.version>
-
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
-            <artifactId>icy-kernel</artifactId>
-            <version>2.1.0</version>
+            <artifactId>track-manager</artifactId>
+            <version>${track-manager.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
-            <artifactId>icy-track-manager</artifactId>
-            <version>1.4.5</version>
+            <artifactId>linear-programming</artifactId>
+            <version>${linear-programming.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
-            <artifactId>icy-linear-programming</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bioimageanalysis.icy</groupId>
-            <artifactId>icy-spot-detector</artifactId>
-            <version>1.7.0</version>
+            <artifactId>spot-detector</artifactId>
+            <version>${spot-detector.version}</version>
         </dependency>
         <dependency>
             <groupId>com.datumbox</groupId>
@@ -56,11 +43,4 @@
             <version>5.5.2.0</version>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>icy</id>
-            <url>https://icy-nexus.pasteur.fr/repository/Icy/</url>
-        </repository>
-    </repositories>
 </project>
