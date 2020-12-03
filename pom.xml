@@ -7,7 +7,7 @@
     <parent>
         <artifactId>pom-icy</artifactId>
         <groupId>org.bioimageanalysis.icy</groupId>
-        <version>1.0.6</version>
+        <version>1.0.8</version>
     </parent>
 
     <artifactId>spot-tracking</artifactId>
@@ -43,4 +43,12 @@
             <version>5.5.2.0</version>
         </dependency>
     </dependencies>
+        
+    <repositories>
+        <repository>
+            <id>icy</id>
+            <url>https://icy-nexus.pasteur.fr/repository/Icy/</url>
+        </repository>
+    </repositories>
+    
 </project>
