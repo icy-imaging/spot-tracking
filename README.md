@@ -43,7 +43,9 @@ Classname: `plugins.nchenouard.particletracking.SpotTrackingPlugin`
 
 ## Citation 
 
-Please cite this plugins as follows:          
+Please cite this plugins as follows: Nicolas Chenouard, Isabelle Bloch, Jean-Christophe Olivo-Marin,
+"Multiple Hypothesis Tracking for Cluttered Biological Image Sequences," IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 35, no. 11, pp. 2736-3750, Nov., 2013
+Pubmed link: http://www.ncbi.nlm.nih.gov/pubmed/23689865             
 
 
 Please also cite the Icy software and mention the version of Icy you used (bottom right corner of the GUI or first lines of the Output tab):     
@@ -59,8 +61,21 @@ Nicolas Chenouard
 
 ## Additional information
 
+This Java library is a particle tracking plugin for ICY that uses the multiple hypothesis tracking algorithm described in:
+Nicolas Chenouard, Isabelle Bloch, Jean-Christophe Olivo-Marin,
+"Multiple Hypothesis Tracking for Cluttered Biological Image Sequences," IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 35, no. 11, pp. 2736-3750, Nov., 2013
+Pubmed link: http://www.ncbi.nlm.nih.gov/pubmed/23689865
 
+ICY webpage: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
 
+The main class is plugins.nchenouard.particletracking.SpotTrackingPlugin.java
+and the tracker implementation is in plugins.nchenouard.particletracking.MHTracker
 
+The tracking methods are freely provided for use and modification.
+By using the provided methods you agree to properly reference the scientific work at their roots in any written or oral communication exposing a work that took advantage of them.
+
+The library is taking advantage of:
+- lpsolve 55 library: lpsolve.sourceforge.net/5.5/‎
+- the simplex algorithm found at: algs4.cs.princeton.edu/65reductions/Simplex.java.html‎
 
 
