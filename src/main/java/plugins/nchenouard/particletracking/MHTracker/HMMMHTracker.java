@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 
 import plugins.fab.trackmanager.TrackSegment;
 import plugins.nchenouard.particletracking.DetectionSpotTrack;
+import plugins.nchenouard.particletracking.SpotTrackingPlugin;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.particletracking.legacytracker.StoppableTracker;
 import plugins.nchenouard.spot.Detection;
@@ -214,7 +215,7 @@ public class HMMMHTracker implements StoppableTracker {
 
         for (ConstructionCluster cl : finishedClusters) {
             Cluster cluster;
-            if (useLPSolve)
+            if (useLPSolve && SpotTrackingPlugin.optimizationLibraryLoaded)
                 cluster = new ClusterSolveLP(this, t - K, t, K, pFA);
             else
                 cluster = new ClusterSolveLPCustom(this, t - K, t, K, pFA);
@@ -313,7 +314,7 @@ public class HMMMHTracker implements StoppableTracker {
             else
             // else create an new cluster
             {
-                if (useLPSolve)
+                if (useLPSolve && SpotTrackingPlugin.optimizationLibraryLoaded)
                     cl = new ClusterSolveLP(this, t - K, t, K, pFA);
                 else
                     cl = new ClusterSolveLPCustom(this, t - K, t, K, pFA);
@@ -376,7 +377,8 @@ public class HMMMHTracker implements StoppableTracker {
             if (f.rootNode != null && f.rootTrack == null) {
                 ArrayList<Detection> detections = new ArrayList<Detection>();
                 Association a = f.rootNode.association;
-                Detection detect = new Detection(a.spot.mass_center.x, a.spot.mass_center.y, a.spot.mass_center.z, a.t);
+//              Detection detect = new Detection(a.spot.mass_center.x, a.spot.mass_center.y, a.spot.mass_center.z, a.t);
+                Detection detect = new DetectionSpotTrack(a.spot, a.t);
                 if (a.isPrediction)
                     detect.setDetectionType(Detection.DETECTIONTYPE_VIRTUAL_DETECTION);
                 else
@@ -420,8 +422,9 @@ public class HMMMHTracker implements StoppableTracker {
                             stop = (node == f.rootNode);
                             if (!stop) {
                                 Association a = node.association;
-                                Detection detect = new Detection(a.spot.mass_center.x, a.spot.mass_center.y,
-                                        a.spot.mass_center.z, a.t);
+//                              Detection detect = new Detection(a.spot.mass_center.x, a.spot.mass_center.y,
+//                              a.spot.mass_center.z, a.t);
+                                Detection detect = new DetectionSpotTrack(a.spot, a.t);
                                 if (a.isPrediction)
                                     detect.setDetectionType(Detection.DETECTIONTYPE_VIRTUAL_DETECTION);
                                 else
@@ -556,7 +559,8 @@ public class HMMMHTracker implements StoppableTracker {
 
     protected TrackSegment recursBuildTrackSegments(MHTrack2s trk, ArrayList<TrackSegment> tsList) {
         Association a = trk.association;
-        Detection detect = new Detection(a.spot.mass_center.x, a.spot.mass_center.y, a.spot.mass_center.z, a.t);
+//        Detection detect = new Detection(a.spot.mass_center.x, a.spot.mass_center.y, a.spot.mass_center.z, a.t);
+        Detection detect = new DetectionSpotTrack(a.spot, a.t);
         if (a.isPrediction)
             detect.setDetectionType(Detection.DETECTIONTYPE_VIRTUAL_DETECTION);
         else

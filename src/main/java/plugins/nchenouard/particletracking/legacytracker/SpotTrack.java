@@ -13,8 +13,8 @@ import plugins.nchenouard.spot.Spot;
  * 
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com)
  * @version 3.1
- * date 2013-11-13
- * license gpl v3.0
+ *          date 2013-11-13
+ *          license gpl v3.0
  */
 
 public class SpotTrack extends Detection
@@ -56,7 +56,11 @@ public class SpotTrack extends Detection
 
         if (point3DList == null)
         {
-            this.point3DList = new ArrayList<Point3D>();
+            // use the one from the spot
+            if (spot.point3DList != null)
+                this.point3DList = new ArrayList<Point3D>(spot.point3DList);
+            else
+                this.point3DList = new ArrayList<Point3D>();
         }
         else
         {
