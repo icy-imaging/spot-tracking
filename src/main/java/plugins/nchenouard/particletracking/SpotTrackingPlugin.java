@@ -114,7 +114,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
     public static boolean optimizationLibraryLoaded = false;
 
     boolean useMultithreading = true;
-    boolean useLPSolve = true;
+    boolean useLPSolve = false;
 
     public SpotTrackingPlugin()
     {
