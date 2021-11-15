@@ -48,6 +48,7 @@ import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 import icy.system.IcyExceptionHandler;
 import icy.system.SystemUtil;
+import lpsolve.LpSolve;
 import plugins.fab.trackmanager.TrackGroup;
 import plugins.fab.trackmanager.TrackManager;
 import plugins.fab.trackmanager.TrackSegment;
@@ -73,8 +74,8 @@ import plugins.nchenouard.spot.Spot;
  * 
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com)
  * @version 3.1
- * date 2013-11-13
- * license gpl v3.0
+ *          date 2013-11-13
+ *          license gpl v3.0
  */
 
 public class SpotTrackingPlugin extends PluginActionable implements ActionListener
@@ -127,14 +128,18 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
                     System.err.println("lpsolve55 cannot be loaded !");
                     throw (new Exception("lpsolve55 cannot be loaded !"));
                 }
+
                 // library have to be loaded by LpSolve itself otherwise it fails
-                if (extractLibrary("lpsolve55j") == null)
+                final File libFile = extractLibrary("lpsolve55j");
+
+                if (libFile == null)
                 {
                     System.err.println("lpsolve55j cannot be extracted !");
                     throw (new Exception("lpsolve55j cannot be extracted !"));
                 }
-                // force LpSolve class loading
-                Class.forName("lpsolve.LpSolve", true, PluginLoader.getLoader());
+
+                // init library
+                LpSolve.initLib(libFile);
             }
             catch (Exception e)
             {
