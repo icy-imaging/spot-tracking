@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
+		<artifactId>pom-icy</artifactId>
         <groupId>org.bioimageanalysis.icy</groupId>
-        <artifactId>parent-pom-plugin</artifactId>
-        <version>1.0.6</version>
+        <version>2.0.0</version>
     </parent>
 
     <artifactId>spot-tracking</artifactId>
@@ -21,21 +21,30 @@
         Up to version 2 it was known as the ‘Probabilistic particle tracker’ plugin.
     </description>
 
+	<profiles>
+		<profile>
+			<id>icy-plugin</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+	</profiles>
+	
     <dependencies>
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
             <artifactId>track-manager</artifactId>
-            <version>${track-manager.version}</version>
+			<version>${track-manager.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
             <artifactId>linear-programming</artifactId>
-            <version>${linear-programming.version}</version>
+			<version>${linear-programming.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
             <artifactId>spot-detector</artifactId>
-            <version>${spot-detector.version}</version>
+			<version>${spot-detector.version}</version>
         </dependency>
         <dependency>
             <groupId>com.datumbox</groupId>
@@ -50,5 +59,4 @@
             <url>https://icy-nexus.pasteur.fr/repository/Icy/</url>
         </repository>
     </repositories>
-    
 </project>
