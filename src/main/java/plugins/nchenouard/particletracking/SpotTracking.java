@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
+import icy.main.Icy;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -376,8 +377,10 @@ public class SpotTracking {
         else
             progress = null;
 
+        final boolean headless = Icy.getMainInterface().isHeadLess();
+
         for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++) {
-            if (SystemUtil.isHeadLess()) {
+            if (headless) {
                 System.out.print("Track extraction at frame " + t + "\r");
             }
 
@@ -394,7 +397,7 @@ public class SpotTracking {
             mhtracker.track(t, dr.getDetectionsAtT(t));
         }
 
-        if (SystemUtil.isHeadLess()) {
+        if (headless) {
             System.out.println();
         }
 
