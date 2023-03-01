@@ -10,6 +10,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import icy.gui.frame.progress.CancelableProgressFrame;
+import icy.system.SystemUtil;
 import icy.util.XMLUtil;
 import plugins.fab.trackmanager.TrackGroup;
 import plugins.fab.trackmanager.TrackSegment;
@@ -376,6 +377,10 @@ public class SpotTracking {
             progress = null;
 
         for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++) {
+            if (SystemUtil.isHeadLess()) {
+                System.out.print("Track extraction at frame " + t + "\r");
+            }
+
             if (progress != null) {
                 progress.setMessage("Track extraction at frame " + t);
                 progress.setPosition(t);
@@ -387,6 +392,10 @@ public class SpotTracking {
 
             // process track for frame T
             mhtracker.track(t, dr.getDetectionsAtT(t));
+        }
+
+        if (SystemUtil.isHeadLess()) {
+            System.out.println();
         }
 
         if (progress != null)
