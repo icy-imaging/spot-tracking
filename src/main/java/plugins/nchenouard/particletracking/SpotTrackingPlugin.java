@@ -141,7 +141,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
                 // init library
                 LpSolve.initLib(libFile);
             }
-            catch (Exception e)
+            catch (UnsatisfiedLinkError | Exception e)
             {
                 IcyExceptionHandler.showErrorMessage(e, true);
                 if (!Icy.getMainInterface().isHeadLess())
