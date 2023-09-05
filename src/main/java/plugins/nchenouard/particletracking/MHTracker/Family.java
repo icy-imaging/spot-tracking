@@ -1,301 +1,277 @@
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package plugins.nchenouard.particletracking.MHTracker;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Stack;
-import java.util.Vector;
+import icy.system.IcyExceptionHandler;
+
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** 
+/**
  * A Family object represents a tree of track segments with a shared root node (association)
- * 
+ * <p>
  * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
- * 
+ *
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com).
  * @version 3.1
  * date 2013-11-13
  * license gpl v3.0
-*/
+ */
+public class Family {
+    MHTrack2s rootNode;
+    ValidatedTrack rootTrack;
+    double trackScore = 0;
+    double rootScore = 0;
+    HashSet<Association> usedAssociations = new HashSet<>();
+    LinkedList<MHTrack2s> leafs = new LinkedList<>();
+    LinkedList<Hypothesis> hypotheses = new LinkedList<>();
+    int rootTime;
+    MHTrack2s lastSelectedLeaf = null;
+    IdCluster cluster = null;
 
-public class Family
-{
-	MHTrack2s rootNode;
-	ValidatedTrack rootTrack;
-	double trackScore = 0;
-	double rootScore = 0;
-	HashSet<Association> usedAssociations = new HashSet<Association>();
-	LinkedList<MHTrack2s> leafs = new LinkedList<MHTrack2s>();
-	LinkedList<Hypothesis> hypotheses = new LinkedList<Hypothesis>();
-	int rootTime;
-	MHTrack2s lastSelectedLeaf = null;
-	IdCluster cluster=null;
-	
-	protected void recursUpdate(MHTrack2s trk)
-	{
-		//since it is validated confirm the track
-		trk.confirmed = true;
-		//update used associations
-		usedAssociations.add(trk.association);
-		//update followingSegments
-		if (trk.followingSegments.isEmpty()) 
-			leafs.add(trk);
-		else
-			for (MHTrack2s trk2:trk.followingSegments)
-				recursUpdate(trk2);
-	}
-	public void updateFamily(MHTrack2s track, ValidatedTrack validatedTrack, int leafTime)
-	{
-		this.rootNode = track;
-		this.rootTrack = validatedTrack;
-		this.rootTime = rootNode.association.t;
-		this.trackScore =rootScore;
-		this.rootScore =rootNode.score;
-		//build leafs and used spots
-		for (MHTrack2s trk:leafs)
-			trk.hypothesis = null;
-		leafs.clear();
-		usedAssociations.clear();
-		recursUpdate(track);
-	}
-	
-	Vector<Hypothesis> getCompatibleHypothesis(GlobalHypothesis gh)
-	{
-		Vector<Hypothesis> hypList = new Vector<Hypothesis>();
-		if (!gh.usedAssociations.contains(this.rootNode.association))
-		{
-			if (rootNode.followingSegments.size()>0)
-				for(MHTrack2s trk:rootNode.followingSegments)
-					recursCompatibleHypotheses(gh, trk, hypList);
-			else if (rootNode.hypothesis!=null)
-				hypList.add(rootNode.hypothesis);
-		}
-		return hypList;
-	}
-	
-	void recursCompatibleHypotheses(final GlobalHypothesis gh, MHTrack2s node, Vector<Hypothesis> hypList)
-	{
-		if (!gh.usedAssociations.contains(node.association))
-		{
-			if (node.followingSegments.size()>0)
-				for(MHTrack2s trk:node.followingSegments)
-				{
-					recursCompatibleHypotheses(gh, trk, hypList);
-				}
-			else if (node.hypothesis!=null)
-				hypList.add(node.hypothesis);
-		}
-	}
-	
-	private boolean belowBound(GlobalHypothesis gh, double bestScore, MHTrack2s node)
-	{
-			if (gh.score + node.bestScore <  bestScore)
-				return true;
-		return false;
-	}
-	
-	Vector<Hypothesis> getCompatibleHypothesis(GlobalHypothesis gh, double bestScore)
-	{
+    protected void recursUpdate(final MHTrack2s trk) {
+        //since it is validated confirm the track
+        trk.confirmed = true;
+        //update used associations
+        usedAssociations.add(trk.association);
+        //update followingSegments
+        if (trk.followingSegments.isEmpty())
+            leafs.add(trk);
+        else
+            for (final MHTrack2s trk2 : trk.followingSegments)
+                recursUpdate(trk2);
+    }
+
+    public void updateFamily(final MHTrack2s track, final ValidatedTrack validatedTrack, final int leafTime) {
+        this.rootNode = track;
+        this.rootTrack = validatedTrack;
+        this.rootTime = rootNode.association.t;
+        this.trackScore = rootScore;
+        this.rootScore = rootNode.score;
+        //build leafs and used spots
+        for (final MHTrack2s trk : leafs)
+            trk.hypothesis = null;
+        leafs.clear();
+        usedAssociations.clear();
+        recursUpdate(track);
+    }
+
+    Vector<Hypothesis> getCompatibleHypothesis(final GlobalHypothesis gh) {
+        final Vector<Hypothesis> hypList = new Vector<>();
+        if (!gh.usedAssociations.contains(this.rootNode.association)) {
+            if (!rootNode.followingSegments.isEmpty())
+                for (final MHTrack2s trk : rootNode.followingSegments)
+                    recursCompatibleHypotheses(gh, trk, hypList);
+            else if (rootNode.hypothesis != null)
+                hypList.add(rootNode.hypothesis);
+        }
+        return hypList;
+    }
+
+    void recursCompatibleHypotheses(final GlobalHypothesis gh, final MHTrack2s node, final Vector<Hypothesis> hypList) {
+        if (!gh.usedAssociations.contains(node.association)) {
+            if (!node.followingSegments.isEmpty())
+                for (final MHTrack2s trk : node.followingSegments) {
+                    recursCompatibleHypotheses(gh, trk, hypList);
+                }
+            else if (node.hypothesis != null)
+                hypList.add(node.hypothesis);
+        }
+    }
+
+    private boolean belowBound(final GlobalHypothesis gh, final double bestScore, final MHTrack2s node) {
+        return gh.score + node.bestScore < bestScore;
+    }
+
+    Vector<Hypothesis> getCompatibleHypothesis(final GlobalHypothesis gh, final double bestScore) {
 //		long ml1 = System.currentTimeMillis();
 //		if (bestHyp==null)
 //			return getCompatibleHypothesis(gh);
-		final ThreadCounter tc = new ThreadCounter();
+        final ThreadCounter tc = new ThreadCounter();
 //		ExecutorService executor = Executors.newFixedThreadPool(4);
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		
-		tc.reset();
-		Vector<Hypothesis> hypList = new Vector<Hypothesis>();
-		if (!belowBound(gh, bestScore, this.rootNode))
-		{
-			if (!gh.usedAssociations.contains(this.rootNode.association))
-			{
-				if (rootNode.followingSegments.size()>0)
-					for(MHTrack2s trk:rootNode.followingSegments)
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        tc.reset();
+        final Vector<Hypothesis> hypList = new Vector<>();
+        if (!belowBound(gh, bestScore, this.rootNode)) {
+            if (!gh.usedAssociations.contains(this.rootNode.association)) {
+                if (!rootNode.followingSegments.isEmpty())
+                    for (final MHTrack2s trk : rootNode.followingSegments)
 //						recursCompatibleHypotheses(gh, bestScore, trk, hypList);
-					{		
-						tc.increaseCount();
-						executor.execute(new RecursCompatibleThr(gh, bestScore, trk, hypList, tc, executor));
-					}
-				else if (rootNode.hypothesis!=null)
-					hypList.add(rootNode.hypothesis);
-			}
-		}
-		tc.lock.lock();
-		try {
-			while (tc.cntThreads!=0)
-				tc.countAndDeathEquality.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		finally{tc.lock.unlock();}
-		executor.shutdown();
+                    {
+                        tc.increaseCount();
+                        executor.execute(new RecursCompatibleThr(gh, bestScore, trk, hypList, tc, executor));
+                    }
+                else if (rootNode.hypothesis != null)
+                    hypList.add(rootNode.hypothesis);
+            }
+        }
+        tc.lock.lock();
+        try {
+            while (tc.cntThreads != 0)
+                tc.countAndDeathEquality.await();
+        }
+        catch (final InterruptedException e) {
+            IcyExceptionHandler.showErrorMessage(e, true);
+        }
+        finally {
+            tc.lock.unlock();
+        }
+        executor.shutdown();
 //		long ml2 = System.currentTimeMillis();
 //		HMMMHTracker.compatibleHypTime+=(ml2-ml1);
-		return hypList;
-	}
-	
-	ArrayList<Hypothesis> getCompatibleHypothesisSingleThread(GlobalHypothesis gh, double bestScore)
-	{
-		ArrayList<Hypothesis> hypList = new ArrayList<Hypothesis>();
-		Stack<MHTrack2s> waitingTracks = new Stack<MHTrack2s>();
-		if (!belowBound(gh, bestScore, this.rootNode))
-		{
-			if (!gh.usedAssociations.contains(this.rootNode.association))
-			{
-				if (rootNode.followingSegments.size()>0)
-					waitingTracks.addAll(rootNode.followingSegments);
-				else if (rootNode.hypothesis!=null)
-					hypList.add(rootNode.hypothesis);
-			}
-		}
-		while(!waitingTracks.isEmpty())
-		{
-			recursCompatibleHypotheses(gh,bestScore, waitingTracks.pop(), hypList, waitingTracks);
-		}
-		Collections.sort(hypList, new HypothesisComparator());
-		return hypList;
-	}
-	
-	void getCompatibleHypothesisSingleThread(GlobalHypothesis gh, double bestScore, ArrayList<Hypothesis> hypList, Stack<MHTrack2s> waitingTracks)
-	{
-		if (!belowBound(gh, bestScore, this.rootNode))
-		{
-			if (!gh.usedAssociations.contains(this.rootNode.association))
-			{
-				if (rootNode.followingSegments.size()>0)
-					waitingTracks.addAll(rootNode.followingSegments);
-				else if (rootNode.hypothesis!=null)
-					hypList.add(rootNode.hypothesis);
-			}
-		}
-		while(!waitingTracks.isEmpty())
-		{
-			recursCompatibleHypotheses(gh,bestScore, waitingTracks.pop(), hypList, waitingTracks);
-		}
-		Collections.sort(hypList, new HypothesisComparator());
-	}
-	
-	
-	void recursCompatibleHypotheses(GlobalHypothesis gh, double bestScore, MHTrack2s node, Vector<Hypothesis> hypList, ThreadCounter tc, ExecutorService executor)
-	{
-		if (!belowBound(gh, bestScore, this.rootNode))
-		{
-			if (!gh.usedAssociations.contains(node.association))
-			{
-				if (node.followingSegments.size()>0)
-					for(MHTrack2s trk:node.followingSegments)
+        return hypList;
+    }
+
+    ArrayList<Hypothesis> getCompatibleHypothesisSingleThread(final GlobalHypothesis gh, final double bestScore) {
+        final ArrayList<Hypothesis> hypList = new ArrayList<>();
+        final Stack<MHTrack2s> waitingTracks = new Stack<>();
+        if (!belowBound(gh, bestScore, this.rootNode)) {
+            if (!gh.usedAssociations.contains(this.rootNode.association)) {
+                if (!rootNode.followingSegments.isEmpty())
+                    waitingTracks.addAll(rootNode.followingSegments);
+                else if (rootNode.hypothesis != null)
+                    hypList.add(rootNode.hypothesis);
+            }
+        }
+        while (!waitingTracks.isEmpty()) {
+            recursCompatibleHypotheses(gh, bestScore, waitingTracks.pop(), hypList, waitingTracks);
+        }
+        hypList.sort(new HypothesisComparator());
+        return hypList;
+    }
+
+    void getCompatibleHypothesisSingleThread(final GlobalHypothesis gh, final double bestScore, final ArrayList<Hypothesis> hypList, final Stack<MHTrack2s> waitingTracks) {
+        if (!belowBound(gh, bestScore, this.rootNode)) {
+            if (!gh.usedAssociations.contains(this.rootNode.association)) {
+                if (!rootNode.followingSegments.isEmpty())
+                    waitingTracks.addAll(rootNode.followingSegments);
+                else if (rootNode.hypothesis != null)
+                    hypList.add(rootNode.hypothesis);
+            }
+        }
+        while (!waitingTracks.isEmpty()) {
+            recursCompatibleHypotheses(gh, bestScore, waitingTracks.pop(), hypList, waitingTracks);
+        }
+        hypList.sort(new HypothesisComparator());
+    }
+
+
+    void recursCompatibleHypotheses(final GlobalHypothesis gh, final double bestScore, final MHTrack2s node, final Vector<Hypothesis> hypList, final ThreadCounter tc, final ExecutorService executor) {
+        if (!belowBound(gh, bestScore, this.rootNode)) {
+            if (!gh.usedAssociations.contains(node.association)) {
+                if (!node.followingSegments.isEmpty())
+                    for (final MHTrack2s trk : node.followingSegments)
 //						recursCompatibleHypotheses(gh, bestScore, trk, hypList);
-				{		
-					tc.increaseCount();
-					executor.execute(new RecursCompatibleThr(gh, bestScore, trk, hypList, tc, executor));
-				}
-				else if (node.hypothesis!=null)
-					hypList.add(node.hypothesis);
-			}
-		}
-	}
-	
-	void recursCompatibleHypotheses(GlobalHypothesis gh, double bestScore, MHTrack2s node, ArrayList<Hypothesis> hypList, Stack<MHTrack2s> taskList)
-	{
-		if (!belowBound(gh, bestScore, this.rootNode))
-		{
-			if (!gh.usedAssociations.contains(node.association))
-			{
-				if (node.followingSegments.size()>0)
-					for(MHTrack2s trk:node.followingSegments)
-					{		
-						taskList.add(trk);
-					}
-				else if (node.hypothesis!=null)
-					hypList.add(node.hypothesis);
-			}
-		}
-	}
-	
-	
-	
-	public void buildHypothesesAndResetBestScores()
-	{		
-		ArrayList<Association> measurementsList =  new ArrayList<Association>();
-		measurementsList.add(rootNode.association);
-		rootNode.resetBestScore();
-	
-		Hypothesis h  = new Hypothesis(measurementsList, rootNode);
-		if (rootNode.followingSegments.isEmpty())
-		{
-			if (rootNode.confirmed)
-			{	
-				hypotheses.add(h);
-				rootNode.hypothesis = h;
-			}
-		}
-		else
-			recursBuildHyp(h, hypotheses);
-		
-		usedAssociations.clear();
-		for (Hypothesis hyp:hypotheses)
-			usedAssociations.addAll(hyp.usedAssociations);
-		//find best scores for each node
-		correctHypothesesScore();
-		putScoresOnNodes();
-	}
-	
-	private void correctHypothesesScore()
-	{
-	//	System.out.println("DIFF "+rootScore+" "+trackScore+" "+Math.log(rootNode.associationLikelihood));
-		for (Hypothesis hyp:hypotheses)
-		{
-			double bnf = 0;//best non feasible score
-			for (Association a:hyp.usedAssociations)
-				bnf+=a.getBestScore();
-			hyp.leaf.bestScore = hyp.leaf.score - bnf - rootScore;
-		}
-	}
-	
-	private void putScoresOnNodes() {
-		for (Hypothesis h:hypotheses)
-		{
-			//h.leaf.bestScore = h.leaf.score;
-			recursPutScoresOnNodes(h.leaf);
-		}
-	}
-	private void recursPutScoresOnNodes(MHTrack2s node)
-	{
-		if (node.precedingSegment!=null)
-		{
-			if (node.precedingSegment.bestScore<node.bestScore)
-			{
-				node.precedingSegment.bestScore=node.bestScore;
-				recursPutScoresOnNodes(node.precedingSegment);
-			}
-		}
-	}
-	protected void recursBuildHyp(Hypothesis h, LinkedList<Hypothesis> hList)
-	{
-		for (MHTrack2s nextTrk:h.leaf.followingSegments)
-		{
-			nextTrk.resetBestScore();
-			ArrayList<Association> associationList = new ArrayList<Association>(h.usedAssociations);
-			associationList.add(nextTrk.association);
-			Hypothesis nextH  = new Hypothesis(associationList, nextTrk);
-			if (nextTrk.followingSegments.isEmpty())
-			{
-					if (nextTrk.confirmed)
-					{
-						hList.add(nextH);
-						nextTrk.hypothesis = nextH;
-					}
-			}
-			else
-				recursBuildHyp(nextH, hList);
-		}
-	}
-	
-	protected void printHypotheses()
-	{
+                    {
+                        tc.increaseCount();
+                        executor.execute(new RecursCompatibleThr(gh, bestScore, trk, hypList, tc, executor));
+                    }
+                else if (node.hypothesis != null)
+                    hypList.add(node.hypothesis);
+            }
+        }
+    }
+
+    void recursCompatibleHypotheses(final GlobalHypothesis gh, final double bestScore, final MHTrack2s node, final ArrayList<Hypothesis> hypList, final Stack<MHTrack2s> taskList) {
+        if (!belowBound(gh, bestScore, this.rootNode)) {
+            if (!gh.usedAssociations.contains(node.association)) {
+                if (!node.followingSegments.isEmpty())
+                    taskList.addAll(node.followingSegments);
+                else if (node.hypothesis != null)
+                    hypList.add(node.hypothesis);
+            }
+        }
+    }
+
+
+    public void buildHypothesesAndResetBestScores() {
+        final ArrayList<Association> measurementsList = new ArrayList<>();
+        measurementsList.add(rootNode.association);
+        rootNode.resetBestScore();
+
+        final Hypothesis h = new Hypothesis(measurementsList, rootNode);
+        if (rootNode.followingSegments.isEmpty()) {
+            if (rootNode.confirmed) {
+                hypotheses.add(h);
+                rootNode.hypothesis = h;
+            }
+        }
+        else
+            recursBuildHyp(h, hypotheses);
+
+        usedAssociations.clear();
+        for (final Hypothesis hyp : hypotheses)
+            usedAssociations.addAll(hyp.usedAssociations);
+        //find best scores for each node
+        correctHypothesesScore();
+        putScoresOnNodes();
+    }
+
+    private void correctHypothesesScore() {
+        //	System.out.println("DIFF "+rootScore+" "+trackScore+" "+Math.log(rootNode.associationLikelihood));
+        for (final Hypothesis hyp : hypotheses) {
+            double bnf = 0;//best non feasible score
+            for (final Association a : hyp.usedAssociations)
+                bnf += a.getBestScore();
+            assert hyp.leaf != null;
+            hyp.leaf.bestScore = hyp.leaf.score - bnf - rootScore;
+        }
+    }
+
+    private void putScoresOnNodes() {
+        for (final Hypothesis h : hypotheses) {
+            //h.leaf.bestScore = h.leaf.score;
+            assert h.leaf != null;
+            recursPutScoresOnNodes(h.leaf);
+        }
+    }
+
+    private void recursPutScoresOnNodes(final MHTrack2s node) {
+        if (node.precedingSegment != null) {
+            if (node.precedingSegment.bestScore < node.bestScore) {
+                node.precedingSegment.bestScore = node.bestScore;
+                recursPutScoresOnNodes(node.precedingSegment);
+            }
+        }
+    }
+
+    protected void recursBuildHyp(final Hypothesis h, final LinkedList<Hypothesis> hList) {
+        assert h.leaf != null;
+        for (final MHTrack2s nextTrk : h.leaf.followingSegments) {
+            nextTrk.resetBestScore();
+            final ArrayList<Association> associationList = new ArrayList<>(h.usedAssociations);
+            associationList.add(nextTrk.association);
+            final Hypothesis nextH = new Hypothesis(associationList, nextTrk);
+            if (nextTrk.followingSegments.isEmpty()) {
+                if (nextTrk.confirmed) {
+                    hList.add(nextH);
+                    nextTrk.hypothesis = nextH;
+                }
+            }
+            else
+                recursBuildHyp(nextH, hList);
+        }
+    }
+
+    protected void printHypotheses() {
 		/*PluginConsole.println("Family hypothesis ");
 		for (Hypothesis h:hypothesis)
 		{
@@ -304,44 +280,42 @@ public class Family
 				PluginConsole.print("["+a.id +" "+a.isPrediction+" "+a.t+"]");
 			PluginConsole.println("score "+h.leaf.score);
 		}*/
-	}
-	
-	class RecursCompatibleThr implements Runnable
-	{
-		ThreadCounter tc;
-		ExecutorService executor;
-		GlobalHypothesis gh;
-		MHTrack2s trk;
-		Vector<Hypothesis> hypList;
-		double bestScore;
-		
-		public RecursCompatibleThr(GlobalHypothesis gh, double bestScore, MHTrack2s trk, Vector<Hypothesis> hypList, ThreadCounter tc, ExecutorService executor)
-		{
-			this.tc = tc;
-			this.gh = gh;
-			this.trk = trk;
-			this.hypList = hypList;
-			this.bestScore = bestScore;
-			this.executor = executor;
-		}
-		
-		public void run()
-		{				
-			recursCompatibleHypotheses(gh, bestScore, trk, hypList, tc, executor);
-			tc.increaseDeath();
-		}
-	}
-	
-	class  HypothesisComparator implements Comparator <Hypothesis>
-	{
+    }
 
-		public int compare(Hypothesis o1, Hypothesis o2) {
-			if (o1.leaf.score > o2.leaf.score)
-				return 1;
-			else if (o1.leaf.score< o2.leaf.score)
-				return -1;
-			return 0;
-		}
-		
-	}
+    class RecursCompatibleThr implements Runnable {
+        ThreadCounter tc;
+        ExecutorService executor;
+        GlobalHypothesis gh;
+        MHTrack2s trk;
+        Vector<Hypothesis> hypList;
+        double bestScore;
+
+        public RecursCompatibleThr(final GlobalHypothesis gh, final double bestScore, final MHTrack2s trk, final Vector<Hypothesis> hypList, final ThreadCounter tc, final ExecutorService executor) {
+            this.tc = tc;
+            this.gh = gh;
+            this.trk = trk;
+            this.hypList = hypList;
+            this.bestScore = bestScore;
+            this.executor = executor;
+        }
+
+        @Override
+        public void run() {
+            recursCompatibleHypotheses(gh, bestScore, trk, hypList, tc, executor);
+            tc.increaseDeath();
+        }
+    }
+
+    static class HypothesisComparator implements Comparator<Hypothesis> {
+        @Override
+        public int compare(final Hypothesis o1, final Hypothesis o2) {
+            assert o1.leaf != null;
+            assert o2.leaf != null;
+            if (o1.leaf.score > o2.leaf.score)
+                return 1;
+            else if (o1.leaf.score < o2.leaf.score)
+                return -1;
+            return 0;
+        }
+    }
 }

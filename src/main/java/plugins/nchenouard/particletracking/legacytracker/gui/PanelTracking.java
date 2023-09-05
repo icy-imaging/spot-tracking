@@ -1,26 +1,27 @@
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package plugins.nchenouard.particletracking.legacytracker.gui;
 
 import icy.gui.component.pool.SwimmingObjectChooser;
 import icy.swimmingPool.SwimmingObject;
 import icy.swimmingPool.SwimmingPoolEvent;
 import icy.swimmingPool.SwimmingPoolEventType;
-
-import java.awt.CardLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.border.TitledBorder;
-
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.particletracking.legacytracker.Tracker;
 import plugins.nchenouard.particletracking.legacytracker.associationMethod.AssignProblemSolver;
@@ -28,54 +29,52 @@ import plugins.nchenouard.particletracking.legacytracker.associationMethod.Insta
 import plugins.nchenouard.particletracking.legacytracker.associationMethod.SolveMLAssociation;
 import plugins.nchenouard.spot.DetectionResult;
 
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+
 /**
  * Panel to configure the legacy tracker of Genovesio et al., TIP 2006.
  * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
- * 
+ *
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com).
  * @version 3.1
  * date 2013-11-13
  * license gpl v3.0
  */
-
-public class PanelTracking extends JPanel
-{
-    private static final long serialVersionUID = -1080899131238029873L;
+public class PanelTracking extends JPanel {
     SwimmingObjectChooser detectionChooser;
 
     SingleMotionPanel singleMotionPanel;
     IMMPanel immPanel;
     final String singleMotionString = "Single motion model";
     final String multipleMotionString = "Multiple motion models";
-    final JComboBox filtersBox = new JComboBox(new String[] {singleMotionString, multipleMotionString});
+    final JComboBox<String> filtersBox = new JComboBox<>(new String[]{singleMotionString, multipleMotionString});
     JCheckBox covUpdateBox;
 
-    private SpinnerNumberModel gateFactorModel = new SpinnerNumberModel(3, 0.5, 100, 0.5);
-    private JSpinner gateFactorSpinner = new JSpinner(gateFactorModel);
-    private SpinnerNumberModel maxConsPredModel = new SpinnerNumberModel(2, 0, 100, 1);
-    private JSpinner maxConsPredSpinner = new JSpinner(maxConsPredModel);;
-    private JTextField trackGroupNameTF;
+    private final SpinnerNumberModel gateFactorModel = new SpinnerNumberModel(3, 0.5, 100, 0.5);
+    private final SpinnerNumberModel maxConsPredModel = new SpinnerNumberModel(2, 0, 100, 1);
+    private final JTextField trackGroupNameTF;
 
-    private String runningString = "Stop tracking";
-    private String nonRunningString = "Start tracking";
     public JButton trackingStartButton;
 
-    public enum AssociationMethods
-    {
+    public enum AssociationMethods {
         ML, OPTIMAL, GREEDY
-    };
+    }
 
-    String[] associationNames = new String[] {"Maximum Likelihood", "Optimal association (slower)",
-            "Greedy association (faster)"};
+    String[] associationNames = new String[]{
+            "Maximum Likelihood",
+            "Optimal association (slower)",
+            "Greedy association (faster)"
+    };
 
     // private JComboBox<String> trackingAssociationBox;
 
-    public PanelTracking()
-    {
-        GridBagLayout mainLayout = new GridBagLayout();
+    public PanelTracking() {
+        final GridBagLayout mainLayout = new GridBagLayout();
         this.setLayout(mainLayout);
 
-        GridBagConstraints constraints = new GridBagConstraints();
+        final GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridheight = 1;
         constraints.gridwidth = 1;
         constraints.gridx = 0;
@@ -86,8 +85,7 @@ public class PanelTracking extends JPanel
         this.add(new JLabel("Detection source:"), constraints);
         constraints.gridy++;
         detectionChooser = new SwimmingObjectChooser(DetectionResult.class);
-        detectionChooser.swimmingPoolChangeEvent(new SwimmingPoolEvent(SwimmingPoolEventType.ELEMENT_REMOVED,
-                new SwimmingObject(null)));
+        detectionChooser.swimmingPoolChangeEvent(new SwimmingPoolEvent(SwimmingPoolEventType.ELEMENT_REMOVED, new SwimmingObject(null)));
         this.add(detectionChooser, constraints);
         constraints.gridy++;
 
@@ -104,13 +102,7 @@ public class PanelTracking extends JPanel
         motionModelPanel.add(immPanel, multipleMotionString);
         motionModelPanel.setBorder(new TitledBorder("Motion setting"));
 
-        filtersBox.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                motionCardLayout.show(motionModelPanel, filtersBox.getSelectedItem().toString());
-            }
-        });
+        filtersBox.addActionListener(e -> motionCardLayout.show(motionModelPanel, (String) filtersBox.getSelectedItem()));
         this.add(filtersBox, constraints);
         constraints.gridy++;
         this.add(motionModelPanel, constraints);
@@ -128,15 +120,17 @@ public class PanelTracking extends JPanel
 
         this.add(new JLabel("Max. number of consecutive missed detections:"), constraints);
         constraints.gridy++;
+        final JSpinner maxConsPredSpinner = new JSpinner(maxConsPredModel);
         this.add(maxConsPredSpinner, constraints);
         constraints.gridy++;
 
         this.add(new JLabel("Gate factor:"), constraints);
         constraints.gridy++;
+        final JSpinner gateFactorSpinner = new JSpinner(gateFactorModel);
         this.add(gateFactorSpinner, constraints);
         constraints.gridy++;
 
-        JLabel trackGroupLabel = new JLabel("Name of the output track group");
+        final JLabel trackGroupLabel = new JLabel("Name of the output track group");
         this.add(trackGroupLabel, constraints);
         constraints.gridy++;
         trackGroupNameTF = new JTextField("newTracks-1");
@@ -148,8 +142,9 @@ public class PanelTracking extends JPanel
         this.add(trackingStartButton, constraints);
     }
 
-    public void changeTrackingState(boolean isRunning)
-    {
+    public void changeTrackingState(final boolean isRunning) {
+        final String runningString = "Stop tracking";
+        final String nonRunningString = "Start tracking";
         if (isRunning)
             trackingStartButton.setText(runningString);
         else
@@ -157,29 +152,26 @@ public class PanelTracking extends JPanel
         trackingStartButton.updateUI();
     }
 
-    public DetectionResult getDetectionResults()
-    {
+    public DetectionResult getDetectionResults() {
         if (detectionChooser.getSelectedObject() != null)
             return (DetectionResult) detectionChooser.getSelectedObject();
         else
             return null;
     }
 
-    public boolean IsErasePreExistingTracks()
-    {
+    public boolean IsErasePreExistingTracks() {
         return false;
     }
 
-    public Predictor buildPredictor(int dim)
-    {
-        if (filtersBox.getSelectedItem().equals(singleMotionString))
+    public Predictor buildPredictor(final int dim) {
+        final String item = (String) filtersBox.getSelectedItem();
+        if (item != null && item.equals(singleMotionString))
             return singleMotionPanel.buildPredictor(dim, covUpdateBox.isSelected());
         else
             return immPanel.buildPredictor(dim, covUpdateBox.isSelected());
     }
 
-    public AssociationMethods getAssociationMethod()
-    {
+    public AssociationMethods getAssociationMethod() {
         return AssociationMethods.ML;
         // int associationMethod = trackingAssociationBox.getSelectedIndex();
         // switch(associationMethod)
@@ -195,20 +187,17 @@ public class PanelTracking extends JPanel
         // }
     }
 
-    public double getGateFactor()
-    {
+    public double getGateFactor() {
         return gateFactorModel.getNumber().doubleValue();
     }
 
-    public int getMaxConsPred()
-    {
+    public int getMaxConsPred() {
         return maxConsPredModel.getNumber().intValue();
     }
 
-    public Tracker buildTracker(int dim)
-    {
-        Predictor predictor = buildPredictor(dim);
-        AssignProblemSolver assignementSolver = null;
+    public Tracker buildTracker(final int dim) {
+        final Predictor predictor = buildPredictor(dim);
+        final AssignProblemSolver assignementSolver;
         // AssociationMethods associationMethod = getAssociationMethod();
         assignementSolver = new SolveMLAssociation(true);
         // switch(associationMethod)
@@ -225,13 +214,10 @@ public class PanelTracking extends JPanel
         // assignementSolver = new SolveMLAssociation(true);
         // }
         // Create Tracker
-        InstantaneousTracker tracker = new InstantaneousTracker(assignementSolver, predictor, true, getGateFactor(),
-                getMaxConsPred() + 1);
-        return tracker;
+        return new InstantaneousTracker(assignementSolver, predictor, true, getGateFactor(), getMaxConsPred() + 1);
     }
 
-    public String getTrackGroupName()
-    {
+    public String getTrackGroupName() {
         return trackGroupNameTF.getText();
     }
 }

@@ -1,76 +1,70 @@
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package plugins.nchenouard.particletracking;
 
 import icy.main.Icy;
 import icy.swimmingPool.SwimmingObject;
 import icy.swimmingPool.SwimmingPoolEvent;
 import icy.swimmingPool.SwimmingPoolListener;
+import plugins.nchenouard.spot.DetectionResult;
 
-import java.awt.Component;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
-
-import plugins.nchenouard.spot.DetectionResult;
 
 /**
  * The detection chooser pick in the swimming pool the object corresponding to DetectionResult
  * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
- * 
+ *
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com)
  * @author Fabrice de Chaumont, Stephane Dallongeville and Nicolas Chenouard<br>
  * @version 3.1
  * date 2013-11-13
  * license gpl v3.0
  */
-public class DetectionChooser extends JComboBox implements SwimmingPoolListener
-{
-    public interface DetectionResultChooserListener
-    {
-        public void DetectionResultChanged(DetectionResult detectionResult);
+public class DetectionChooser extends JComboBox<DetectionResult> implements SwimmingPoolListener {
+    public interface DetectionResultChooserListener {
+        void DetectionResultChanged(DetectionResult detectionResult);
     }
 
-    private class DetectionComboModel extends DefaultComboBoxModel
-    {
-        /**
-		 * 
-		 */
-        private static final long serialVersionUID = 3064234412504253556L;
-
+    private static class DetectionComboModel extends DefaultComboBoxModel<DetectionResult> {
         /**
          * items list
          */
         final ArrayList<DetectionResult> detectionResults;
 
-        /**
-         * @param sequences
-         */
-        public DetectionComboModel(ArrayList<DetectionResult> detectionResults)
-        {
+        public DetectionComboModel(final ArrayList<DetectionResult> detectionResults) {
             super();
 
             this.detectionResults = detectionResults;
         }
 
         @Override
-        public DetectionResult getElementAt(int index)
-        {
+        public DetectionResult getElementAt(final int index) {
             return detectionResults.get(index);
         }
 
         @Override
-        public int getSize()
-        {
+        public int getSize() {
             return detectionResults.size();
         }
     }
-
-    private static final long serialVersionUID = -6108163762809540675L;
 
     /**
      * listeners
@@ -82,16 +76,10 @@ public class DetectionChooser extends JComboBox implements SwimmingPoolListener
      */
     private DetectionResult previousDetectionResult;
 
-    public DetectionChooser()
-    {
+    public DetectionChooser() {
         super();
-        setRenderer(new ListCellRenderer()
-        {
-            // @Override
-            // public Component getListCellRendererComponent(JList<DetectionResult> list, DetectionResult value, int
-            // index, boolean isSelected,
-            // boolean cellHasFocus)
-            // {
+
+        setRenderer((list, value, index, isSelected, cellHasFocus) -> {
             // if (value == null)
             // return new JLabel(" no detection result - Please use the Spot detector to create a detection set.");
             //
@@ -99,20 +87,11 @@ public class DetectionChooser extends JComboBox implements SwimmingPoolListener
             // return new JLabel(StringUtil.limit( value.toString() , 50 ));
             //
             // return new JLabel("");
-            // }
 
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                    boolean cellHasFocus)
-            {
-                if (value == null)
-                    return new JLabel("Select detection results here");
+            if (value == null)
+                return new JLabel("Select detection results here");
 
-                if (value instanceof DetectionResult)
-                    // return new JLabel(StringUtil.limit( value.toString() , 50 ));
-                    return new JLabel(value.toString());
-                return new JLabel("");
-            }
+            return new JLabel(value.toString());
         });
 
         Icy.getMainInterface().getSwimmingPool().addListener(this);
@@ -120,7 +99,7 @@ public class DetectionChooser extends JComboBox implements SwimmingPoolListener
         addActionListener(this);
 
         // default
-        listeners = new ArrayList<DetectionResultChooserListener>();
+        listeners = new ArrayList<>();
 
         previousDetectionResult = null;
         setSelectedItem(null);
@@ -134,27 +113,22 @@ public class DetectionChooser extends JComboBox implements SwimmingPoolListener
 
     /**
      * @return current detectionResult selected in combo. null if no sequence is selected or if the
-     *         sequence do not exists anymore.
+     * sequence do not exists anymore.
      */
-    public DetectionResult getSelectedDetectionResult()
-    {
+    public DetectionResult getSelectedDetectionResult() {
         return (DetectionResult) getSelectedItem();
     }
 
     /**
-     * @param detectionResult
-     *        The detectionResult to select in the combo box.
+     * @param detectionResult The detectionResult to select in the combo box.
      */
-    public void setDetectionResultSelected(DetectionResult detectionResult)
-    {
-        if (detectionResult != getSelectedDetectionResult())
-        {
+    public void setDetectionResultSelected(final DetectionResult detectionResult) {
+        if (detectionResult != getSelectedDetectionResult()) {
             setSelectedItem(detectionResult);
         }
     }
 
-    void refreshDetectionResultList()
-    {
+    void refreshDetectionResultList() {
         // save old selection
         final Object oldSelected = getSelectedItem();
         // rebuild model
@@ -163,96 +137,73 @@ public class DetectionChooser extends JComboBox implements SwimmingPoolListener
         setSelectedItem(oldSelected);
     }
 
-    private ArrayList<DetectionResult> getDetectionResultList()
-    {
+    private ArrayList<DetectionResult> getDetectionResultList() {
 
-        ArrayList<DetectionResult> detectionResultList = new ArrayList<DetectionResult>();
+        final ArrayList<DetectionResult> detectionResultList = new ArrayList<>();
 
-        ArrayList<SwimmingObject> objects = Icy.getMainInterface().getSwimmingPool().getObjects();
+        final ArrayList<SwimmingObject> objects = Icy.getMainInterface().getSwimmingPool().getObjects();
 
-        for (SwimmingObject so : objects)
-        {
+        for (final SwimmingObject so : objects) {
             System.out.println(so.getObject());
-            Object o = so.getObject();
+            final Object o = so.getObject();
             System.out.println(o instanceof DetectionResult);
-            if (so.getObject() instanceof DetectionResult)
-            {
+            if (so.getObject() instanceof DetectionResult) {
                 // System.out.println("Object added: " + so.getObject() );
                 detectionResultList.add((DetectionResult) so.getObject());
             }
         }
 
         return detectionResultList;
-
     }
 
-    /** called when the selection has changed */
-    private void detectionResultChanged(DetectionResult detectionResult)
-    {
+    /**
+     * called when the selection has changed
+     */
+    private void detectionResultChanged(final DetectionResult detectionResult) {
         fireDetectionResultChanged(detectionResult);
     }
 
-    private void fireDetectionResultChanged(DetectionResult detectionResult)
-    {
+    private void fireDetectionResultChanged(final DetectionResult detectionResult) {
         final ArrayList<DetectionResultChooserListener> listenersCopy = getListeners();
 
-        for (DetectionResultChooserListener listener : listenersCopy)
+        for (final DetectionResultChooserListener listener : listenersCopy)
             listener.DetectionResultChanged(detectionResult);
     }
 
-    public ArrayList<DetectionResultChooserListener> getListeners()
-    {
-        return new ArrayList<DetectionResultChooserListener>(listeners);
+    public ArrayList<DetectionResultChooserListener> getListeners() {
+        return new ArrayList<>(listeners);
     }
 
-    public void addListener(DetectionResultChooserListener listener)
-    {
+    public void addListener(final DetectionResultChooserListener listener) {
         if (!listeners.contains(listener))
             listeners.add(listener);
     }
 
-    public void removeListener(DetectionResultChooserListener listener)
-    {
+    public void removeListener(final DetectionResultChooserListener listener) {
         listeners.remove(listener);
     }
 
     @Override
-    public void actionPerformed(ActionEvent e)
-    {
+    public void actionPerformed(final ActionEvent e) {
         final DetectionResult detectionResult = getSelectedDetectionResult();
 
-        if (previousDetectionResult != detectionResult)
-        {
+        if (previousDetectionResult != detectionResult) {
             previousDetectionResult = detectionResult;
             detectionResultChanged(detectionResult);
         }
     }
 
     @Override
-    public void swimmingPoolChangeEvent(final SwimmingPoolEvent event)
-    {
-
+    public void swimmingPoolChangeEvent(final SwimmingPoolEvent event) {
         // Thread.in
-        SwingUtilities.invokeLater(
+        SwingUtilities.invokeLater(() -> {
+            refreshDetectionResultList();
 
-        new Runnable()
-        {
-
-            @Override
-            public void run()
-            {
-
-                refreshDetectionResultList();
-
-                // Select the last entry computed
-                if (event.getResult().getObject() instanceof DetectionResult)
-                {
-                    setSelectedItem(event.getResult().getObject());
-                }
+            // Select the last entry computed
+            if (event.getResult().getObject() instanceof DetectionResult) {
+                setSelectedItem(event.getResult().getObject());
             }
-        }
-
-        );
+        });
     }
 
 }

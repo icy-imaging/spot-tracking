@@ -1,24 +1,40 @@
-package plugins.nchenouard.particletracking;
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+package plugins.nchenouard.particletracking;
 
 import icy.util.StringUtil;
 import icy.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import plugins.nchenouard.spot.DetectionResult;
 
 /**
  * Set of parameters for the MHT tracking algorithms
  * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
- * 
+ *
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com)
  * @version 3.1
  * date 2013-11-13
  * license gpl v3.0
  */
 
-public class MHTparameterSet
-{
+public class MHTparameterSet {
     // detection parameters
     public DetectionResult detectionResults = null;
     public static final int defaultNumberOfFalseDetections = 20;
@@ -110,8 +126,7 @@ public class MHTparameterSet
     public String trackGroupName;
     public final static String defaultTrackGroupName = "mht-tracks-1";
 
-    public MHTparameterSet()
-    {
+    public MHTparameterSet() {
         numberOfFalseDetections = defaultNumberOfFalseDetections;
         detectionRate = defaultDetectionRate;
         confirmationThreshold = defaultConfirmationThreshold;
@@ -135,20 +150,17 @@ public class MHTparameterSet
         trackGroupName = defaultTrackGroupName;
     }
 
-    public static MHTparameterSet loadFromXML(Node node)
-    {
-        MHTparameterSet parameterSet = new MHTparameterSet();
+    public static MHTparameterSet loadFromXML(final Node node) {
+        final MHTparameterSet parameterSet = new MHTparameterSet();
         final Element nodeDetection = XMLUtil.getElement(node, ROOT_DETECTION_INPUT);
-        if (nodeDetection != null)
-        {
+        if (nodeDetection != null) {
             parameterSet.numberOfFalseDetections = XMLUtil.getAttributeIntValue(nodeDetection, FALSE_DETECTION,
                     defaultNumberOfFalseDetections);
             parameterSet.detectionRate = XMLUtil.getAttributeDoubleValue(nodeDetection, DETECTION_RATE,
                     defaultDetectionRate);
         }
         final Element nodeExistence = XMLUtil.getElement(node, ROOT_TARGET_EXISTENCE);
-        if (nodeExistence != null)
-        {
+        if (nodeExistence != null) {
             parameterSet.meanTrackLength = XMLUtil.getAttributeDoubleValue(nodeExistence, TRACK_LENGTH,
                     defaultMeanTrackLength);
             parameterSet.confirmationThreshold = XMLUtil.getAttributeDoubleValue(nodeExistence, CONFIRMATION_THRESHOLD,
@@ -157,8 +169,7 @@ public class MHTparameterSet
                     defaultTerminationThreshold);
         }
         final Element nodeMotion = XMLUtil.getElement(node, ROOT_MOTION_MODEL);
-        if (nodeMotion != null)
-        {
+        if (nodeMotion != null) {
             parameterSet.isSingleMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_SINGLE_MOTION,
                     defaultIsSingleMotion);
             parameterSet.displacementXY = XMLUtil.getAttributeDoubleValue(nodeMotion, XYDISPLACEMENT_1,
@@ -169,8 +180,7 @@ public class MHTparameterSet
                     defaultIsUpdateMotion);
             parameterSet.isDirectedMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_DIRECTED_MOTION_1,
                     defaultIsDirectedMotion);
-            if (!parameterSet.isSingleMotion)
-            {
+            if (!parameterSet.isSingleMotion) {
                 parameterSet.displacementXY2 = XMLUtil.getAttributeDoubleValue(nodeMotion, XYDISPLACEMENT_2,
                         defaultDisplacementXY2);
                 parameterSet.displacementZ2 = XMLUtil.getAttributeDoubleValue(nodeMotion, ZDISPLACEMENT_2,
@@ -185,8 +195,7 @@ public class MHTparameterSet
             }
         }
         final Element nodeMHT = XMLUtil.getElement(node, MHTparameterSet.ROOT_MHT);
-        if (nodeMHT != null)
-        {
+        if (nodeMHT != null) {
             parameterSet.gateFactor = XMLUtil.getAttributeDoubleValue(nodeMHT, MHTparameterSet.GATE_FACTOR,
                     defaultGateFactor);
             parameterSet.numberNewObjects = XMLUtil.getAttributeDoubleValue(nodeMHT, MHTparameterSet.NUMBER_NEW_OBJECTS,
@@ -203,11 +212,9 @@ public class MHTparameterSet
         return parameterSet;
     }
 
-    public void saveToXML(Node configurationElement)
-    {
+    public void saveToXML(final Node configurationElement) {
         final Element nodeDetection = XMLUtil.setElement(configurationElement, MHTparameterSet.ROOT_DETECTION_INPUT);
-        if (nodeDetection != null)
-        {
+        if (nodeDetection != null) {
             if (detectionResults != null)
                 XMLUtil.setAttributeValue(nodeDetection, MHTparameterSet.DETECTION_SOURCE, detectionResults.toString());
             else
@@ -216,27 +223,23 @@ public class MHTparameterSet
             XMLUtil.setAttributeDoubleValue(nodeDetection, MHTparameterSet.DETECTION_RATE, detectionRate);
         }
         final Element nodeExistence = XMLUtil.setElement(configurationElement, MHTparameterSet.ROOT_TARGET_EXISTENCE);
-        if (nodeExistence != null)
-        {
+        if (nodeExistence != null) {
             XMLUtil.setAttributeDoubleValue(nodeExistence, MHTparameterSet.TRACK_LENGTH, meanTrackLength);
             XMLUtil.setAttributeDoubleValue(nodeExistence, MHTparameterSet.CONFIRMATION_THRESHOLD,
                     confirmationThreshold);
             XMLUtil.setAttributeDoubleValue(nodeExistence, MHTparameterSet.TERMINATION_THRESHOLD, terminationThreshold);
         }
         final Element nodeMotionModel = XMLUtil.setElement(configurationElement, MHTparameterSet.ROOT_MOTION_MODEL);
-        if (nodeMotionModel != null)
-        {
+        if (nodeMotionModel != null) {
             XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_SINGLE_MOTION, isSingleMotion);
-            if (isSingleMotion)
-            {
+            if (isSingleMotion) {
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.XYDISPLACEMENT_1, displacementXY);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.ZDISPLACEMENT_1, displacementZ);
                 XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_UPDATE_MOTION_1, isUpdateMotion);
                 XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_1,
                         isDirectedMotion);
             }
-            else
-            {
+            else {
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.XYDISPLACEMENT_1, displacementXY);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.ZDISPLACEMENT_1, displacementZ);
                 XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_UPDATE_MOTION_1, isUpdateMotion);
@@ -255,35 +258,32 @@ public class MHTparameterSet
             }
         }
         final Element nodeMHT = XMLUtil.setElement(configurationElement, MHTparameterSet.ROOT_MHT);
-        if (nodeMHT != null)
-        {
+        if (nodeMHT != null) {
             XMLUtil.setAttributeDoubleValue(nodeMHT, MHTparameterSet.NUMBER_NEW_OBJECTS, numberNewObjects);
             XMLUtil.setAttributeDoubleValue(nodeMHT, MHTparameterSet.NUMBER_OBJECTS_FIRST_FRAME, numberInitialObjects);
             XMLUtil.setAttributeIntValue(nodeMHT, MHTparameterSet.MHT_DEPTH, mhtDepth);
             XMLUtil.setAttributeDoubleValue(nodeMHT, MHTparameterSet.GATE_FACTOR, gateFactor);
         }
         final Element nodeOutput = XMLUtil.setElement(configurationElement, MHTparameterSet.ROOT_OUTPUT);
-        if (nodeOutput != null)
-        {
+        if (nodeOutput != null) {
             XMLUtil.setAttributeValue(nodeOutput, MHTparameterSet.TRACK_GROUP_NAME, trackGroupName);
         }
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         String result;
 
         if (isSingleMotion)
-            result = trackGroupName + " - Single motion [" + Boolean.toString(isDirectedMotion) + ";"
-                    + Boolean.toString(isUpdateMotion) + ";" + StringUtil.toString(displacementXY, 1) + ";"
+            result = trackGroupName + " - Single motion [" + isDirectedMotion + ";"
+                    + isUpdateMotion + ";" + StringUtil.toString(displacementXY, 1) + ";"
                     + StringUtil.toString(displacementZ, 1) + "]\n";
         else
-            result = trackGroupName + " - Multi motion [" + Boolean.toString(isDirectedMotion) + ";"
-                    + Boolean.toString(isUpdateMotion) + ";" + StringUtil.toString(displacementXY, 1) + ";"
-                    + StringUtil.toString(displacementZ, 1) + "]" + "[" + Boolean.toString(isDirectedMotion2) + ";"
-                    + Boolean.toString(isUpdateMotion2) + ";" + StringUtil.toString(displacementXY2, 1) + ";"
-                    + StringUtil.toString(displacementZ2, 1) + "]" + "[" + Boolean.toString(useMostLikelyModel) + ";"
+            result = trackGroupName + " - Multi motion [" + isDirectedMotion + ";"
+                    + isUpdateMotion + ";" + StringUtil.toString(displacementXY, 1) + ";"
+                    + StringUtil.toString(displacementZ, 1) + "]" + "[" + isDirectedMotion2 + ";"
+                    + isUpdateMotion2 + ";" + StringUtil.toString(displacementXY2, 1) + ";"
+                    + StringUtil.toString(displacementZ2, 1) + "]" + "[" + useMostLikelyModel + ";"
                     + StringUtil.toString(immInertia, 2) + "]\n";
 
         result += "(" + StringUtil.toString(gateFactor, 1) + ";" + StringUtil.toString(mhtDepth) + ";"

@@ -1,78 +1,86 @@
-package plugins.nchenouard.particletracking.MHTracker;
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map.Entry;
+package plugins.nchenouard.particletracking.MHTracker;
 
 import plugins.nchenouard.linearprogrammingfullsimplex.CanonicalSimplexProgram;
 import plugins.nchenouard.linearprogrammingfullsimplex.SimplexLEXICO;
 import plugins.nchenouard.particletracking.MHTracker.LinearProgramming.HierarchicalLP;
 import plugins.nchenouard.particletracking.MHTracker.LinearProgramming.HierarchicalProcedureResult;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map.Entry;
+
 /**
  * Specialized Cluster object which contains some Linear Programming (LP) methods to solve the tracking problem using a custom implementation of the optimizer
  * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
- * 
+ *
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com).
  * @version 3.1
- *          date 2013-11-13
- *          license gpl v3.0
+ * date 2013-11-13
+ * license gpl v3.0
  */
-
-public class ClusterSolveLPCustom extends Cluster
-{
+public class ClusterSolveLPCustom extends Cluster {
     double pFA;
 
-    public ClusterSolveLPCustom(HMMMHTracker tracker, int firstT, int lastT, int K, double pFA)
-    {
+    public ClusterSolveLPCustom(final HMMMHTracker tracker, final int firstT, final int lastT, final int K, final double pFA) {
         super(tracker, firstT, lastT, K);
         this.pFA = pFA;
     }
 
     @Override
-    public void buildAndApplyBestHypTree(final int t2)
-    {
-        int t = t2;
+    public void buildAndApplyBestHypTree(final int t2) {
+        final int t = t2;
         int firstTtemp = -1;
-        boolean buildAndApplyBestHyp = false;
-        for (Integer i : concurrentFamilies.keySet())
-        {
-            if (firstTtemp < 0 || i.intValue() < firstTtemp)
-                firstTtemp = i.intValue();
+        final boolean buildAndApplyBestHyp;
+        for (final Integer i : concurrentFamilies.keySet()) {
+            if (firstTtemp < 0 || i < firstTtemp)
+                firstTtemp = i;
         }
         buildAndApplyBestHyp = (firstTtemp >= 0 && firstTtemp <= t - K);
         final int firstT = firstTtemp;
-        if (buildAndApplyBestHyp)
-        {
+        if (buildAndApplyBestHyp) {
             println("-----build best Hyp");
             println("different root time for families " + concurrentFamilies.size());
             // for each family build global hyps and only keep the best one
             println("firstT " + firstT + " first time " + firstT + "  time " + t);
-            for (Entry<Integer, ArrayList<Family>> e : concurrentFamilies.entrySet())
-                println("time " + ((Integer) e.getKey()).intValue() + "numFamily "
-                        + ((ArrayList<Family>) e.getValue()).size());
+            for (final Entry<Integer, ArrayList<Family>> e : concurrentFamilies.entrySet())
+                println("time " + e.getKey() + "numFamily "
+                        + e.getValue().size());
             final int currentT = firstT;
             // build the set of mandatories and optional families with root at time currentT
-            final ArrayList<Family> fList = concurrentFamilies.get(new Integer(currentT));
-            ArrayList<Family> mandatoryFamilies = new ArrayList<Family>(); // families that have a previous validated tracks are mandatory
-            ArrayList<Family> optionalFamilies = new ArrayList<Family>(); // families that don't have a previous validated tracks are optional
-            for (Family f : fList)
-            {
+            final ArrayList<Family> fList = concurrentFamilies.get(currentT);
+            final ArrayList<Family> mandatoryFamilies = new ArrayList<>(); // families that have a previous validated tracks are mandatory
+            final ArrayList<Family> optionalFamilies = new ArrayList<>(); // families that don't have a previous validated tracks are optional
+            for (final Family f : fList) {
                 if (f.rootTrack == null)
                     optionalFamilies.add(f);// families that do not have a previous ValidatedTrack are optional
-                else
-                {
+                else {
                     mandatoryFamilies.add(f); // families that already have a previous ValidatedTrack are mandatory
-                    println("mandatory family : begin = " + f.rootTrack.associations.getFirst().t + " root time "
-                            + f.rootTime);
+                    println("mandatory family : begin = " + f.rootTrack.associations.getFirst().t + " root time " + f.rootTime);
                 }
             }
             // long tOpt = System.currentTimeMillis();
             bestHypSafe.bestHyp = solvePbWithLPCustomHierarchical3(firstT, t);
             // GlobalHypothesis refHyp = solvePbWithLpLibrary(firstT, t);
-            if (bestHypSafe.bestHyp == null)
-            {
-                SolveMLAssociation mlSolver = new SolveMLAssociation();
+            if (bestHypSafe.bestHyp == null) {
+                final SolveMLAssociation mlSolver = new SolveMLAssociation();
                 mlSolver.solve(firstT, t, concurrentFamilies, mandatoryFamilies, optionalFamilies);
                 bestHypSafe.bestHyp = mlSolver.getHypothesis(this, firstT, t, tracker);
             }
@@ -88,38 +96,31 @@ public class ClusterSolveLPCustom extends Cluster
             // }
         }
         applyBestHyp(t);
-        for (Collection<Family> c : concurrentFamilies.values())
-            for (Family f : c)
+        for (final Collection<Family> c : concurrentFamilies.values())
+            for (final Family f : c)
                 f.hypotheses.clear();
     }
 
-    public GlobalHypothesis solvePbWithLPCustomHierarchical3(int firstT, int t)
-    {
+    public GlobalHypothesis solvePbWithLPCustomHierarchical3(final int firstT, final int t) {
         GlobalHypothesis gh = null;
         // first build a list of detections
-        ArrayList<Association> associations = new ArrayList<Association>();
-        ArrayList<Association> mandatoryAssociations = new ArrayList<Association>();
-        for (ArrayList<Family> flist : this.concurrentFamilies.values())
-        {
-            for (Family f : flist)
-            {
+        final ArrayList<Association> associations = new ArrayList<>();
+        final ArrayList<Association> mandatoryAssociations = new ArrayList<>();
+        for (final ArrayList<Family> flist : this.concurrentFamilies.values()) {
+            for (final Family f : flist) {
                 // first we add mandatory families
                 if (f.rootTrack != null)// add the previous validated association
                 {
-                    Association rootAssociation = f.rootNode.association;
-                    if (rootAssociation != null && !associations.contains(rootAssociation)
-                            && !mandatoryAssociations.contains(rootAssociation))
-                    {
+                    final Association rootAssociation = f.rootNode.association;
+                    if (rootAssociation != null && !associations.contains(rootAssociation) && !mandatoryAssociations.contains(rootAssociation)) {
                         mandatoryAssociations.add(rootAssociation);
                     }
                     else
                         System.out.println("Error: rootrack without association!");
                 }
             }
-            for (Family f : flist)
-            {
-                for (Association a : f.usedAssociations)
-                {
+            for (final Family f : flist) {
+                for (final Association a : f.usedAssociations) {
                     // add all the associations of the family
                     if (!associations.contains(a) && !mandatoryAssociations.contains(a))
                         associations.add(a);
@@ -127,39 +128,33 @@ public class ClusterSolveLPCustom extends Cluster
             }
         }
         // then build the table of tuples, along with the list of scores
-        ArrayList<boolean[]> tuples = new ArrayList<boolean[]>();
-        ArrayList<Double> scores = new ArrayList<Double>();
-        ArrayList<Object> hypList = new ArrayList<Object>();
-        ArrayList<Boolean> isPredList = new ArrayList<Boolean>();
-        double logPFA = Math.log(pFA);
-        for (ArrayList<Family> flist : this.concurrentFamilies.values())
-        {
-            for (Family f : flist)
-            {
+        final ArrayList<boolean[]> tuples = new ArrayList<>();
+        final ArrayList<Double> scores = new ArrayList<>();
+        final ArrayList<Object> hypList = new ArrayList<>();
+        final ArrayList<Boolean> isPredList = new ArrayList<>();
+        final double logPFA = Math.log(pFA);
+        for (final ArrayList<Family> flist : this.concurrentFamilies.values()) {
+            for (final Family f : flist) {
                 // check that the family is feasible: its root is not used by a mandatory track
                 if (f.rootTrack != null || !mandatoryAssociations.contains(f.rootNode.association))
-                    for (Hypothesis h : f.hypotheses)
-                    {
+                    for (final Hypothesis h : f.hypotheses) {
                         // build a table indicating which association the hypothesis is using
-                        boolean[] detectionTab = new boolean[associations.size() + mandatoryAssociations.size()];
+                        final boolean[] detectionTab = new boolean[associations.size() + mandatoryAssociations.size()];
+                        assert h.leaf != null;
                         double s = h.leaf.score;
                         // and correct leaf score for detection it is using
                         int cnt = 0;
-                        for (Association a : associations)
-                        {
-                            if (h.usedAssociations.contains(a))
-                            {
+                        for (final Association a : associations) {
+                            if (h.usedAssociations.contains(a)) {
                                 detectionTab[cnt] = true;
                                 if (!a.isPrediction)
                                     s -= logPFA;
                             }
                             cnt++;
                         }
-                        for (Association a : mandatoryAssociations)
-                        {
-                            Association rootAssociation = f.rootNode.association;
-                            if (rootAssociation != null && rootAssociation == a)
-                            {
+                        for (final Association a : mandatoryAssociations) {
+                            final Association rootAssociation = f.rootNode.association;
+                            if (rootAssociation != null && rootAssociation == a) {
                                 detectionTab[cnt] = true;
                                 if (!a.isPrediction)
                                     s -= logPFA;
@@ -172,14 +167,14 @@ public class ClusterSolveLPCustom extends Cluster
                         scores.add(s);
                         // scores.add(new Double(h.leaf.score));
                         hypList.add(h);
-                        isPredList.add(new Boolean(false));
+                        isPredList.add(Boolean.FALSE);
                     }
             }
         }
 
         // now create the corresponding lp problem
-        int numVariables = tuples.size(); // the number of variables is the number of tuples
-        int numConstraintsDetections = tuples.get(0).length; // the number of constraints is the number of detections (each is used once)
+        final int numVariables = tuples.size(); // the number of variables is the number of tuples
+        final int numConstraintsDetections = tuples.get(0).length; // the number of constraints is the number of detections (each is used once)
 
         // Simplex solving:
         // * N-length vector c, solve the LP { max cx : Ax <= b, x >= 0 }.
@@ -188,71 +183,61 @@ public class ClusterSolveLPCustom extends Cluster
         // this adds one constraint per variable : x <= 1
         // for each tuple we also have constraints of the form Ax <= 1 if the detection is not mandatory
         // otherwise the constraint is on the form AX = 1
-        ArrayList<double[]> Alist = new ArrayList<double[]>(numConstraintsDetections + numVariables);
-        ArrayList<Boolean> isEqList = new ArrayList<Boolean>(numConstraintsDetections + numVariables);
+        final ArrayList<double[]> Alist = new ArrayList<>(numConstraintsDetections + numVariables);
+        final ArrayList<Boolean> isEqList = new ArrayList<>(numConstraintsDetections + numVariables);
         // add a constraint per variable (tuple indicator) as each variable is <= 1
-        for (int n = 0; n < numVariables; n++)
-        {
-            double[] constraint = new double[numVariables];
+        for (int n = 0; n < numVariables; n++) {
+            final double[] constraint = new double[numVariables];
             constraint[n] = 1d;
             Alist.add(constraint);
             isEqList.add(false);
         }
         // now add one constraint per detection, checking that it is not already in
-        for (int n = 0; n < numConstraintsDetections; n++)
-        {
-            boolean isEquality = (n >= associations.size());
-            double[] constraint = new double[numVariables];
+        for (int n = 0; n < numConstraintsDetections; n++) {
+            final boolean isEquality = (n >= associations.size());
+            final double[] constraint = new double[numVariables];
             int num1 = 0;
             for (int i = 0; i < numVariables; i++)
-                if (tuples.get(i)[n])
-                {
+                if (tuples.get(i)[n]) {
                     constraint[i] = 1;
                     num1++;
                 }
-            if (num1 > 0)
-            {
+            if (num1 > 0) {
                 // check that the contraint does not already exist
                 boolean alreadyExists = false;
                 int idx = -1;
-                for (int kk = 0; kk < Alist.size(); kk++)
-                {
-                    double[] c = Alist.get(kk);
+                for (int kk = 0; kk < Alist.size(); kk++) {
+                    final double[] c = Alist.get(kk);
                     boolean e = true;
                     for (int k = 0; k < numVariables; k++)
-                        if (c[k] != constraint[k])
-                        {
+                        if (c[k] != constraint[k]) {
                             e = false;
                             break;
                         }
-                    if (e)
-                    {
+                    if (e) {
                         alreadyExists = true;
                         idx = kk;
                         break;
                     }
                 }
-                if (!alreadyExists)
-                {
+                if (!alreadyExists) {
                     Alist.add(constraint); // add the constraint
                     isEqList.add(isEquality);
                 }
-                else
-                {
+                else {
                     if (isEquality)
                         isEqList.set(idx, true);// set the previously existing constraint as an equality
                 }
             }
             // else no need to add the constraint, it is either only 0s
         }
-        int totalNumConstraints = Alist.size();
-        double[] c = new double[numVariables]; // score vector s.t. problem is argmax_x cx
-        double[] b = new double[totalNumConstraints];
-        double[][] A = new double[totalNumConstraints][numVariables]; // constraint matrix st Ax <= b
-        boolean[] equalityConstraints = new boolean[totalNumConstraints];
+        final int totalNumConstraints = Alist.size();
+        final double[] c = new double[numVariables]; // score vector s.t. problem is argmax_x cx
+        final double[] b = new double[totalNumConstraints];
+        final double[][] A = new double[totalNumConstraints][numVariables]; // constraint matrix st Ax <= b
+        final boolean[] equalityConstraints = new boolean[totalNumConstraints];
         // set the constraints
-        for (int i = 0; i < totalNumConstraints; i++)
-        {
+        for (int i = 0; i < totalNumConstraints; i++) {
             A[i] = Alist.get(i);
             b[i] = 1d;
             equalityConstraints[i] = isEqList.get(i);
@@ -285,20 +270,17 @@ public class ClusterSolveLPCustom extends Cluster
         // b[i] = 1;
 
         // solve the problem by a hierarchy of problems
-        CanonicalSimplexProgram program = new SimplexLEXICO(A, b, c, true, equalityConstraints);
+        final CanonicalSimplexProgram program = new SimplexLEXICO(A, b, c, true, equalityConstraints);
 
-        long tCustom1 = System.currentTimeMillis();
-        HierarchicalProcedureResult res = HierarchicalLP.hierarchicalBinarySimplex(program, true);
-        long tCustom2 = System.currentTimeMillis();
-        if (res != null)
-        {
-            double[] x = res.solution;
+        final long tCustom1 = System.currentTimeMillis();
+        final HierarchicalProcedureResult res = HierarchicalLP.hierarchicalBinarySimplex(program, true);
+        final long tCustom2 = System.currentTimeMillis();
+        if (res != null) {
+            final double[] x = res.solution;
             // build the global Hypothesis corresponding to the lp solution
             gh = new GlobalHypothesis(firstT, t, tracker);
-            for (int cnt = 0; cnt < numVariables; cnt++)
-            {
-                if (x[cnt] > 0.5)
-                {
+            for (int cnt = 0; cnt < numVariables; cnt++) {
+                if (x[cnt] > 0.5) {
                     // the corresponding object is used
                     if (hypList.get(cnt) instanceof Hypothesis)
                         gh.addHypothesis((Hypothesis) hypList.get(cnt));
@@ -310,21 +292,19 @@ public class ClusterSolveLPCustom extends Cluster
         else // optimization failed for some reason (should not happen) then use the simple instantaneoux max likelihood solution
         {
             // get the instantaneous max likelihood hypothesis
-            ArrayList<Family> mandatoryFamilies = new ArrayList<Family>(); // families that have a previous validated tracks are mandatory
-            ArrayList<Family> optionalFamilies = new ArrayList<Family>(); // families that don't have a previous validated tracks are optional
-            final ArrayList<Family> fList = concurrentFamilies.get(new Integer(firstT));
-            for (Family f : fList)
-            {
+            final ArrayList<Family> mandatoryFamilies = new ArrayList<>(); // families that have a previous validated tracks are mandatory
+            final ArrayList<Family> optionalFamilies = new ArrayList<>(); // families that don't have a previous validated tracks are optional
+            final ArrayList<Family> fList = concurrentFamilies.get(firstT);
+            for (final Family f : fList) {
                 if (f.rootTrack == null)
                     optionalFamilies.add(f);// families that do not have a previous ValidatedTrack are optional
-                else
-                {
+                else {
                     mandatoryFamilies.add(f); // families that already have a previous ValidatedTrack are mandatory
                     println("mandatory family : begin = " + f.rootTrack.associations.getFirst().t + " root time "
                             + f.rootTime);
                 }
             }
-            SolveMLAssociation mlSolver = new SolveMLAssociation();
+            final SolveMLAssociation mlSolver = new SolveMLAssociation();
             mlSolver.solve(firstT, t, concurrentFamilies, mandatoryFamilies, optionalFamilies);
             bestHypSafe.bestHyp = mlSolver.getHypothesis(this, firstT, t, tracker);
         }

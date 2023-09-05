@@ -1,4 +1,37 @@
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package plugins.nchenouard.particletracking;
+
+import icy.gui.frame.progress.CancelableProgressFrame;
+import icy.main.Icy;
+import icy.util.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import plugins.fab.trackmanager.TrackGroup;
+import plugins.fab.trackmanager.TrackSegment;
+import plugins.nchenouard.particletracking.MHTracker.HMMMHTracker;
+import plugins.nchenouard.particletracking.filtering.*;
+import plugins.nchenouard.particletracking.legacytracker.associationMethod.InstantaneousTracker;
+import plugins.nchenouard.particletracking.legacytracker.associationMethod.SolveMLAssociation;
+import plugins.nchenouard.particletracking.legacytracker.associationMethod.Track;
+import plugins.nchenouard.spot.DetectionResult;
+import plugins.nchenouard.spot.Spot;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -6,55 +39,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
-import icy.main.Icy;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import icy.gui.frame.progress.CancelableProgressFrame;
-import icy.system.SystemUtil;
-import icy.util.XMLUtil;
-import plugins.fab.trackmanager.TrackGroup;
-import plugins.fab.trackmanager.TrackSegment;
-import plugins.nchenouard.particletracking.MHTracker.HMMMHTracker;
-import plugins.nchenouard.particletracking.filtering.IMM2D;
-import plugins.nchenouard.particletracking.filtering.IMM3D;
-import plugins.nchenouard.particletracking.filtering.KF2dDirected;
-import plugins.nchenouard.particletracking.filtering.KF2dRandomWalk;
-import plugins.nchenouard.particletracking.filtering.KF3dDirected;
-import plugins.nchenouard.particletracking.filtering.KF3dRandomWalk;
-import plugins.nchenouard.particletracking.filtering.Predictor;
-import plugins.nchenouard.particletracking.filtering.Predictor2D;
-import plugins.nchenouard.particletracking.filtering.Predictor3D;
-import plugins.nchenouard.particletracking.legacytracker.associationMethod.InstantaneousTracker;
-import plugins.nchenouard.particletracking.legacytracker.associationMethod.SolveMLAssociation;
-import plugins.nchenouard.particletracking.legacytracker.associationMethod.Track;
-import plugins.nchenouard.spot.DetectionResult;
-import plugins.nchenouard.spot.Spot;
-
 public class SpotTracking {
     public static String ID_CONFIG = "MHTconfiguration";
 
-    @SuppressWarnings("unused")
-    synchronized static boolean loadOptimizationLibray() {
-        if (SpotTrackingPlugin.optimizationLibraryLoaded)
-            return true;
-
-        // this actually load the library
-        new SpotTrackingPlugin();
-
-        return SpotTrackingPlugin.optimizationLibraryLoaded;
-    }
-
     /**
      * Computes and return best estimated parameters from given set of Detections objects.
-     * @param detections DetectionResult
+     *
+     * @param detections     DetectionResult
      * @param directedMotion bool
-     * @param singleMotion bool
-     * @param updateMotion bool
+     * @param singleMotion   bool
+     * @param updateMotion   bool
      * @return MHTparameterSet
      */
-    public static MHTparameterSet estimateParameters(DetectionResult detections, boolean directedMotion,
-                                                     boolean singleMotion, boolean updateMotion) {
+    public static MHTparameterSet estimateParameters(final DetectionResult detections, final boolean directedMotion, final boolean singleMotion, final boolean updateMotion) {
         final MHTparameterSet parameters = new MHTparameterSet();
 
         estimateParameters(parameters, detections, directedMotion, singleMotion, updateMotion);
@@ -64,15 +61,15 @@ public class SpotTracking {
 
     /**
      * Computes and return best estimated parameters from given set of Detections objects.
-     * @param parameters MHTparameterSet
-     * @param detections DectectionResult
+     *
+     * @param parameters     MHTparameterSet
+     * @param detections     DectectionResult
      * @param directedMotion bool
-     * @param singleMotion bool
-     * @param updateMotion bool
+     * @param singleMotion   bool
+     * @param updateMotion   bool
      * @return bool
      */
-    public static boolean estimateParameters(MHTparameterSet parameters, DetectionResult detections,
-                                             boolean directedMotion, boolean singleMotion, boolean updateMotion) {
+    public static boolean estimateParameters(final MHTparameterSet parameters, final DetectionResult detections, final boolean directedMotion, final boolean singleMotion, final boolean updateMotion) {
         parameters.isDirectedMotion = directedMotion;
         parameters.isSingleMotion = singleMotion;
         parameters.isUpdateMotion = updateMotion;
@@ -106,12 +103,12 @@ public class SpotTracking {
             final Vector<Spot> dList2 = parameters.detectionResults.getDetectionsAtT(t + 1);
 
             if (!dList1.isEmpty() && !dList2.isEmpty()) {
-                for (Spot s1 : dList1) {
+                for (final Spot s1 : dList1) {
                     double minDist = Double.MAX_VALUE;
                     Spot minSpot = null;
 
-                    for (Spot s2 : dList2) {
-                        double d = squaredDistance(s1, s2);
+                    for (final Spot s2 : dList2) {
+                        final double d = squaredDistance(s1, s2);
                         if (d < minDist) {
                             minDist = d;
                             minSpot = s2;
@@ -136,14 +133,14 @@ public class SpotTracking {
         // get a first estimation of the diffusion as the underestimated median of the squared distances
         Arrays.sort(distTabXY);
         Arrays.sort(distTabZ);
-        double varDiffXY = distTabXY[(int) (distTabXY.length * 0.45)];
-        double varDiffZ = distTabZ[(int) (distTabXY.length * 0.45)];
+        final double varDiffXY = distTabXY[(int) (distTabXY.length * 0.45)];
+        final double varDiffZ = distTabZ[(int) (distTabXY.length * 0.45)];
 
         // then run the legacy tracker to get a refined estimation
-        int maxConsecutivePred = 1;
-        int gateFactor = 3;
-        boolean gateLikelihood = true;
-        Predictor predictor = null;
+        final int maxConsecutivePred = 1;
+        final int gateFactor = 3;
+        final boolean gateLikelihood = true;
+        final Predictor predictor;
         if (singleMotion) {
             if (varDiffZ > 0) {
                 if (directedMotion)
@@ -162,7 +159,7 @@ public class SpotTracking {
         }
         else {
             if (varDiffZ > 0) {
-                final List<Predictor3D> predictors = new ArrayList<Predictor3D>();
+                final List<Predictor3D> predictors = new ArrayList<>();
 
                 predictors.add(new KF3dRandomWalk());
                 predictors.add(new KF3dDirected());
@@ -172,11 +169,10 @@ public class SpotTracking {
                 if (parameters.useMostLikelyModel)
                     predictor = new IMM3D(IMM3D.LikelihoodTypes.IMM_MAX_LIKELIHOOD, parameters.immInertia, predictors);
                 else
-                    predictor = new IMM3D(IMM3D.LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD, parameters.immInertia,
-                            predictors);
+                    predictor = new IMM3D(IMM3D.LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD, parameters.immInertia, predictors);
             }
             else {
-                final List<Predictor2D> predictors = new ArrayList<Predictor2D>();
+                final List<Predictor2D> predictors = new ArrayList<>();
 
                 predictors.add(new KF2dRandomWalk());
                 predictors.add(new KF2dDirected());
@@ -186,8 +182,7 @@ public class SpotTracking {
                 if (parameters.useMostLikelyModel)
                     predictor = new IMM2D(IMM2D.LikelihoodTypes.IMM_MAX_LIKELIHOOD, parameters.immInertia, predictors);
                 else
-                    predictor = new IMM2D(IMM2D.LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD, parameters.immInertia,
-                            predictors);
+                    predictor = new IMM2D(IMM2D.LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD, parameters.immInertia, predictors);
             }
         }
 
@@ -201,10 +196,10 @@ public class SpotTracking {
 
         final List<Track> tracks = tracker.getTracks();
         // consider tracks with length < 3 to be wrong
-        final List<Track> trueTracks = new ArrayList<Track>();
-        final List<Track> falseTracks = new ArrayList<Track>();
+        final List<Track> trueTracks = new ArrayList<>();
+        final List<Track> falseTracks = new ArrayList<>();
 
-        for (Track tr : tracks) {
+        for (final Track tr : tracks) {
             if (tr.getLastIndex() - tr.getFirstIndex() > 2)
                 trueTracks.add(tr);
             else
@@ -216,15 +211,15 @@ public class SpotTracking {
 
         // compute track length
         int sumTrackLength = 0;
-        for (Track tr : trueTracks)
+        for (final Track tr : trueTracks)
             sumTrackLength += (tr.getLastIndex() - tr.getFirstIndex() + 1);
 
-        parameters.meanTrackLength = sumTrackLength / trueTracks.size();
+        parameters.meanTrackLength = (double) sumTrackLength / trueTracks.size();
 
         // compute number of tracks at first frame, and number of new tracks in other frames
         int numTrackFirstFrame = 0;
         int numNewTracks = 0;
-        for (Track tr : trueTracks) {
+        for (final Track tr : trueTracks) {
             if (tr.getFirstIndex() == 0)
                 numTrackFirstFrame++;
             else
@@ -237,7 +232,7 @@ public class SpotTracking {
 
         // compute number of false detections per frame
         int numFalseDetections = 0;
-        for (Track tr : falseTracks) {
+        for (final Track tr : falseTracks) {
             for (int tt = tr.getFirstIndex(); tt < tr.getLastIndex() + 1; tt++) {
                 if (tr.isPredictionAtFrame(tt))
                     numFalseDetections++;
@@ -254,11 +249,11 @@ public class SpotTracking {
             double sumDistSq = 0;
             double sumDistSqZ = 0;
             int numDist = 0;
-            for (Track tr : trueTracks) {
+            for (final Track tr : trueTracks) {
                 for (int f = tr.getFirstIndex(); f < tr.getLastIndex(); f++) {
                     if (!tr.isPredictionAtFrame(f) && !tr.isPredictionAtFrame(f + 1)) {
-                        Spot s1 = tr.getSpotAtFrame(f);
-                        Spot s2 = tr.getSpotAtFrame(f + 1);
+                        final Spot s1 = tr.getSpotAtFrame(f);
+                        final Spot s2 = tr.getSpotAtFrame(f + 1);
                         sumDistSq += (s1.mass_center.x - s2.mass_center.x) * (s1.mass_center.x - s2.mass_center.x)
                                 + (s1.mass_center.y - s2.mass_center.y) * (s1.mass_center.y - s2.mass_center.y);
                         sumDistSqZ += (s1.mass_center.z - s2.mass_center.z) * (s1.mass_center.z - s2.mass_center.z);
@@ -278,7 +273,7 @@ public class SpotTracking {
         // estimate detection rate
         int numTrueDetections = 0;
         int numVirtualDetections = 0;
-        for (Track tr : trueTracks) {
+        for (final Track tr : trueTracks) {
             for (int f = tr.getFirstIndex(); f < tr.getLastIndex(); f++) {
                 if (tr.isPredictionAtFrame(f))
                     numVirtualDetections++;
@@ -294,10 +289,11 @@ public class SpotTracking {
 
     /**
      * Load parameter from the given file
+     *
      * @param file File
      * @return MHTparameterSet
      */
-    public static MHTparameterSet loadParameters(File file) {
+    public static MHTparameterSet loadParameters(final File file) {
         final Document document = XMLUtil.loadDocument(file);
         final Element root = XMLUtil.getRootElement(document);
 
@@ -313,28 +309,31 @@ public class SpotTracking {
 
     /**
      * Load parameter from the given file path
+     *
      * @param path String
      * @return MHTparameterSet
      */
-    public static MHTparameterSet loadParameters(String path) {
+    public static MHTparameterSet loadParameters(final String path) {
         return loadParameters(new File(path));
     }
 
     /**
      * Save parameters into given file path
+     *
      * @param value MHTparameterSet
-     * @param f file
+     * @param f     file
      */
-    public static void saveParameters(MHTparameterSet value, File f) {
+    public static void saveParameters(final MHTparameterSet value, final File f) {
         saveParameters(value, f.getAbsolutePath());
     }
 
     /**
      * Save parameters into given file path
+     *
      * @param parameters MHTparameterSet
-     * @param path String
+     * @param path       String
      */
-    public static void saveParameters(MHTparameterSet parameters, String path) {
+    public static void saveParameters(final MHTparameterSet parameters, final String path) {
         final Document document = XMLUtil.createDocument(true);
         final Element root = XMLUtil.getRootElement(document);
         final Element configurationElement = XMLUtil.setElement(root, ID_CONFIG);
@@ -348,26 +347,21 @@ public class SpotTracking {
     /**
      * Execute tracking process given a set of detection and tracking parameters and return corresponding TrackGroup
      * result.
-     * @param parameters MHTparameterSet
-     * @param dr DetectionResult
-     * @param useLPSolver bool
-     * @param multiThread bool
+     *
+     * @param parameters   MHTparameterSet
+     * @param dr           DetectionResult
+     * @param multiThread  bool
      * @param showProgress bool
      * @return TrackGroup
      */
-    public static TrackGroup executeTracking(MHTparameterSet parameters, DetectionResult dr, boolean useLPSolver,
-                                             boolean multiThread, boolean showProgress) throws IllegalArgumentException {
+    public static TrackGroup executeTracking(final MHTparameterSet parameters, final DetectionResult dr, final boolean multiThread, final boolean showProgress) throws IllegalArgumentException {
         if (dr == null)
-            throw new IllegalArgumentException(
-                    "Tracking requires to specify a set of detections. You can use the Spot Detector plugin to create some.");
+            throw new IllegalArgumentException("Tracking requires to specify a set of detections. You can use the Spot Detector plugin to create some.");
         if (dr.getNumberOfDetection() < 1)
             throw new IllegalArgumentException("A non empty set of detections needs to process the tracking.");
 
-        // load the optimization library if not already done
-        loadOptimizationLibray();
-
         // build the tracker
-        final HMMMHTracker mhtracker = buildTracker(parameters, dr, useLPSolver, multiThread);
+        final HMMMHTracker mhtracker = buildTracker(parameters, dr, multiThread);
         final CancelableProgressFrame progress;
 
         if (showProgress) {
@@ -408,7 +402,7 @@ public class SpotTracking {
         final TrackGroup result = new TrackGroup(dr.getSequence());
 
         result.setDescription(parameters.trackGroupName);
-        for (TrackSegment ts : tracks)
+        for (final TrackSegment ts : tracks)
             result.addTrackSegment(ts);
 
         return result;
@@ -417,22 +411,20 @@ public class SpotTracking {
     /**
      * Execute tracking process given a set of detection and tracking parameters and return corresponding TrackGroup
      * result.
-     * @param parameters MHTparameterSet
-     * @param dr DetectionResult
+     *
+     * @param parameters   MHTparameterSet
+     * @param dr           DetectionResult
      * @param showProgress bool
      * @return TrackGroup
      */
-    public static TrackGroup executeTracking(MHTparameterSet parameters, DetectionResult dr, boolean showProgress)
-            throws IllegalArgumentException {
-        return executeTracking(parameters, dr, true, true, showProgress);
+    public static TrackGroup executeTracking(final MHTparameterSet parameters, final DetectionResult dr, final boolean showProgress) throws IllegalArgumentException {
+        return executeTracking(parameters, dr, true, showProgress);
     }
 
-    protected static HMMMHTracker buildTracker(MHTparameterSet parameters, DetectionResult dr, final int dim,
-                                               final double volume, boolean useLPSolve, boolean multithreaded) throws IllegalArgumentException {
+    protected static HMMMHTracker buildTracker(final MHTparameterSet parameters, final DetectionResult dr, final int dim, final double volume, final boolean multithreaded) throws IllegalArgumentException {
         final double probaDetect = parameters.detectionRate;
         if (probaDetect < 0 || probaDetect > 1)
-            throw new IllegalArgumentException(
-                    "The probability of detection for each particle has to lie between 0 and 1");
+            throw new IllegalArgumentException("The probability of detection for each particle has to lie between 0 and 1");
 
         final double densityFalseDetection = parameters.numberOfFalseDetections / volume;
         if (densityFalseDetection < 0)
@@ -448,15 +440,14 @@ public class SpotTracking {
 
         final double densityNewTrack = parameters.numberNewObjects / volume;
         if (densityNewTrack < 0)
-            throw new IllegalArgumentException(
-                    "The expected number of new tracks per frame needs to be a positive number");
+            throw new IllegalArgumentException("The expected number of new tracks per frame needs to be a positive number");
 
         final int treeDepth = parameters.mhtDepth;
         if (treeDepth < 1)
             throw new IllegalArgumentException("The tree depth needs to be an integer greater or equal to 1");
 
         /* build the predictor */
-        Predictor pred = null;
+        final Predictor pred;
         if (parameters.isSingleMotion) {
             // single motion
             if (parameters.isDirectedMotion) {
@@ -467,8 +458,7 @@ public class SpotTracking {
                     trackingCovariances[1] = parameters.displacementXY;
                     trackingCovariances[2] = parameters.displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number.");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number.");
 
                     final KF3dDirected predictor = new KF3dDirected();
 
@@ -483,8 +473,7 @@ public class SpotTracking {
                     trackingCovariances[0] = parameters.displacementXY;
                     trackingCovariances[1] = parameters.displacementXY;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number.");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number.");
 
                     final KF2dDirected predictor = new KF2dDirected();
 
@@ -503,8 +492,7 @@ public class SpotTracking {
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     trackingCovariances[2] = displacementZ * displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
                     final KF3dRandomWalk predictor = new KF3dRandomWalk();
 
@@ -513,14 +501,13 @@ public class SpotTracking {
                     pred = predictor;
                 }
                 else {
-                    double[] trackingCovariances = new double[2];
+                    final double[] trackingCovariances = new double[2];
                     final double displacementXY = parameters.displacementXY;
 
                     trackingCovariances[0] = displacementXY * displacementXY / 2;
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
                     final KF2dRandomWalk predictor = new KF2dRandomWalk();
 
@@ -536,13 +523,12 @@ public class SpotTracking {
                 // 3D
                 final double immInertia = parameters.immInertia;
                 if (immInertia < 0 || immInertia > 1)
-                    throw new IllegalArgumentException(
-                            "The inertia for model switching must be a number lying between 0 and 1.");
+                    throw new IllegalArgumentException("The inertia for model switching must be a number lying between 0 and 1.");
 
                 final IMM3D.LikelihoodTypes predictorType = parameters.useMostLikelyModel
                         ? IMM3D.LikelihoodTypes.IMM_MAX_LIKELIHOOD
                         : IMM3D.LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD;
-                final List<Predictor3D> p3DList = new ArrayList<Predictor3D>();
+                final List<Predictor3D> p3DList = new ArrayList<>();
 
                 // first model
                 if (parameters.isDirectedMotion) {
@@ -556,8 +542,7 @@ public class SpotTracking {
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     trackingCovariances[2] = displacementZ * displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number.");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number.");
 
                     final KF3dDirected predictor = new KF3dDirected();
 
@@ -575,8 +560,7 @@ public class SpotTracking {
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     trackingCovariances[2] = displacementZ * displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
                     final KF3dRandomWalk predictor = new KF3dRandomWalk();
 
@@ -597,8 +581,7 @@ public class SpotTracking {
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     trackingCovariances[2] = displacementZ * displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number.");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number.");
 
                     final KF3dDirected predictor = new KF3dDirected();
 
@@ -616,8 +599,7 @@ public class SpotTracking {
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     trackingCovariances[2] = displacementZ * displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
                     final KF3dRandomWalk predictor = new KF3dRandomWalk();
 
@@ -633,13 +615,12 @@ public class SpotTracking {
                 // 2D
                 final double immInertia = parameters.immInertia;
                 if (immInertia < 0 || immInertia > 1)
-                    throw new IllegalArgumentException(
-                            "The inertia for model switching must be a number lying between 0 and 1.");
+                    throw new IllegalArgumentException("The inertia for model switching must be a number lying between 0 and 1.");
 
                 final IMM2D.LikelihoodTypes predictorType = parameters.useMostLikelyModel
                         ? IMM2D.LikelihoodTypes.IMM_MAX_LIKELIHOOD
                         : IMM2D.LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD;
-                final List<Predictor2D> p2DList = new ArrayList<Predictor2D>();
+                final List<Predictor2D> p2DList = new ArrayList<>();
 
                 // first model
                 if (parameters.isDirectedMotion) {
@@ -651,8 +632,7 @@ public class SpotTracking {
                     trackingCovariances[0] = displacementXY * displacementXY / 2;
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
                     final KF2dDirected predictor = new KF2dDirected();
 
@@ -668,8 +648,7 @@ public class SpotTracking {
                     trackingCovariances[0] = displacementXY * displacementXY / 2;
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
                     final KF2dRandomWalk predictor = new KF2dRandomWalk();
 
@@ -688,8 +667,7 @@ public class SpotTracking {
                     trackingCovariances[0] = displacementXY * displacementXY / 2;
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
                     final KF2dDirected predictor = new KF2dDirected();
 
@@ -705,8 +683,7 @@ public class SpotTracking {
                     trackingCovariances[0] = displacementXY * displacementXY / 2;
                     trackingCovariances[1] = displacementXY * displacementXY / 2;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
-                        throw new IllegalArgumentException(
-                                "The expected particle displacement has to be a positive number");
+                        throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
                     final KF2dRandomWalk predictor = new KF2dRandomWalk();
 
@@ -721,35 +698,42 @@ public class SpotTracking {
         }
 
         // build the mht tracker
-        final List<Predictor> predictors = new ArrayList<Predictor>();
+        final List<Predictor> predictors = new ArrayList<>();
         predictors.add(pred);
 
-        final HMMMHTracker tracker = new HMMMHTracker(predictors, volume, gateFactor, probaDetect,
-                densityFalseDetection, densityInitialTrack, densityNewTrack, treeDepth, dim, multithreaded, useLPSolve);
+        try (final HMMMHTracker tracker = new HMMMHTracker(
+                predictors,
+                volume,
+                gateFactor,
+                probaDetect,
+                densityFalseDetection,
+                densityInitialTrack,
+                densityNewTrack,
+                treeDepth,
+                dim,
+                multithreaded
+        )) {
+            // set the existence parameters
+            final double meanTrackLength = parameters.meanTrackLength;
+            final double pc = parameters.confirmationThreshold;
+            final double pt = parameters.terminationThreshold;
 
-        // set the existence parameters
-        final double meanTrackLength = parameters.meanTrackLength;
-        final double pc = parameters.confirmationThreshold;
-        final double pt = parameters.terminationThreshold;
+            if (meanTrackLength <= 0)
+                throw new IllegalArgumentException("The expected track length must be a positive number.");
+            if (pc < 0 || pc > 1)
+                throw new IllegalArgumentException("The confirmation probability threshold must be a number lying between 0 and 1.");
+            if (pt < 0 || pt > 1)
+                throw new IllegalArgumentException("The termination probability threshold must be a number lying between 0 and 1.");
 
-        if (meanTrackLength <= 0)
-            throw new IllegalArgumentException("The expected track length must be a positive number.");
-        if (pc < 0 || pc > 1)
-            throw new IllegalArgumentException(
-                    "The confirmation probability threshold must be a number lying between 0 and 1.");
-        if (pt < 0 || pt > 1)
-            throw new IllegalArgumentException(
-                    "The termination probability threshold must be a number lying between 0 and 1.");
+            tracker.changeExistenceSettings(1 / meanTrackLength, pc, pt);
 
-        tracker.changeExistenceSettings(1 / meanTrackLength, pc, pt);
-
-        return tracker;
+            return tracker;
+        }
     }
 
-    public static HMMMHTracker buildTracker(MHTparameterSet parameters, DetectionResult dr, boolean useLPSolver,
-                                            boolean multiThread) throws IllegalArgumentException {
+    public static HMMMHTracker buildTracker(final MHTparameterSet parameters, final DetectionResult dr, final boolean multiThread) throws IllegalArgumentException {
         int dim = 2;
-        double volume = 256 * 256;
+        final double volume;// = 256 * 256;
 
         // initialize dimension and volume
         if (dr.getSequence() != null) {
@@ -770,7 +754,7 @@ public class SpotTracking {
             double maxZ = 0;
 
             for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++) {
-                for (Spot s : dr.getDetectionsAtT(t)) {
+                for (final Spot s : dr.getDetectionsAtT(t)) {
                     minX = Math.min(minX, s.mass_center.x);
                     minY = Math.min(minY, s.mass_center.y);
                     minZ = Math.min(minZ, s.mass_center.z);
@@ -789,16 +773,14 @@ public class SpotTracking {
             }
         }
 
-        return buildTracker(parameters, dr, dim, volume, SpotTrackingPlugin.optimizationLibraryLoaded && useLPSolver,
-                multiThread);
+        return buildTracker(parameters, dr, dim, volume, multiThread);
     }
 
-    public static HMMMHTracker buildTracker(MHTparameterSet parameters, DetectionResult dr)
-            throws IllegalArgumentException {
-        return buildTracker(parameters, dr, true, true);
+    public static HMMMHTracker buildTracker(final MHTparameterSet parameters, final DetectionResult dr) throws IllegalArgumentException {
+        return buildTracker(parameters, dr, true);
     }
 
-    static double squaredDistance(Spot s1, Spot s2) {
+    static double squaredDistance(final Spot s1, final Spot s2) {
         return (s1.mass_center.x - s2.mass_center.x) * (s1.mass_center.x - s2.mass_center.x)
                 + (s1.mass_center.y - s2.mass_center.y) * (s1.mass_center.y - s2.mass_center.y)
                 + (s1.mass_center.z - s2.mass_center.z) * (s1.mass_center.z - s2.mass_center.z);

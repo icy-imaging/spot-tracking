@@ -1,11 +1,29 @@
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package plugins.nchenouard.particletracking.MHTracker;
 
-import java.util.LinkedList;
-
+import Jama.Matrix;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.spot.Spot;
-import Jama.Matrix;
+
+import java.util.LinkedList;
 
 /**
  * Track with two perceivability states:
@@ -28,7 +46,7 @@ public class MHTrack2s {
 
     Family family = null;
     Association association;
-    LinkedList<MHTrack2s> followingSegments = new LinkedList<MHTrack2s>();
+    LinkedList<MHTrack2s> followingSegments = new LinkedList<>();
     MHTrack2s precedingSegment = null;
     HMMMHTracker tracker;
     Hypothesis hypothesis = null;
@@ -72,12 +90,12 @@ public class MHTrack2s {
 
     boolean verbose = false;
 
-    public void println(String str) {
+    public void println(final String str) {
         if (verbose)
             System.out.println(str);
     }
 
-    public MHTrack2s(double p1_0, HMMMHTracker tracker, Predictor predictor, Association association, Family family) {
+    public MHTrack2s(final double p1_0, final HMMMHTracker tracker, final Predictor predictor, final Association association, final Family family) {
         this.pObs = p1_0;
         this.pPredObs = p11 * pObs + p01 * (1 - pObs);
 
@@ -101,7 +119,7 @@ public class MHTrack2s {
     }
 
     public MHTrack2s copy() {
-        MHTrack2s mtrack = new MHTrack2s();
+        final MHTrack2s mtrack = new MHTrack2s();
         mtrack.predictor = this.predictor.copy();
         mtrack.likelihood = this.likelihood;
         mtrack.associationLikelihood = this.associationLikelihood;
@@ -122,8 +140,8 @@ public class MHTrack2s {
         return mtrack;
     }
 
-    public MHTrack2s createPotentialTrackWithPrediction(int t) {
-        MHTrack2s trk = this.copy();
+    public MHTrack2s createPotentialTrackWithPrediction(final int t) {
+        final MHTrack2s trk = this.copy();
         trk.precedingSegment = this;
         trk.followingSegments.clear();
         trk.hypothesis = null;
@@ -132,8 +150,8 @@ public class MHTrack2s {
         return trk;
     }
 
-    public MHTrack2s createPotentialTrack(Association a, int t) {
-        MHTrack2s trk = this.copy();
+    public MHTrack2s createPotentialTrack(final Association a, final int t) {
+        final MHTrack2s trk = this.copy();
         trk.precedingSegment = this;
         trk.followingSegments.clear();
         trk.hypothesis = null;
@@ -151,31 +169,31 @@ public class MHTrack2s {
 
     /**
      * Test if spot is in the search gate of the track
+     *
      * @param a Association
      * @return bool
      */
-    public boolean inGate(Association a) {
-        double dist = predictor.normalizedInnovation(a.state); // TODO: check the normalized innovation here
+    public boolean inGate(final Association a) {
+        final double dist = predictor.normalizedInnovation(a.state); // TODO: check the normalized innovation here
         return (dist <= tracker.gateFactor);
     }
 
-    public double kineticLikelihood(Spot s, boolean gated, double gateFactor) {
-        double kineticL = predictor.likelihood(s, gated, gateFactor);
-        return kineticL;
+    public double kineticLikelihood(final Spot s, final boolean gated, final double gateFactor) {
+        return predictor.likelihood(s, gated, gateFactor);
     }
 
     public double falseAlarmLikelihood() {
         return tracker.pFA;
     }
 
-    public void associate(Association a, int t) {
+    public void associate(final Association a, final int t) {
         association = a;
-        double kL = tracker.pDpG * kineticLikelihood(a.spot, true, tracker.gateFactor);
-        double faL = falseAlarmLikelihood();
+        final double kL = tracker.pDpG * kineticLikelihood(a.spot, true, tracker.gateFactor);
+        final double faL = falseAlarmLikelihood();
 
         associationLikelihood = kL * pPredObs + faL * (1 - pPredObs);
         likelihood *= associationLikelihood;
-        double s = Math.log(associationLikelihood);
+        final double s = Math.log(associationLikelihood);
         score += s;
         a.setNewScore(s);
 
@@ -189,12 +207,12 @@ public class MHTrack2s {
             this.terminated = true;
     }
 
-    public void prolongate(int t) {
-        VirtualSpot pred = this.predictor.getCurrentPredictedStateAsSpot();
+    public void prolongate(final int t) {
+        final VirtualSpot pred = this.predictor.getCurrentPredictedStateAsSpot();
         association = new Association(null, pred, true, t, 0);
 
-        double kL = (1 - tracker.pDpG);//*predictor.likelihoodOfPredictedState();
-        double faL = 1;
+        final double kL = (1 - tracker.pDpG);//*predictor.likelihoodOfPredictedState();
+        final double faL = 1;
 
         associationLikelihood = kL * pPredObs + faL * (1 - pPredObs);
 //		println("prolongate "+kL+" "+faL+" "+associationLikelihood);

@@ -1,14 +1,33 @@
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package plugins.nchenouard.particletracking.filtering;
+
+import Jama.EigenvalueDecomposition;
+import Jama.Matrix;
+import icy.system.IcyExceptionHandler;
+import plugins.nchenouard.particletracking.VirtualSpot;
+import plugins.nchenouard.spot.Spot;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
-
-import plugins.nchenouard.particletracking.VirtualSpot;
-import plugins.nchenouard.spot.Spot;
-import Jama.EigenvalueDecomposition;
-import Jama.Matrix;
 
 
 /**
@@ -102,12 +121,13 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Constructor specifying the process matrices
+     *
      * @param F Matrix
      * @param H Matrix
      * @param Q Matrix
      * @param R Matrix
      */
-    public KalmanFilter(Matrix F, Matrix H, Matrix Q, Matrix R) {
+    public KalmanFilter(final Matrix F, final Matrix H, final Matrix Q, final Matrix R) {
         if (F.getRowDimension() != F.getColumnDimension())
             throw new IllegalArgumentException("F (transition) is not square");
         if (Q.getRowDimension() != Q.getColumnDimension())
@@ -130,21 +150,22 @@ public abstract class KalmanFilter implements Predictor {
         this.R = R;
     }
 
-    ;
-
     /**
      * Build the measurement matrix corresponding to a spot
+     *
      * @param s Spot
      * @return Matrix
      */
+    @Override
     abstract public Matrix buildMeasurementMatrix(Spot s);
 
     /**
      * Compute the predicted covariance matrix
+     *
      * @param t int
      * @return Matrix
      */
-    public Matrix buildPredCovMatrix(int t) {
+    public Matrix buildPredCovMatrix(final int t) {
         if (t > this.t) {
             Matrix P = F.times(P_est).times(F.transpose()).plus(Q);
             for (int i = this.t + 1; i < t; i++) {
@@ -160,42 +181,42 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Build the ellipse corresponding to the search area defined by the gate factor
-     * @param z_pre Matrix
-     * @param S Matrix
+     *
+     * @param z_pre      Matrix
+     * @param S          Matrix
      * @param gateFactor double
      * @return Area
      */
     //TODO: in 3D we should return a 3 ellipsoid
-    private Area builtEllipse(Matrix z_pre, Matrix S, double gateFactor) {
+    private Area builtEllipse(final Matrix z_pre, Matrix S, final double gateFactor) {
         S = S.getMatrix(0, 1, 0, 1);
         //int sx = (int) (gateFactor*Math.sqrt(S.get(0, 0)));
         //int sy =  (int) (gateFactor*Math.sqrt(S.get(1, 1)));
-        EigenvalueDecomposition evd = S.eig();
-        Matrix D = evd.getD();
-        Matrix V = evd.getV();
-        double norm1 = Math.sqrt(Math.pow(V.get(0, 0), 2) + Math.pow(V.get(1, 0), 2));
-        double norm2 = Math.sqrt(Math.pow(V.get(0, 1), 2) + Math.pow(V.get(1, 1), 2));
-        double cos = V.get(0, 0) / norm1;
-        double sin = V.get(1, 0) / norm2;
-        double alpha;
+        final EigenvalueDecomposition evd = S.eig();
+        final Matrix D = evd.getD();
+        final Matrix V = evd.getV();
+        final double norm1 = Math.sqrt(Math.pow(V.get(0, 0), 2) + Math.pow(V.get(1, 0), 2));
+        final double norm2 = Math.sqrt(Math.pow(V.get(0, 1), 2) + Math.pow(V.get(1, 1), 2));
+        final double cos = V.get(0, 0) / norm1;
+        final double sin = V.get(1, 0) / norm2;
+        final double alpha;
         if (sin >= 0)
             alpha = Math.acos(cos);
         else
             alpha = -Math.acos(cos);
-        int zx = (int) (z_pre.get(0, 0));
-        int zy = (int) (z_pre.get(1, 0));
-        int l1 = (int) (gateFactor * Math.sqrt(D.get(0, 0)));
-        int l2 = (int) (gateFactor * Math.sqrt(D.get(1, 1)));
-        AffineTransform atx = new AffineTransform();
+        final int zx = (int) (z_pre.get(0, 0));
+        final int zy = (int) (z_pre.get(1, 0));
+        final int l1 = (int) (gateFactor * Math.sqrt(D.get(0, 0)));
+        final int l2 = (int) (gateFactor * Math.sqrt(D.get(1, 1)));
+        final AffineTransform atx = new AffineTransform();
         atx.rotate(alpha, zx, zy);
         atx.translate(-l1, -l2);
-        Area gate = new Area(new Ellipse2D.Double(zx, zy, l1 * 2, l2 * 2)).createTransformedArea(atx);
-        return gate;
+        return new Area(new Ellipse2D.Double(zx, zy, l1 * 2, l2 * 2)).createTransformedArea(atx);
     }
 
     @Override
     public Object clone() {
-        KalmanFilter newKf = (KalmanFilter) copyInit();
+        final KalmanFilter newKf = (KalmanFilter) copyInit();
 
         if (x_pre != null) newKf.x_pre = (Matrix) this.x_pre.clone();
         if (x_est != null) newKf.x_est = (Matrix) this.x_est.clone();
@@ -220,9 +241,10 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Copy all the data contained in this KF into another KF
+     *
      * @param kf KalmanFilter
      */
-    protected void copyMyDataInKF(KalmanFilter kf) {
+    protected void copyMyDataInKF(final KalmanFilter kf) {
         kf.setTrackingCovariances(Q0.copy());
         if (x_pre != null) kf.x_pre = x_pre.copy();
         if (x_est != null) kf.x_est = x_est.copy();
@@ -244,9 +266,11 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Correct the current predictions with the inputed measurement
+     *
      * @param z Matrix
      */
-    public void correct(Matrix z) {
+    @Override
+    public void correct(final Matrix z) {
         if (z.getRowDimension() != H.getRowDimension())
             throw new IllegalArgumentException("row dimension of z (is " + z.getRowDimension() + " should be " + H.getRowDimension() + ") is not the same as row dimension of H");
         if (z.getColumnDimension() != 1)
@@ -263,39 +287,41 @@ public abstract class KalmanFilter implements Predictor {
     protected void covupdate() {
         if (updateCovariances) {
             //factor used for the update of Q: Q = b*Q + a*(x_est - x_pre)*(x_est - x_pre)T + c*Q0
-            double a = 0.15;  // error
-            double b = 0.75;  // Q
-            double c = 0.10;  // Q0
+            final double a = 0.15;  // error
+            final double b = 0.75;  // Q
+            final double c = 0.10;  // Q0
             try {
                 if ((x_est.minus(x_pre)).normF() != 0) {
                     Q = Q.times(b).plus(((x_est.minus(x_pre)).times((x_est.minus(x_pre)).transpose())).times(a)).plus(Q0.times(c));
                 }
-                double maxIncrease = 2;
-                double maxDecrease = 0.5;
+                final double maxIncrease = 2;
+                final double maxDecrease = 0.5;
                 for (int i = 0; i < Q.getColumnDimension(); i++)
                     for (int j = 0; j < Q.getRowDimension(); j++) {
                         Q.set(i, j, Math.min(Q0.get(i, j) * maxIncrease, Math.max(Q0.get(i, j) * maxDecrease, Q.get(i, j))));
                     }
             }
-            catch (RuntimeException e) {
+            catch (final RuntimeException e) {
                 System.out.println("error in KalmanFiter.covupdate:");
                 if (x_est == null) System.out.println("xest null");
                 if (x_pre == null) System.out.println("xpre null");
                 if (Q == null) System.out.println("Q null");
                 if (Q0 == null) System.out.println("Q0 null");
-                e.printStackTrace();
+                IcyExceptionHandler.showErrorMessage(e, true);
             }
         }
     }
 
     /**
      * Get the current gate as a cubic area
+     *
      * @param gateFactor double
      * @return 2D array of double
      */
-    public double[][] getCurrentCubicGate(double gateFactor) {
+    @Override
+    public double[][] getCurrentCubicGate(final double gateFactor) {
         //TODO 3D
-        double[][] bounds = new double[2][2];//pour l'instant test en 2D
+        final double[][] bounds = new double[2][2];//pour l'instant test en 2D
         bounds[0][0] = z_pre.get(0, 0) - gateFactor * Math.sqrt(S.get(0, 0));
         bounds[0][1] = z_pre.get(0, 0) + gateFactor * Math.sqrt(S.get(0, 0));
         bounds[1][0] = z_pre.get(1, 0) - gateFactor * Math.sqrt(S.get(1, 1));
@@ -305,19 +331,23 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Get the current estimate of the target state
+     *
      * @return Matrix
      */
+    @Override
     public Matrix getCurrentEstimatedState() {
         return x_est;
     }
 
     /**
      * Get the current gates as a list of areas
+     *
      * @param gateFactor double
      * @return ArrayList of Area
      */
-    public ArrayList<Area> getCurrentGate(double gateFactor) {
-        ArrayList<Area> gates = new ArrayList<Area>();
+    @Override
+    public ArrayList<Area> getCurrentGate(final double gateFactor) {
+        final ArrayList<Area> gates = new ArrayList<>();
         gates.add(builtEllipse(z_pre, S, gateFactor));
         return gates;
     }
@@ -325,8 +355,10 @@ public abstract class KalmanFilter implements Predictor {
     /**
      * Get the current predicted measurement
      * {@link KalmanFilter#z_pre}
+     *
      * @return Matrix
      */
+    @Override
     public Matrix getCurrentPredictedMeasurement() {
         return z_pre;
     }
@@ -334,8 +366,10 @@ public abstract class KalmanFilter implements Predictor {
     /**
      * Get the current predicted target state
      * {@link KalmanFilter#x_pre}
+     *
      * @return Matrix
      */
+    @Override
     public Matrix getCurrentPredictedState() {
         return x_pre;
     }
@@ -343,39 +377,43 @@ public abstract class KalmanFilter implements Predictor {
     /**
      * Get the current state error covariance
      * {@link KalmanFilter#P_est}
+     *
      * @return Matrix
      */
+    @Override
     public Matrix getCurrentStateErrorCovariance() {
         return P_est;
     }
 
     /**
      * Get the measurement error covariance at a given frame
+     *
      * @param t int
      * @return Matrix
      */
-    public Matrix getMeasurementErrorCovariance(int t) {
+    public Matrix getMeasurementErrorCovariance(final int t) {
         return H.times(getStateErrorCovariance(t)).times(H.transpose()).plus(R);
     }
 
     /**
      * Build the target position likelihood map at a given frame for a specified area
-     * @param gated bool
+     *
+     * @param gated      bool
      * @param gateFactor double
-     * @param t int
-     * @param width int
-     * @param height int
-     * @param depth int
+     * @param t          int
+     * @param width      int
+     * @param height     int
+     * @param depth      int
      * @return LikelihoodMap
      */
-    public LikelihoodMap getLikelihoodMap(boolean gated, double gateFactor, int t, int width, int height, int depth) {
+    public LikelihoodMap getLikelihoodMap(final boolean gated, final double gateFactor, final int t, final int width, final int height, final int depth) {
         if (t <= this.t)
             throw new IllegalArgumentException("cannot get past prediction in Kalman Filter");
         if (this instanceof Predictor2D) {
-            Predictor2D p2D = (Predictor2D) this;
-            double xPred = p2D.getXCoordPredicted();
-            double yPred = p2D.getYCoordPredicted();
-            Matrix covMeas = getMeasurementErrorCovariance(t);
+            final Predictor2D p2D = (Predictor2D) this;
+            final double xPred = p2D.getXCoordPredicted();
+            final double yPred = p2D.getYCoordPredicted();
+            final Matrix covMeas = getMeasurementErrorCovariance(t);
             //build the cubic gate in 2D
             int minX = 0;
             int maxX = width - 1;
@@ -387,11 +425,11 @@ public abstract class KalmanFilter implements Predictor {
                 minY = (int) Math.max(yPred - gateFactor * Math.sqrt(covMeas.get(1, 1)), minY);
                 maxY = (int) Math.min(Math.floor(yPred + gateFactor * Math.sqrt(covMeas.get(1, 1))) + 1, maxY);
             }
-            LikelihoodMap map = new LikelihoodMap(width, height);
+            final LikelihoodMap map = new LikelihoodMap(width, height);
             for (int y = minY; y <= maxY; y++)
                 for (int x = minX; x <= maxX; x++) {
-                    Spot s = new Spot(x, y, 0);
-                    double l = likelihood(s, false, 4);
+                    final Spot s = new Spot(x, y, 0);
+                    final double l = likelihood(s, false, 4);
                     map.setLikelihood(x, y, l);
                 }
             return map;
@@ -442,28 +480,29 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Build the target position likelihood map at a given frame
+     *
      * @param gateFactor double
-     * @param t int
+     * @param t          int
      * @return LikelihoodMap
      */
-    public LikelihoodMap getLikelihoodMap(double gateFactor, int t) {
+    public LikelihoodMap getLikelihoodMap(final double gateFactor, final int t) {
         if (t <= this.t)
             throw new IllegalArgumentException("cannot get past prediction in Kalman Filter");
         if (this instanceof Predictor2D) {
-            Predictor2D p2D = (Predictor2D) this;
-            double xPred = p2D.getXCoordPredicted();
-            double yPred = p2D.getYCoordPredicted();
-            Matrix covMeas = getMeasurementErrorCovariance(t);
+            final Predictor2D p2D = (Predictor2D) this;
+            final double xPred = p2D.getXCoordPredicted();
+            final double yPred = p2D.getYCoordPredicted();
+            final Matrix covMeas = getMeasurementErrorCovariance(t);
             //build the cubic gate in 2D
-            int minX = (int) (xPred - gateFactor * Math.sqrt(covMeas.get(0, 0)));
-            int maxX = (int) (Math.floor(xPred + gateFactor * Math.sqrt(covMeas.get(0, 0))));
-            int minY = (int) (yPred - gateFactor * Math.sqrt(covMeas.get(1, 1)));
-            int maxY = (int) (Math.floor(yPred + gateFactor * Math.sqrt(covMeas.get(1, 1))) + 1);
-            LikelihoodMap map = new LikelihoodMap(maxX - minX + 1, maxY - minY + 1, minX, minY);
+            final int minX = (int) (xPred - gateFactor * Math.sqrt(covMeas.get(0, 0)));
+            final int maxX = (int) (Math.floor(xPred + gateFactor * Math.sqrt(covMeas.get(0, 0))));
+            final int minY = (int) (yPred - gateFactor * Math.sqrt(covMeas.get(1, 1)));
+            final int maxY = (int) (Math.floor(yPred + gateFactor * Math.sqrt(covMeas.get(1, 1))) + 1);
+            final LikelihoodMap map = new LikelihoodMap(maxX - minX + 1, maxY - minY + 1, minX, minY);
             for (int y = minY; y <= maxY; y++)
                 for (int x = minX; x <= maxX; x++) {
-                    Spot s = new Spot(x, y, 0);
-                    double l = likelihood(s, false, 4);
+                    final Spot s = new Spot(x, y, 0);
+                    final double l = likelihood(s, false, 4);
                     map.setLikelihood(x, y, l);
                 }
             return map;
@@ -606,10 +645,12 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Get the predicted state at a given frame
+     *
      * @param t int
      * @return Matrix
      */
-    public Matrix getPredictedState(int t) {
+    @Override
+    public Matrix getPredictedState(final int t) {
         if (t > this.t) {
             Matrix pred = F.times(x_est);
             for (int i = this.t + 1; i < t; i++) {
@@ -623,40 +664,42 @@ public abstract class KalmanFilter implements Predictor {
             throw new IllegalArgumentException("cannot get past prediction in Kalman Filter");
     }
 
-    ;
-
     /**
      * Compute the total target state likelihood contained into the search gate
-     * @param gated bool
+     *
+     * @param gated      bool
      * @param gateFactor double
      * @return double
      */
     //TODO real computation instead of approximated values
-    public double getTotalGateLikelihood(boolean gated, double gateFactor) {
+    @Override
+    public double getTotalGateLikelihood(final boolean gated, final double gateFactor) {
         if (gated) {
-            if (gateFactor < 1)
-                return 0.5;
-            if (gateFactor < 2)
-                return 0.7;
-            if (gateFactor < 3)
-                return 0.85;
-            if (gateFactor < 4)
-                return 0.95;
-            if (gateFactor < 5)
-                return 0.99;
-            if (gateFactor < 8)
-                return 0.999;
-            else return 1;
+            if (gateFactor < 1d)
+                return .5d;
+            if (gateFactor < 2d)
+                return .7d;
+            if (gateFactor < 3d)
+                return .85d;
+            if (gateFactor < 4d)
+                return .95d;
+            if (gateFactor < 5d)
+                return .99d;
+            if (gateFactor < 8d)
+                return .999d;
+            else return 1d;
         }
-        else return 1;
+        else return 1d;
     }
 
     /**
      * Initialize the KF with a first state and a first state covariance matrix
+     *
      * @param x0 Matrix
      * @param P0 Matrix
      */
-    public void init(Matrix x0, Matrix P0) {
+    @Override
+    public void init(final Matrix x0, final Matrix P0) {
         if (x0.getColumnDimension() != 1)
             throw new IllegalArgumentException("x0 is not a vector");
         if (x0.getRowDimension() != F.getRowDimension())
@@ -670,6 +713,7 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Check if the predictor is initialized
+     *
      * @return bool
      */
     public boolean initialized() {
@@ -678,6 +722,7 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Build the first state matrix for a first measurement matrix
+     *
      * @param firstElement Matrix
      * @return Matrix
      */
@@ -685,94 +730,104 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Get the initial state covariance
+     *
      * @return Matrix
      */
     abstract Matrix getP0();
 
     /**
      * Initialize the KF with a first measurement at a given frame
+     *
      * @param firstElement Matrix
-     * @param t int
+     * @param t            int
      */
-    public void initWithFirstElement(Matrix firstElement, int t) {
+    @Override
+    public void initWithFirstElement(final Matrix firstElement, final int t) {
         this.t = t;
         this.t0 = t;
-        Matrix x0 = buildX0(firstElement);
-        Matrix P0 = getP0();
+        final Matrix x0 = buildX0(firstElement);
+        final Matrix P0 = getP0();
         init(x0, P0);
     }
 
     /**
      * Initialize the KF with a first spot at a given time
+     *
      * @param spot Spot
-     * @param t int
+     * @param t    int
      */
-    public void initWithFirstElement(Spot spot, int t) {
+    @Override
+    public void initWithFirstElement(final Spot spot, final int t) {
         initWithFirstElement(buildMeasurementMatrix(spot), t);
     }
 
     /**
      * Compute the likelihood of a measurement
-     * @param z Matrix
-     * @param gated bool
+     *
+     * @param z          Matrix
+     * @param gated      bool
      * @param gateFactor double
      * @return double
      */
-    public double likelihood(Matrix z, boolean gated, double gateFactor) {
-        Matrix z_err = z.minus(z_pre); // local
+    @Override
+    public double likelihood(final Matrix z, final boolean gated, final double gateFactor) {
+        final Matrix z_err = z.minus(z_pre); // local
         // first, check if it's in the rectangular gate (faster)
         if (gated)
             for (int i = 0; i < z_err.getRowDimension(); i++)
                 if (Math.abs(z_err.get(i, 0)) > gateFactor * Math.sqrt(S.get(i, i)))
                     return 0;
         // then, check if it's in the ellipsoide gate
-        double d2 = mahalanobis(z);
+        final double d2 = mahalanobis(z);
         if (gated && d2 > Math.pow(gateFactor, 2))
             return 0;
         // at the end, if needed, compute likelihood
-        double d1 = 1.0 / (Math.sqrt(S.times(_2PI).det()));
+        final double d1 = 1.0 / (Math.sqrt(S.times(_2PI).det()));
         return d1 * Math.exp(-0.5 * d2);
     }
 
     /**
      * Compute the likelihood of a spot as a measurement
-     * @param s Spot
-     * @param gated bool
+     *
+     * @param s          Spot
+     * @param gated      bool
      * @param gateFactor double
      * @return double
      */
-    public double likelihood(Spot s, boolean gated, double gateFactor) {
-        Matrix z = buildMeasurementMatrix(s);
+    @Override
+    public double likelihood(final Spot s, final boolean gated, final double gateFactor) {
+        final Matrix z = buildMeasurementMatrix(s);
         return likelihood(z, gated, gateFactor);
     }
 
     /**
      * Compute the likelihood of a spot as a measurement at a given frame
-     * @param s Spot
-     * @param gated bool
+     *
+     * @param s          Spot
+     * @param gated      bool
      * @param gateFactor double
-     * @param t int
+     * @param t          int
      * @return double
      */
-    public double likelihood(Spot s, boolean gated, double gateFactor, int t) {
+    public double likelihood(final Spot s, final boolean gated, final double gateFactor, final int t) {
         if (t >= this.t) {
-            Matrix z = buildMeasurementMatrix(s);
-            Matrix predState = getPredictedState(t);
-            Matrix predMeasurement = H.times(predState);
-            Matrix z_err = z.minus(predMeasurement);
-            Matrix covPred = buildPredCovMatrix(t);
-            Matrix covMeas = H.times(covPred).times(H.transpose()).plus(R);
+            final Matrix z = buildMeasurementMatrix(s);
+            final Matrix predState = getPredictedState(t);
+            final Matrix predMeasurement = H.times(predState);
+            final Matrix z_err = z.minus(predMeasurement);
+            final Matrix covPred = buildPredCovMatrix(t);
+            final Matrix covMeas = H.times(covPred).times(H.transpose()).plus(R);
             // first, check if it's in the rectangular gate (faster)
             if (gated)
                 for (int i = 0; i < z_err.getRowDimension(); i++)
                     if (Math.abs(z_err.get(i, 0)) > gateFactor * Math.sqrt(covMeas.get(i, i)))
                         return 0;
             // then, check if it's in the ellipsoide gate
-            double d2 = z_err.transpose().times(covMeas.inverse()).times(z_err).get(0, 0);
+            final double d2 = z_err.transpose().times(covMeas.inverse()).times(z_err).get(0, 0);
             if (gated && d2 > Math.pow(gateFactor, 2))
                 return 0;
             // at the end, if needed, compute likelihood
-            double d1 = 1.0 / (Math.sqrt(covMeas.times(_2PI).det()));
+            final double d1 = 1.0 / (Math.sqrt(covMeas.times(_2PI).det()));
             return d1 * Math.exp(-0.5 * d2);
         }
         else
@@ -781,40 +836,45 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Compute the likelihood of a measurement in logarithmic scale
+     *
      * @param z Matrix
      * @return double
      */
-    public double loglikelihood(Matrix z) {
-        Matrix z_err = z.minus(z_pre);
+    @Override
+    public double loglikelihood(final Matrix z) {
+        final Matrix z_err = z.minus(z_pre);
         return -(Math.log(S.times(_2PI).det()) + z_err.transpose().times(S_1).times(z_err).get(0, 0)) * 0.5;
     }
 
     /**
      * Compute the likelihood of a spot as a measurement in logarithmic scale
+     *
      * @param ds Spot
      * @return double
      */
-    public double loglikelihood(Spot ds) {
-        Matrix z = buildMeasurementMatrix(ds);
+    @Override
+    public double loglikelihood(final Spot ds) {
+        final Matrix z = buildMeasurementMatrix(ds);
         return loglikelihood(z);
     }
 
     /**
      * Compute the likelihood of a state matrix in logarithmic scale
+     *
      * @param x Matrix
      * @return double
      */
     @Override
-    public double loglikelihoodOfState(Matrix x) {
-        Matrix x_err = x.minus(x_pre);
-        Matrix P_1 = P_pre.inverse();
+    public double loglikelihoodOfState(final Matrix x) {
+        final Matrix x_err = x.minus(x_pre);
+        final Matrix P_1 = P_pre.inverse();
         return -(Math.log(P_pre.times(_2PI).det()) + x_err.transpose().times(P_1).times(x_err).get(0, 0)) * 0.5;
     }
 
     @Override
-    public double likelihoodOfState(Matrix x) {
-        Matrix x_err = x.minus(x_pre); // local
-        Matrix P_1 = P_pre.inverse();
+    public double likelihoodOfState(final Matrix x) {
+        final Matrix x_err = x.minus(x_pre); // local
+        final Matrix P_1 = P_pre.inverse();
         // first, check if it's in the rectangular gate (faster)
         return Math.exp(x_err.transpose().times(P_1).times(x_err).get(0, 0) / 2) / Math.sqrt(P_pre.times(_2PI).det());
     }
@@ -826,71 +886,82 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Compute mahalanobis distance between a measurement and the prediction
+     *
      * @param z Matrix
      * @return double
      */
-    protected double mahalanobis(Matrix z) {
-        Matrix z_err = z.minus(z_pre); // local
+    protected double mahalanobis(final Matrix z) {
+        final Matrix z_err = z.minus(z_pre); // local
         return z_err.transpose().times(S_1).times(z_err).get(0, 0);
     }
 
     /**
      * Compute mahalanobis distance between a measurement (spot) and the prediction
+     *
      * @param s Matrix
      * @return double
      */
-    protected double mahalanobis(Spot s) {
-        Matrix z = buildMeasurementMatrix(s);
+    protected double mahalanobis(final Spot s) {
+        final Matrix z = buildMeasurementMatrix(s);
         return mahalanobis(z);
     }
 
     /**
      * Get the minimum likelihood value for a measurement in the gate at a given time
+     *
      * @param gateFactor double
-     * @param t int
+     * @param t          int
      * @return double
      */
-    public double getMinLikelihoodInGate(double gateFactor, int t) {
-        Matrix covPred = buildPredCovMatrix(t);
-        Matrix covMeas = H.times(covPred).times(H.transpose()).plus(R);
+    @Override
+    public double getMinLikelihoodInGate(final double gateFactor, final int t) {
+        final Matrix covPred = buildPredCovMatrix(t);
+        final Matrix covMeas = H.times(covPred).times(H.transpose()).plus(R);
         // first, check if it's in the rectangular gate (faster)
-        double d2 = Math.pow(gateFactor, 2);
-        double d1 = 1.0 / (Math.sqrt(covMeas.times(_2PI).det()));
+        final double d2 = Math.pow(gateFactor, 2);
+        final double d1 = 1.0 / (Math.sqrt(covMeas.times(_2PI).det()));
         return d1 * Math.exp(-0.5 * d2);
     }
 
     /**
      * Get the minimum likelihood value for a measurement in the gate at the current time
+     *
      * @param gateFactor double
      * @return double
      */
-    public double getCurrentMinLikelihoodInGate(double gateFactor) {
-        double d2 = Math.pow(gateFactor, 2);
-        double d1 = 1.0 / (Math.sqrt(S.times(_2PI).det()));
+    @Override
+    public double getCurrentMinLikelihoodInGate(final double gateFactor) {
+        final double d2 = Math.pow(gateFactor, 2);
+        final double d1 = 1.0 / (Math.sqrt(S.times(_2PI).det()));
         return d1 * Math.exp(-0.5 * d2);
     }
 
     /**
      * Compute the normalized innovation of the process for a given measurement
      * {@link KalmanFilter#mahalanobis(Matrix)}
+     *
      * @return double
      */
-    public double normalizedInnovation(Matrix m) {
+    @Override
+    public double normalizedInnovation(final Matrix m) {
         return this.mahalanobis(m);
     }
 
     /**
      * Compute the normalized innovation of the process for a given spot
      * {@link KalmanFilter#mahalanobis(Spot)}
+     *
      * @return double
      */
-    public double normalizedInnovation(Spot s) {
+    @Override
+    public double normalizedInnovation(final Spot s) {
         return this.mahalanobis(s);
     }
 
     /**
      * Predict next state and update covariance matrices
      */
+    @Override
     public void predict() {
         x_pre = F.times(x_est); // state prediction x~(k+1|k)
         z_pre = H.times(x_pre); // measurement prediction z~(k+1|k)
@@ -903,7 +974,8 @@ public abstract class KalmanFilter implements Predictor {
     /**
      * predict the state and update covariance matrices at a given time
      */
-    public void predict(int t) {
+    @Override
+    public void predict(final int t) {
         if (t == this.t)
             predict();
         else if (t > this.t) {
@@ -924,33 +996,39 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Set the covariance values of the filters
+     *
      * @param trackingCov array of double
      */
+    @Override
     public abstract void setTrackingCovariances(double[] trackingCov);
 
     /**
      * Set the covariance matrix of the filters
+     *
      * @param Q0 Matrix
      */
-    public void setTrackingCovariances(Matrix Q0) {
+    public void setTrackingCovariances(final Matrix Q0) {
         this.Q = Q0;
         this.Q0 = Q0;
     }
 
     /**
      * Specify wether to update the covariance of the filter during the tracking
+     *
      * @param update bool
      */
-    public void setUpdateCovariances(boolean update) {
+    public void setUpdateCovariances(final boolean update) {
         this.updateCovariances = update;
     }
 
     /**
      * Update the filtering process with a given measurement at a given frame
+     *
      * @param z Matrix
      * @param t int
      */
-    public void update(Matrix z, int t) {
+    @Override
+    public void update(final Matrix z, final int t) {
         if (z != null) {
             correct(z);
             this.t = t;
@@ -960,11 +1038,13 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Update the filtering process with a given spot at a given frame
+     *
      * @param s Spot
      * @param t int
      */
-    public void update(Spot s, int t) {
-        Matrix z = buildMeasurementMatrix(s);
+    @Override
+    public void update(final Spot s, final int t) {
+        final Matrix z = buildMeasurementMatrix(s);
         update(z, t);
     }
 
@@ -972,24 +1052,28 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Get the estimated state at a future frame
+     *
      * @param t int
      * @return Matrix
      */
-    public Matrix getEstimatedState(int t) {
+    @Override
+    public Matrix getEstimatedState(final int t) {
         return null;
     }
 
     /**
      * Get the predicted mesurement at a future frame
+     *
      * @param t int
      * @return Matrix
      */
-    public Matrix getPredictedMeasurement(int t) {
+    @Override
+    public Matrix getPredictedMeasurement(final int t) {
         if (this.t == t) {
             return z_pre;
         }
         else if (t > this.t) {
-            Matrix pred = getPredictedState(t);
+            final Matrix pred = getPredictedState(t);
             return H.times(pred);
         }
         else
@@ -998,19 +1082,23 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Get the predicted mesurement at a future frame as a spot
+     *
      * @param t int
      * @return VirtualSpot
      */
-    public VirtualSpot getPredictedStateAsSpot(int t) {
+    @Override
+    public VirtualSpot getPredictedStateAsSpot(final int t) {
         return null;
     }
 
     /**
      * Compute the state error covariance at a future frame
+     *
      * @param t int
      * @return Matrix
      */
-    public Matrix getStateErrorCovariance(int t) {
+    @Override
+    public Matrix getStateErrorCovariance(final int t) {
         Matrix Ppre = F.times(P_est).times(F.transpose()).plus(Q);
         for (int i = this.t + 1; i < t; i++)
             Ppre = F.times(Ppre).times(F.transpose()).plus(Q);
@@ -1019,20 +1107,24 @@ public abstract class KalmanFilter implements Predictor {
 
     /**
      * Compute the search gates at a future frame
+     *
      * @param gateFactor double
-     * @param i int
+     * @param i          int
      * @return ArrayList of Area
      */
     //FIXME
-    public ArrayList<Area> getGates(double gateFactor, int i) {
+    @Override
+    public ArrayList<Area> getGates(final double gateFactor, final int i) {
         return null;
     }
 
     /**
      * Modify the filter current time
+     *
      * @param t int
      */
-    public void updateTime(int t) {
+    @Override
+    public void updateTime(final int t) {
         this.t = t;
     }
 }

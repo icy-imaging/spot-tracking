@@ -1,36 +1,52 @@
-package plugins.nchenouard.particletracking.legacytracker.associationMethod;
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
 
-import java.util.ArrayList;
+package plugins.nchenouard.particletracking.legacytracker.associationMethod;
 
 import plugins.nchenouard.spot.Spot;
 
+import java.util.ArrayList;
+
 /**
  * Object dedicated the assignment problem tracks vs. detections
- * 
+ * <p>
  * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
- * 
+ *
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com)
  * @version 3.1
  * date 2013-11-13
  * license gpl v3.0
-*/
+ */
 
-public class AssignProblem
-{
-	AssignProblemSolver solver;
-	ArrayList<Track> tracks;
-	ArrayList<Track> tracksToBeProlongated;
-	ArrayList<Spot> tracksToBeCreated;
-	ArrayList<Spot> detections;
-	double[][] likelihoods;
-	double[][] innovations;
-	int t;
-	
-	public AssignProblem()
-	{
-		tracks = new ArrayList<Track>();
-		detections = new ArrayList<Spot>();
-		tracksToBeCreated = new ArrayList<Spot>();
-		tracksToBeProlongated = new ArrayList<Track>();
-	}
+public class AssignProblem {
+    AssignProblemSolver solver;
+    ArrayList<Track> tracks;
+    ArrayList<Track> tracksToBeProlongated;
+    ArrayList<Spot> tracksToBeCreated;
+    ArrayList<Spot> detections;
+    double[][] likelihoods;
+    double[][] innovations;
+    int t;
+
+    public AssignProblem() {
+        tracks = new ArrayList<>();
+        detections = new ArrayList<>();
+        tracksToBeCreated = new ArrayList<>();
+        tracksToBeProlongated = new ArrayList<>();
+    }
 }

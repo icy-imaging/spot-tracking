@@ -1,12 +1,30 @@
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package plugins.nchenouard.particletracking.filtering;
+
+import Jama.Matrix;
+import plugins.nchenouard.particletracking.VirtualSpot;
+import plugins.nchenouard.spot.Spot;
 
 import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.List;
-
-import plugins.nchenouard.particletracking.VirtualSpot;
-import plugins.nchenouard.spot.Spot;
-import Jama.Matrix;
 
 /**
  * This class is an implementation of the Interacting Multiple Model estimator (IMM) for 3D predictors
@@ -19,7 +37,7 @@ import Jama.Matrix;
  * license gpl v3.0
  */
 public class IMM3D implements Predictor {
-    public static enum LikelihoodTypes {IMM_MAX_LIKELIHOOD, IMM_WEIGHTED_LIKELIHOOD}
+    public enum LikelihoodTypes {IMM_MAX_LIKELIHOOD, IMM_WEIGHTED_LIKELIHOOD}
 
     public double inertia;
     protected int maxLikelihoodIndex = 0;
@@ -40,7 +58,7 @@ public class IMM3D implements Predictor {
 
     int dim = 3;
 
-    public IMM3D(LikelihoodTypes predictorType, double immInertia, List<Predictor3D> predictors) {
+    public IMM3D(final LikelihoodTypes predictorType, final double immInertia, final List<Predictor3D> predictors) {
         r = predictors.size();
         inertia = immInertia;
         x_est = new Matrix(dim, 1);
@@ -53,7 +71,7 @@ public class IMM3D implements Predictor {
         m_est_ij = new double[r][r];
         m_pre_i = new double[r];
         l_i = new double[r];
-        double mi = 1.0 / r;
+        final double mi = 1.0 / r;
         for (int i = 0; i < r; i++) {
             m_pre_i[i] = mi;
             m_est_i[i] = mi;
@@ -65,13 +83,14 @@ public class IMM3D implements Predictor {
             }
         }
         int cnt = 0;
-        for (Predictor3D p : predictors) {
+        for (final Predictor3D p : predictors) {
             this.setModelAt(p, cnt);
             cnt++;
         }
     }
 
-    public IMM3D(IMM3D toCopy) {
+    public IMM3D(final IMM3D toCopy) {
+        this.dim = toCopy.dim;
         this.r = toCopy.r;
         this.likelihoodType = toCopy.likelihoodType;
         this.inertia = toCopy.inertia;
@@ -100,25 +119,29 @@ public class IMM3D implements Predictor {
         this.maxLikelihoodIndex = toCopy.maxLikelihoodIndex;
     }
 
+    @Override
     public Predictor copy() {
         return new IMM3D(this);
     }
 
+    @Override
     public Predictor copyInit() {
-        ArrayList<Predictor3D> predictors = new ArrayList<Predictor3D>(r);
-        for (Predictor3D p : filter_i)
+        final ArrayList<Predictor3D> predictors = new ArrayList<>(r);
+        for (final Predictor3D p : filter_i)
             predictors.add((Predictor3D) p.copyInit());
         return new IMM3D(likelihoodType, inertia, predictors);
     }
 
+    @Override
     public Object clone() {
         return new IMM3D(this);
     }
 
-    public void correct(Matrix z) {
+    @Override
+    public void correct(final Matrix z) {
         if (z != null) {
             /* ***************** STEP 2a : FILTER CORRECT ************************** */
-            for (Predictor p : filter_i)
+            for (final Predictor p : filter_i)
                 p.correct(z);
             /* ***************** STEP 3 : LIKELIHOOD COMPUTATION ******************* */
             // the likelihood tab is computed again !!
@@ -144,7 +167,7 @@ public class IMM3D implements Predictor {
             x_est.set(2, 0, zNew);
             P_est.timesEquals(0.0);
             for (int i = 0; i < r; i++) {
-                Matrix m0 = filter_i[i].getCurrentEstimatedState3D().minus(x_est);
+                final Matrix m0 = filter_i[i].getCurrentEstimatedState3D().minus(x_est);
                 P_est.plusEquals(filter_i[i].getCurrentStateErrorCovariance3D().plus(m0.times(m0.transpose())).times(m_est_i[i]));
             }
         }
@@ -152,13 +175,15 @@ public class IMM3D implements Predictor {
 
     /**
      * Nicolas's method to improve the detection through tracking
+     *
      * @param gateFactor double
      * @return 2D array of double
      */
-    public double[][] getCurrentCubicGate(double gateFactor) {
-        double[][] bounds = filter_i[0].getCurrentCubicGate(gateFactor);
+    @Override
+    public double[][] getCurrentCubicGate(final double gateFactor) {
+        final double[][] bounds = filter_i[0].getCurrentCubicGate(gateFactor);
         for (int i = 1; i < r; i++) {
-            double[][] tmp = filter_i[i].getCurrentCubicGate(gateFactor);
+            final double[][] tmp = filter_i[i].getCurrentCubicGate(gateFactor);
             for (int k = 0; k < tmp.length; k++) {
                 bounds[k][0] = Math.min(bounds[k][0], tmp[k][0]);
                 bounds[k][1] = Math.max(bounds[k][1], tmp[k][1]);
@@ -167,43 +192,51 @@ public class IMM3D implements Predictor {
         return bounds;
     }
 
-    public ArrayList<Area> getCurrentGate(double gateFactor) {
-        ArrayList<Area> areas = new ArrayList<Area>();
+    @Override
+    public ArrayList<Area> getCurrentGate(final double gateFactor) {
+        final ArrayList<Area> areas = new ArrayList<>();
         for (int i = 0; i < r; i++) {
             areas.addAll(filter_i[i].getCurrentGate(gateFactor));
         }
         return areas;
     }
 
+    @Override
     public Matrix getCurrentEstimatedState() {
         return x_est;
     }
 
+    @Override
     public Matrix getCurrentPredictedMeasurement() {
         return z_pre;
     }
 
+    @Override
     public Matrix getCurrentPredictedState() {
         return x_pre;
     }
 
+    @Override
     public Matrix getCurrentStateErrorCovariance() {
         return P_est;
     }
 
-    public void init(Matrix x0, Matrix P0) {
+    @Override
+    public void init(final Matrix x0, final Matrix P0) {
         for (int i = 0; i < r; i++) {
             filter_i[i].init(x0, P0);
         }
     }
 
-    public void initWithFirstElement(Matrix firstElement, int t) {
-        for (Predictor p3D : filter_i)
+    @Override
+    public void initWithFirstElement(final Matrix firstElement, final int t) {
+        for (final Predictor p3D : filter_i)
             p3D.initWithFirstElement(firstElement, t);
     }
 
-    public double likelihood(Spot s, boolean gated, double gateFactor) {
-        double l;
+    @Override
+    public double likelihood(final Spot s, final boolean gated, final double gateFactor) {
+        final double l;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
                 l = likelihoodMax(s, gated, gateFactor);
@@ -219,13 +252,15 @@ public class IMM3D implements Predictor {
 
     /**
      * Likelihood method for abstract class Predictor
-     * @param z Matrix
-     * @param gated bool
+     *
+     * @param z          Matrix
+     * @param gated      bool
      * @param gateFactor double
      * @return double
      **/
-    public double likelihood(Matrix z, boolean gated, double gateFactor) {
-        double l;
+    @Override
+    public double likelihood(final Matrix z, final boolean gated, final double gateFactor) {
+        final double l;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
                 l = likelihoodMax(z, gated, gateFactor);
@@ -241,12 +276,13 @@ public class IMM3D implements Predictor {
 
     /**
      * LikelihoodMax = max{likelihood for each model}
-     * @param s Spot
-     * @param gated bool
+     *
+     * @param s          Spot
+     * @param gated      bool
      * @param gateFactor double
      * @return double
      **/
-    public double likelihoodMax(Spot s, boolean gated, double gateFactor) {
+    public double likelihoodMax(final Spot s, final boolean gated, final double gateFactor) {
         for (int i = 0; i < r; i++)
             l_i[i] = filter_i[i].likelihood(s, gated, gateFactor);
         return l_i[maxLikelihoodIndex];
@@ -254,12 +290,13 @@ public class IMM3D implements Predictor {
 
     /**
      * LikelihoodMax = max{likelihood for each model}
-     * @param z Matrix
-     * @param gated bool
+     *
+     * @param z          Matrix
+     * @param gated      bool
      * @param gateFactor double
      * @return double
      **/
-    public double likelihoodMax(Matrix z, boolean gated, double gateFactor) {
+    public double likelihoodMax(final Matrix z, final boolean gated, final double gateFactor) {
         for (int i = 0; i < r; i++)
             l_i[i] = filter_i[i].likelihood(z, gated, gateFactor);
         return l_i[maxLikelihoodIndex];
@@ -267,12 +304,13 @@ public class IMM3D implements Predictor {
 
     /**
      * LikelihoodMean = sum(l_i*)
-     * @param s Matrix
-     * @param gated bool
+     *
+     * @param s          Matrix
+     * @param gated      bool
      * @param gateFactor double
      * @return double
      **/
-    public double likelihoodMean(Spot s, boolean gated, double gateFactor) {
+    public double likelihoodMean(final Spot s, final boolean gated, final double gateFactor) {
         double mean = 0;
         for (int i = 0; i < r; i++) {
             l_i[i] = filter_i[i].likelihood(s, gated, gateFactor);
@@ -283,12 +321,13 @@ public class IMM3D implements Predictor {
 
     /**
      * LikelihoodMean = sum(l_i*)
-     * @param z Matrix
-     * @param gated bool
+     *
+     * @param z          Matrix
+     * @param gated      bool
      * @param gateFactor double
      * @return double
      **/
-    public double likelihoodMean(Matrix z, boolean gated, double gateFactor) {
+    public double likelihoodMean(final Matrix z, final boolean gated, final double gateFactor) {
         double mean = 0;
         for (int i = 0; i < r; i++) {
             l_i[i] = filter_i[i].likelihood(z, gated, gateFactor);
@@ -309,6 +348,7 @@ public class IMM3D implements Predictor {
         return index;
     }
 
+    @Override
     public void predict() {
         /* ***************** STEP 1 : MIX ************************************** */
         // update : m_pre_i
@@ -325,8 +365,8 @@ public class IMM3D implements Predictor {
             }
         }
 
-        Matrix[] x_est_0j = new Matrix[r];
-        Matrix[] P_est_0j = new Matrix[r];
+        final Matrix[] x_est_0j = new Matrix[r];
+        final Matrix[] P_est_0j = new Matrix[r];
         // MIXING estimates : x_est_0j
         for (int j = 0; j < r; j++) {
             x_est_0j[j] = new Matrix(3, 1);
@@ -371,7 +411,8 @@ public class IMM3D implements Predictor {
         }
     }
 
-    public void predict(int t) {
+    @Override
+    public void predict(final int t) {
         /* ***************** STEP 1 : MIX ************************************** */
         // update : m_pre_i
         for (int j = 0; j < r; j++) {
@@ -386,8 +427,8 @@ public class IMM3D implements Predictor {
                 m_est_ij[i][j] = p_ij[i][j] * m_est_i[i] / m_pre_i[j];
             }
         }
-        Matrix[] x_est_0j = new Matrix[r];  // mixed estimate for the filter matched to model j (filters input)
-        Matrix[] P_est_0j = new Matrix[r];
+        final Matrix[] x_est_0j = new Matrix[r];  // mixed estimate for the filter matched to model j (filters input)
+        final Matrix[] P_est_0j = new Matrix[r];
         // MIXING estimates : x_est_0j
         for (int j = 0; j < r; j++) {
             x_est_0j[j] = new Matrix(3, 1);
@@ -433,22 +474,24 @@ public class IMM3D implements Predictor {
         }
     }
 
-    public void setModelAt(Predictor3D predictor, int i) {
+    public void setModelAt(final Predictor3D predictor, final int i) {
         filter_i[i] = predictor;
     }
 
     /**
      * Same covariance for all models
+     *
      * @param trackingCov array of double
      */
-    public void setTrackingCovariances(double[] trackingCov)
-    {
-        for (Predictor p : filter_i)
+    @Override
+    public void setTrackingCovariances(final double[] trackingCov) {
+        for (final Predictor p : filter_i)
             p.setTrackingCovariances(trackingCov);
     }
 
-    public double loglikelihood(Matrix z) {
-        double l;
+    @Override
+    public double loglikelihood(final Matrix z) {
+        final double l;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
                 l = likelihoodMax(z, false, 10);
@@ -462,8 +505,9 @@ public class IMM3D implements Predictor {
         return Math.log(l);
     }
 
-    public double loglikelihood(Spot s) {
-        double l;
+    @Override
+    public double loglikelihood(final Spot s) {
+        final double l;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
                 l = likelihoodMax(s, false, 10);
@@ -478,8 +522,8 @@ public class IMM3D implements Predictor {
     }
 
     @Override
-    public double likelihoodOfState(Matrix x) {
-        double l;
+    public double likelihoodOfState(final Matrix x) {
+        final double l;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
                 l = likelihoodMaxOfState(x);
@@ -494,8 +538,8 @@ public class IMM3D implements Predictor {
     }
 
     @Override
-    public double loglikelihoodOfState(Matrix x) {
-        double l;
+    public double loglikelihoodOfState(final Matrix x) {
+        final double l;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
                 l = likelihoodMaxOfState(x);
@@ -511,20 +555,22 @@ public class IMM3D implements Predictor {
 
     /**
      * LikelihoodMax = max{likelihood for each model}
+     *
      * @param x Matrix
      * @return double
      **/
-    public double likelihoodMaxOfState(Matrix x) {
+    public double likelihoodMaxOfState(final Matrix x) {
         return filter_i[maxLikelihoodIndex].likelihoodOfState(x);
     }
 
 
     /**
      * LikelihoodMean = sum(l_i*)
+     *
      * @param x Matrix
      * @return double
      **/
-    public double likelihoodMeanOfState(Matrix x) {
+    public double likelihoodMeanOfState(final Matrix x) {
         double mean = 0;
         for (int i = 0; i < r; i++) {
             mean += filter_i[i].likelihoodOfState(x) * m_est_i[i];
@@ -534,7 +580,7 @@ public class IMM3D implements Predictor {
 
     @Override
     public double likelihoodOfPredictedState() {
-        double l;
+        final double l;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
                 l = filter_i[maxLikelihoodIndex].likelihoodOfPredictedState();
@@ -552,11 +598,13 @@ public class IMM3D implements Predictor {
         return l;
     }
 
-    public Matrix buildMeasurementMatrix(Spot spot) {
+    @Override
+    public Matrix buildMeasurementMatrix(final Spot spot) {
         return filter_i[0].buildMeasurementMatrix(spot);
     }
 
-    public void initWithFirstElement(Spot firstElement, int t) {
+    @Override
+    public void initWithFirstElement(final Spot firstElement, final int t) {
         for (int i = 0; i < r; i++) {
             filter_i[i].initWithFirstElement(firstElement, t);
         }
@@ -567,11 +615,13 @@ public class IMM3D implements Predictor {
         return new VirtualSpot(x_pre.get(0, 0), x_pre.get(1, 0), x_pre.get(2, 0));
     }
 
-    public Spot buildSpotFromState(Matrix state) {
+    @Override
+    public Spot buildSpotFromState(final Matrix state) {
         return new Spot(state.get(0, 0), state.get(1, 0), state.get(2, 0));
     }
 
-    public double getTotalGateLikelihood(boolean gated, double gateFactor) {
+    @Override
+    public double getTotalGateLikelihood(final boolean gated, final double gateFactor) {
         double likelihood = 0;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
@@ -589,12 +639,14 @@ public class IMM3D implements Predictor {
         return l_i;
     }
 
-    public double normalizedInnovation(Spot s) {
-        Matrix m = buildMeasurementMatrix(s);
+    @Override
+    public double normalizedInnovation(final Spot s) {
+        final Matrix m = buildMeasurementMatrix(s);
         return normalizedInnovation(m);
     }
 
-    public double normalizedInnovation(Matrix m) {
+    @Override
+    public double normalizedInnovation(final Matrix m) {
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
                 return filter_i[maxLikelihoodIndex].normalizedInnovation(m);
@@ -608,18 +660,18 @@ public class IMM3D implements Predictor {
         }
     }
 
-    public LikelihoodMap[] getLikelihoodMapsIMM(double gateFactor, int t) {
+    public LikelihoodMap[] getLikelihoodMapsIMM(final double gateFactor, final int t) {
 
-        ArrayList<Integer> enabledFilters = new ArrayList<Integer>();
+        final ArrayList<Integer> enabledFilters = new ArrayList<>();
         for (int i = 0; i < r; i++) {
             if (filter_i[i] instanceof KF3dDirected || filter_i[i] instanceof KF3dRandomWalk)
-                enabledFilters.add(new Integer(i));
+                enabledFilters.add(i);
         }
-        if (enabledFilters.size() > 0) {
-            LikelihoodMap[] maps = new LikelihoodMap[enabledFilters.size()];
+        if (!enabledFilters.isEmpty()) {
+            final LikelihoodMap[] maps = new LikelihoodMap[enabledFilters.size()];
             int cnt = 0;
-            for (Integer i : enabledFilters) {
-                maps[cnt] = ((KalmanFilter) filter_i[i.intValue()]).getLikelihoodMap(gateFactor, t);
+            for (final Integer i : enabledFilters) {
+                maps[cnt] = ((KalmanFilter) filter_i[i]).getLikelihoodMap(gateFactor, t);
                 cnt++;
             }
             int minX = maps[0].getOffsetX();
@@ -629,12 +681,12 @@ public class IMM3D implements Predictor {
             int maxY = maps[0].getOffsetY() + maps[0].getHeight() - 1;
             int maxZ = maps[0].getOffsetZ() + maps[0].getDepth() - 1;
             for (int i = 1; i < maps.length; i++) {
-                minX = (int) Math.min(minX, maps[i].getOffsetX());
-                minY = (int) Math.min(minY, maps[i].getOffsetY());
-                minZ = (int) Math.min(minZ, maps[i].getOffsetZ());
-                maxX = (int) Math.max(maxX, maps[i].getOffsetX() + maps[i].getWidth() - 1);
-                maxY = (int) Math.max(maxY, maps[i].getOffsetY() + maps[i].getHeight() - 1);
-                maxZ = (int) Math.max(maxZ, maps[i].getOffsetZ() + maps[i].getDepth() - 1);
+                minX = Math.min(minX, maps[i].getOffsetX());
+                minY = Math.min(minY, maps[i].getOffsetY());
+                minZ = Math.min(minZ, maps[i].getOffsetZ());
+                maxX = Math.max(maxX, maps[i].getOffsetX() + maps[i].getWidth() - 1);
+                maxY = Math.max(maxY, maps[i].getOffsetY() + maps[i].getHeight() - 1);
+                maxZ = Math.max(maxZ, maps[i].getOffsetZ() + maps[i].getDepth() - 1);
             }
             return maps;
         }
@@ -642,11 +694,11 @@ public class IMM3D implements Predictor {
             throw new IllegalArgumentException("invalid KalmanFilter type to invoke getLikelihoodMap");
     }
 
-    public LikelihoodMap getLikelihoodMap(double gateFactor, int t) {
+    public LikelihoodMap getLikelihoodMap(final double gateFactor, final int t) {
         if (likelihoodType == LikelihoodTypes.IMM_MAX_LIKELIHOOD)
             return ((KalmanFilter) filter_i[maxLikelihoodIndex]).getLikelihoodMap(gateFactor, t);
         else if (likelihoodType == LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD) {
-            LikelihoodMap[] maps = new LikelihoodMap[filter_i.length];
+            final LikelihoodMap[] maps = new LikelihoodMap[filter_i.length];
             for (int cnt = 0; cnt < filter_i.length; cnt++) {
                 maps[cnt] = ((KalmanFilter) filter_i[cnt]).getLikelihoodMap(gateFactor, t);
                 cnt++;
@@ -658,17 +710,17 @@ public class IMM3D implements Predictor {
             int maxY = maps[0].getOffsetY() + maps[0].getHeight() - 1;
             int maxZ = maps[0].getOffsetZ() + maps[0].getDepth() - 1;
             for (int i = 1; i < maps.length; i++) {
-                minX = (int) Math.min(minX, maps[i].getOffsetX());
-                minY = (int) Math.min(minY, maps[i].getOffsetY());
-                minZ = (int) Math.min(minZ, maps[i].getOffsetZ());
-                maxX = (int) Math.max(maxX, maps[i].getOffsetX() + maps[i].getWidth() - 1);
-                maxY = (int) Math.max(maxY, maps[i].getOffsetY() + maps[i].getHeight() - 1);
-                maxZ = (int) Math.max(maxZ, maps[i].getOffsetZ() + maps[i].getDepth() - 1);
+                minX = Math.min(minX, maps[i].getOffsetX());
+                minY = Math.min(minY, maps[i].getOffsetY());
+                minZ = Math.min(minZ, maps[i].getOffsetZ());
+                maxX = Math.max(maxX, maps[i].getOffsetX() + maps[i].getWidth() - 1);
+                maxY = Math.max(maxY, maps[i].getOffsetY() + maps[i].getHeight() - 1);
+                maxZ = Math.max(maxZ, maps[i].getOffsetZ() + maps[i].getDepth() - 1);
             }
-            LikelihoodMap lmap = new LikelihoodMap(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1, minX, minY, minZ);
+            final LikelihoodMap lmap = new LikelihoodMap(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1, minX, minY, minZ);
             for (int cnt = 0; cnt < filter_i.length; cnt++) {
-                LikelihoodMap map = maps[cnt];
-                double p = m_est_i[cnt];
+                final LikelihoodMap map = maps[cnt];
+                final double p = m_est_i[cnt];
                 for (int z = map.getOffsetZ(); z < map.getOffsetZ() + map.getDepth(); z++)
                     for (int y = map.getOffsetY(); y < map.getOffsetY() + map.getHeight(); y++)
                         for (int x = map.getOffsetX(); x < map.getOffsetX() + map.getWidth(); x++)
@@ -680,21 +732,21 @@ public class IMM3D implements Predictor {
             throw new IllegalArgumentException("invalid KalmanFilter type to invoke getLikelihoodMap");
     }
 
-    public LikelihoodMap getLikelihoodMap(boolean gated, double gateFactor, int t, int width, int height, int depth) {
+    public LikelihoodMap getLikelihoodMap(final boolean gated, final double gateFactor, final int t, final int width, final int height, final int depth) {
         if (likelihoodType == LikelihoodTypes.IMM_MAX_LIKELIHOOD) {
             return ((KalmanFilter) filter_i[maxLikelihoodIndex]).getLikelihoodMap(gated, gateFactor, t, width, height, depth);
         }
         else if (likelihoodType == LikelihoodTypes.IMM_WEIGHTED_LIKELIHOOD) {
 
-            LikelihoodMap[] maps = new LikelihoodMap[filter_i.length];
+            final LikelihoodMap[] maps = new LikelihoodMap[filter_i.length];
             for (int cnt = 0; cnt < filter_i.length; cnt++) {
                 maps[cnt] = ((KalmanFilter) filter_i[cnt]).getLikelihoodMap(gated, gateFactor, t, width, height, depth);
                 cnt++;
             }
-            LikelihoodMap lmap = new LikelihoodMap(width, height, depth, 0, 0, 0);
+            final LikelihoodMap lmap = new LikelihoodMap(width, height, depth, 0, 0, 0);
             for (int cnt = 0; cnt < filter_i.length; cnt++) {
-                LikelihoodMap map = maps[cnt];
-                double p = m_est_i[cnt];
+                final LikelihoodMap map = maps[cnt];
+                final double p = m_est_i[cnt];
                 for (int z = map.getOffsetZ(); z < map.getOffsetZ() + map.getDepth(); z++)
                     for (int y = map.getOffsetY(); y < map.getOffsetY() + map.getHeight(); y++)
                         for (int x = map.getOffsetX(); x < map.getOffsetX() + map.getWidth(); x++)
@@ -706,23 +758,27 @@ public class IMM3D implements Predictor {
             throw new IllegalArgumentException("Unknown IMM likelihood type.");
     }
 
-    public void update(Matrix z, int t) {
+    @Override
+    public void update(final Matrix z, final int t) {
         correct(z);
         if (z != null)
             updateTime(t);
         predict(t);
     }
 
-    public void update(Spot s, int t) {
-        Matrix z = buildMeasurementMatrix(s);
+    @Override
+    public void update(final Spot s, final int t) {
+        final Matrix z = buildMeasurementMatrix(s);
         update(z, t);
     }
 
-    public void updateTime(int t) {
+    @Override
+    public void updateTime(final int t) {
         for (int c = 0; c < r; c++)
             filter_i[c].updateTime(t);
     }
 
+    @Override
     public VirtualSpot getCurrentPredictedStateAsSpot() {
         switch (likelihoodType) {
             case IMM_WEIGHTED_LIKELIHOOD: {
@@ -730,7 +786,7 @@ public class IMM3D implements Predictor {
                 double y = 0;
                 double z = 0;
                 for (int c = 0; c < r; c++) {
-                    VirtualSpot prediction = filter_i[c].getCurrentPredictedStateAsSpot();
+                    final VirtualSpot prediction = filter_i[c].getCurrentPredictedStateAsSpot();
                     x += prediction.mass_center.x * m_est_i[c];
                     y += prediction.mass_center.y * m_est_i[c];
                     z += prediction.mass_center.z * m_est_i[c];
@@ -748,11 +804,13 @@ public class IMM3D implements Predictor {
 
     /**
      * Compute the minimum likelihood in the gate at time t
+     *
      * @param gateFactor double
-     * @param t int
+     * @param t          int
      * @return double
      */
-    public double getMinLikelihoodInGate(double gateFactor, int t) {
+    @Override
+    public double getMinLikelihoodInGate(final double gateFactor, final int t) {
         double l = 0;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
@@ -770,10 +828,12 @@ public class IMM3D implements Predictor {
 
     /**
      * Compute the minimum likelihood in the gate
+     *
      * @param gateFactor double
      * @return double
      */
-    public double getCurrentMinLikelihoodInGate(double gateFactor) {
+    @Override
+    public double getCurrentMinLikelihoodInGate(final double gateFactor) {
         double l = 0;
         switch (likelihoodType) {
             case IMM_MAX_LIKELIHOOD:
@@ -790,27 +850,33 @@ public class IMM3D implements Predictor {
     }
 
     //FIXME implement inherited functions
-    public Matrix getEstimatedState(int t) {
+    @Override
+    public Matrix getEstimatedState(final int t) {
         return x_est;
     }
 
-    public Matrix getPredictedMeasurement(int t) {
+    @Override
+    public Matrix getPredictedMeasurement(final int t) {
         return z_pre;
     }
 
-    public Matrix getPredictedState(int t) {
+    @Override
+    public Matrix getPredictedState(final int t) {
         return null;
     }
 
-    public VirtualSpot getPredictedStateAsSpot(int t) {
+    @Override
+    public VirtualSpot getPredictedStateAsSpot(final int t) {
         return null;
     }
 
-    public Matrix getStateErrorCovariance(int t) {
+    @Override
+    public Matrix getStateErrorCovariance(final int t) {
         return null;
     }
 
-    public ArrayList<Area> getGates(double gateFactor, int t) {
+    @Override
+    public ArrayList<Area> getGates(final double gateFactor, final int t) {
         return null;
     }
 }

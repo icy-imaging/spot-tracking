@@ -1,8 +1,26 @@
+/*
+ * Copyright (c) 2010-2023. Institut Pasteur.
+ *
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package plugins.nchenouard.particletracking.legacytracker.gui;
 
-import javax.swing.JPanel;
-
 import plugins.nchenouard.particletracking.filtering.Predictor;
+
+import javax.swing.*;
 
 /**
  * Standard panel for a motion predictor
@@ -15,10 +33,9 @@ import plugins.nchenouard.particletracking.filtering.Predictor;
  * license gpl v3.0
  */
 public abstract class PredictorPanel extends JPanel {
-    private static final long serialVersionUID = -3409174505640300869L;
-
     /**
      * Build a predictor with the dimension given by the parameter dim
+     *
      * @param dim int
      * @return Predictor
      */
@@ -26,7 +43,8 @@ public abstract class PredictorPanel extends JPanel {
 
     /**
      * Build a predictor with the dimension given by the parameter dim
-     * @param dim int
+     *
+     * @param dim       int
      * @param covUpdate bool
      * @return Predictor
      */
@@ -39,7 +57,9 @@ public abstract class PredictorPanel extends JPanel {
 
     /**
      * Name of the predictor
+     *
      * @return String
      */
+    @Override
     public abstract String getName();
 }
