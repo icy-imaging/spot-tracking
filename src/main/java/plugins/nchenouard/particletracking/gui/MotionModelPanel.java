@@ -134,18 +134,26 @@ public class MotionModelPanel extends JPanel {
         }
 
         public double getDisplacementXY() {
+            if (isDirectedMotion())
+                return ((SpinnerNumberModel) directedPanel.spinnerXYVelocity.getModel()).getNumber().doubleValue();
             return ((SpinnerNumberModel) diffusionPanel.spinnerXYDisplacement.getModel()).getNumber().doubleValue();
         }
 
         public void setDisplacementXY(final double d) {
+            if (isDirectedMotion())
+                directedPanel.spinnerXYVelocity.getModel().setValue(d);
             diffusionPanel.spinnerXYDisplacement.getModel().setValue(d);
         }
 
         public double getDisplacementZ() {
+            if (isDirectedMotion())
+                return ((SpinnerNumberModel) directedPanel.spinnerZVelocity.getModel()).getNumber().doubleValue();
             return ((SpinnerNumberModel) diffusionPanel.spinnerZDisplacement.getModel()).getNumber().doubleValue();
         }
 
         public void setDisplacementZ(final double d) {
+            if (isDirectedMotion())
+                directedPanel.spinnerZVelocity.getModel().setValue(d);
             diffusionPanel.spinnerZDisplacement.getModel().setValue(d);
         }
 
@@ -322,111 +330,23 @@ public class MotionModelPanel extends JPanel {
         motionCardLayout.show(motionModelPanel, (String) filtersBox.getSelectedItem());
     }
 
-    // XML import/export
-
-    public void saveToXML(final Node node) {
-        final Element nodeMotionModel = XMLUtil.setElement(node, MHTparameterSet.ROOT_MOTION_MODEL);
-        if (nodeMotionModel != null) {
-            XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_SINGLE_MOTION, isSingleMotion());
-            if (isSingleMotion()) {
-                XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.XYDISPLACEMENT_1,
-                        singleMotionPanel.getDisplacementXY());
-                XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.ZDISPLACEMENT_1,
-                        singleMotionPanel.getDisplacementZ());
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_UPDATE_MOTION_1,
-                        singleMotionPanel.isUpdateMotion());
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_1,
-                        singleMotionPanel.isDirectedMotion());
-            }
-            else {
-                XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.XYDISPLACEMENT_1, multipleMotionPanel
-                        .getSingleMotionPanels().get(0).getDisplacementXY());
-                XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.ZDISPLACEMENT_1, multipleMotionPanel
-                        .getSingleMotionPanels().get(0).getDisplacementZ());
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_UPDATE_MOTION_1,
-                        multipleMotionPanel.getSingleMotionPanels().get(0).isUpdateMotion());
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_1,
-                        multipleMotionPanel.getSingleMotionPanels().get(0).isDirectedMotion());
-
-                XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.XYDISPLACEMENT_2, multipleMotionPanel
-                        .getSingleMotionPanels().get(1).getDisplacementXY());
-                XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.ZDISPLACEMENT_2, multipleMotionPanel
-                        .getSingleMotionPanels().get(1).getDisplacementZ());
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_UPDATE_MOTION_2,
-                        multipleMotionPanel.getSingleMotionPanels().get(1).isUpdateMotion());
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_2,
-                        multipleMotionPanel.getSingleMotionPanels().get(1).isDirectedMotion());
-
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_MOST_LIKELY_MODEL,
-                        multipleMotionPanel.isUseMostLikelyModel());
-                XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.IMM_INERTIA,
-                        multipleMotionPanel.getInertia());
-            }
-        }
-    }
-
-    public void loadFromFromXML(final Node node) {
-        final Element nodeMotion = XMLUtil.getElement(node, MHTparameterSet.ROOT_MOTION_MODEL);
-        if (nodeMotion != null) {
-            final boolean isSingleMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, MHTparameterSet.IS_SINGLE_MOTION,
-                    MHTparameterSet.defaultIsSingleMotion);
-            setSingleMotion(isSingleMotion);
-            if (isSingleMotion) {
-                singleMotionPanel.setDisplacementXY(XMLUtil.getAttributeDoubleValue(nodeMotion,
-                        MHTparameterSet.XYDISPLACEMENT_1, MHTparameterSet.defaultDisplacementXY));
-                singleMotionPanel.setDisplacementZ(XMLUtil.getAttributeDoubleValue(nodeMotion,
-                        MHTparameterSet.ZDISPLACEMENT_1, MHTparameterSet.defaultDisplacementZ));
-                singleMotionPanel.setUpdateMotion(XMLUtil.getAttributeBooleanValue(nodeMotion,
-                        MHTparameterSet.IS_UPDATE_MOTION_1, MHTparameterSet.defaultIsUpdateMotion));
-                singleMotionPanel.setDirectedMotion(XMLUtil.getAttributeBooleanValue(nodeMotion,
-                        MHTparameterSet.IS_DIRECTED_MOTION_1, MHTparameterSet.defaultIsDirectedMotion));
-            }
-            else {
-                SingleMotionPanel panel = multipleMotionPanel.getSingleMotionPanels().get(0);
-                panel.setDisplacementXY(XMLUtil.getAttributeDoubleValue(nodeMotion, MHTparameterSet.XYDISPLACEMENT_1,
-                        panel.getDisplacementXY()));
-                panel.setDisplacementZ(XMLUtil.getAttributeDoubleValue(nodeMotion, MHTparameterSet.ZDISPLACEMENT_1,
-                        panel.getDisplacementZ()));
-                panel.setUpdateMotion(XMLUtil.getAttributeBooleanValue(nodeMotion, MHTparameterSet.IS_UPDATE_MOTION_1,
-                        panel.isUpdateMotion()));
-                panel.setDirectedMotion(XMLUtil.getAttributeBooleanValue(nodeMotion,
-                        MHTparameterSet.IS_DIRECTED_MOTION_1, panel.isDirectedMotion()));
-
-                panel = multipleMotionPanel.getSingleMotionPanels().get(1);
-                panel.setDisplacementXY(XMLUtil.getAttributeDoubleValue(nodeMotion, MHTparameterSet.XYDISPLACEMENT_2,
-                        panel.getDisplacementXY()));
-                panel.setDisplacementZ(XMLUtil.getAttributeDoubleValue(nodeMotion, MHTparameterSet.ZDISPLACEMENT_2,
-                        panel.getDisplacementZ()));
-                panel.setUpdateMotion(XMLUtil.getAttributeBooleanValue(nodeMotion, MHTparameterSet.IS_UPDATE_MOTION_2,
-                        panel.isUpdateMotion()));
-                panel.setDirectedMotion(XMLUtil.getAttributeBooleanValue(nodeMotion,
-                        MHTparameterSet.IS_DIRECTED_MOTION_1, panel.isDirectedMotion()));
-
-                multipleMotionPanel.useMostLikelyModelBox.setSelected(XMLUtil.getAttributeBooleanValue(nodeMotion,
-                        MHTparameterSet.IS_MOST_LIKELY_MODEL, multipleMotionPanel.isUseMostLikelyModel()));
-                multipleMotionPanel.inertiaTF.setText(Double.toString(XMLUtil.getAttributeDoubleValue(nodeMotion,
-                        MHTparameterSet.IMM_INERTIA, multipleMotionPanel.getInertia())));
-            }
-        }
-    }
-
     public void fillParameterSet(final MHTparameterSet parameterSet) {
         parameterSet.isSingleMotion = isSingleMotion();
         if (isSingleMotion()) {
+            parameterSet.isDirectedMotion = singleMotionPanel.isDirectedMotion();
             parameterSet.displacementXY = singleMotionPanel.getDisplacementXY();
             parameterSet.displacementZ = singleMotionPanel.getDisplacementZ();
-            parameterSet.isDirectedMotion = singleMotionPanel.isDirectedMotion();
             parameterSet.isUpdateMotion = singleMotionPanel.isUpdateMotion();
         }
         else {
+            parameterSet.isDirectedMotion = multipleMotionPanel.getSingleMotionPanels().get(0).isDirectedMotion();
             parameterSet.displacementXY = multipleMotionPanel.getSingleMotionPanels().get(0).getDisplacementXY();
             parameterSet.displacementZ = multipleMotionPanel.getSingleMotionPanels().get(0).getDisplacementZ();
-            parameterSet.isDirectedMotion = multipleMotionPanel.getSingleMotionPanels().get(0).isDirectedMotion();
             parameterSet.isUpdateMotion = multipleMotionPanel.getSingleMotionPanels().get(0).isUpdateMotion();
 
+            parameterSet.isDirectedMotion2 = multipleMotionPanel.getSingleMotionPanels().get(1).isDirectedMotion();
             parameterSet.displacementXY2 = multipleMotionPanel.getSingleMotionPanels().get(1).getDisplacementXY();
             parameterSet.displacementZ2 = multipleMotionPanel.getSingleMotionPanels().get(1).getDisplacementZ();
-            parameterSet.isDirectedMotion2 = multipleMotionPanel.getSingleMotionPanels().get(1).isDirectedMotion();
             parameterSet.isUpdateMotion2 = multipleMotionPanel.getSingleMotionPanels().get(1).isUpdateMotion();
 
             parameterSet.useMostLikelyModel = multipleMotionPanel.isUseMostLikelyModel();
@@ -437,23 +357,23 @@ public class MotionModelPanel extends JPanel {
     public void setParameters(final MHTparameterSet parameterSet) {
         setSingleMotion(parameterSet.isSingleMotion);
         if (parameterSet.isSingleMotion) {
+            singleMotionPanel.setDirectedMotion(parameterSet.isDirectedMotion);
             singleMotionPanel.setDisplacementXY(parameterSet.displacementXY);
             singleMotionPanel.setDisplacementZ(parameterSet.displacementZ);
             singleMotionPanel.setUpdateMotion(parameterSet.isUpdateMotion);
-            singleMotionPanel.setDirectedMotion(parameterSet.isDirectedMotion);
         }
         else {
             SingleMotionPanel panel = multipleMotionPanel.getSingleMotionPanels().get(0);
+            panel.setDirectedMotion(parameterSet.isDirectedMotion);
             panel.setDisplacementXY(parameterSet.displacementXY);
             panel.setDisplacementZ(parameterSet.displacementZ);
             panel.setUpdateMotion(parameterSet.isUpdateMotion);
-            panel.setDirectedMotion(parameterSet.isDirectedMotion);
 
             panel = multipleMotionPanel.getSingleMotionPanels().get(1);
+            panel.setDirectedMotion(parameterSet.isDirectedMotion2);
             panel.setDisplacementXY(parameterSet.displacementXY2);
             panel.setDisplacementZ(parameterSet.displacementZ2);
             panel.setUpdateMotion(parameterSet.isUpdateMotion2);
-            panel.setDirectedMotion(parameterSet.isDirectedMotion2);
 
             multipleMotionPanel.useMostLikelyModelBox.setSelected(parameterSet.useMostLikelyModel);
             multipleMotionPanel.inertiaTF.setText(Double.toString(parameterSet.immInertia));
