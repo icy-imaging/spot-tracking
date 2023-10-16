@@ -136,25 +136,29 @@ public class MotionModelPanel extends JPanel {
         public double getDisplacementXY() {
             if (isDirectedMotion())
                 return ((SpinnerNumberModel) directedPanel.spinnerXYVelocity.getModel()).getNumber().doubleValue();
-            return ((SpinnerNumberModel) diffusionPanel.spinnerXYDisplacement.getModel()).getNumber().doubleValue();
+            else
+                return ((SpinnerNumberModel) diffusionPanel.spinnerXYDisplacement.getModel()).getNumber().doubleValue();
         }
 
         public void setDisplacementXY(final double d) {
             if (isDirectedMotion())
                 directedPanel.spinnerXYVelocity.getModel().setValue(d);
-            diffusionPanel.spinnerXYDisplacement.getModel().setValue(d);
+            else
+                diffusionPanel.spinnerXYDisplacement.getModel().setValue(d);
         }
 
         public double getDisplacementZ() {
             if (isDirectedMotion())
                 return ((SpinnerNumberModel) directedPanel.spinnerZVelocity.getModel()).getNumber().doubleValue();
-            return ((SpinnerNumberModel) diffusionPanel.spinnerZDisplacement.getModel()).getNumber().doubleValue();
+            else
+                return ((SpinnerNumberModel) diffusionPanel.spinnerZDisplacement.getModel()).getNumber().doubleValue();
         }
 
         public void setDisplacementZ(final double d) {
             if (isDirectedMotion())
                 directedPanel.spinnerZVelocity.getModel().setValue(d);
-            diffusionPanel.spinnerZDisplacement.getModel().setValue(d);
+            else
+                diffusionPanel.spinnerZDisplacement.getModel().setValue(d);
         }
 
         public boolean isUpdateMotion() {
