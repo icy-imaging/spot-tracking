@@ -85,7 +85,9 @@ public class MHTparameterSet
     public final static String XYDISPLACEMENT_2 = "yxDisplacement_2";
     public final static String ZDISPLACEMENT_2 = "zDisplacement_2";
     public final static String IS_DIRECTED_MOTION_2 = "isDirectedMotion_2";
-    public final static String IS_UPDATE_MOTION_2 = "updateCovariance_2";
+    public final static String IS_UPDATE_MOTION_2 = "updateMotion_2";
+    @Deprecated
+    public final static String IS_UPDATE_COVARIANCE_2 = "updateCovariance_2";
 
     // MHT algorithm
     public static final double defaultGateFactor = 4;
@@ -141,64 +143,54 @@ public class MHTparameterSet
         final Element nodeDetection = XMLUtil.getElement(node, ROOT_DETECTION_INPUT);
         if (nodeDetection != null)
         {
-            parameterSet.numberOfFalseDetections = XMLUtil.getAttributeIntValue(nodeDetection, FALSE_DETECTION,
-                    defaultNumberOfFalseDetections);
-            parameterSet.detectionRate = XMLUtil.getAttributeDoubleValue(nodeDetection, DETECTION_RATE,
-                    defaultDetectionRate);
+            parameterSet.numberOfFalseDetections = XMLUtil.getAttributeIntValue(nodeDetection, FALSE_DETECTION, defaultNumberOfFalseDetections);
+            parameterSet.detectionRate = XMLUtil.getAttributeDoubleValue(nodeDetection, DETECTION_RATE, defaultDetectionRate);
         }
         final Element nodeExistence = XMLUtil.getElement(node, ROOT_TARGET_EXISTENCE);
         if (nodeExistence != null)
         {
-            parameterSet.meanTrackLength = XMLUtil.getAttributeDoubleValue(nodeExistence, TRACK_LENGTH,
-                    defaultMeanTrackLength);
-            parameterSet.confirmationThreshold = XMLUtil.getAttributeDoubleValue(nodeExistence, CONFIRMATION_THRESHOLD,
-                    defaultConfirmationThreshold);
-            parameterSet.terminationThreshold = XMLUtil.getAttributeDoubleValue(nodeExistence, TERMINATION_THRESHOLD,
-                    defaultTerminationThreshold);
+            parameterSet.meanTrackLength = XMLUtil.getAttributeDoubleValue(nodeExistence, TRACK_LENGTH, defaultMeanTrackLength);
+            parameterSet.confirmationThreshold = XMLUtil.getAttributeDoubleValue(nodeExistence, CONFIRMATION_THRESHOLD, defaultConfirmationThreshold);
+            parameterSet.terminationThreshold = XMLUtil.getAttributeDoubleValue(nodeExistence, TERMINATION_THRESHOLD, defaultTerminationThreshold);
         }
         final Element nodeMotion = XMLUtil.getElement(node, ROOT_MOTION_MODEL);
         if (nodeMotion != null)
         {
-            parameterSet.isSingleMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_SINGLE_MOTION,
-                    defaultIsSingleMotion);
-            parameterSet.displacementXY = XMLUtil.getAttributeDoubleValue(nodeMotion, XYDISPLACEMENT_1,
-                    defaultDisplacementXY);
-            parameterSet.displacementZ = XMLUtil.getAttributeDoubleValue(nodeMotion, ZDISPLACEMENT_1,
-                    defaultDisplacementZ);
-            parameterSet.isUpdateMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_UPDATE_MOTION_1,
-                    defaultIsUpdateMotion);
-            parameterSet.isDirectedMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_DIRECTED_MOTION_1,
-                    defaultIsDirectedMotion);
+            parameterSet.isSingleMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_SINGLE_MOTION, defaultIsSingleMotion);
+            parameterSet.isDirectedMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_DIRECTED_MOTION_1, defaultIsDirectedMotion);
+            parameterSet.displacementXY = XMLUtil.getAttributeDoubleValue(nodeMotion, XYDISPLACEMENT_1, defaultDisplacementXY);
+            parameterSet.displacementZ = XMLUtil.getAttributeDoubleValue(nodeMotion, ZDISPLACEMENT_1, defaultDisplacementZ);
+            parameterSet.isUpdateMotion = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_UPDATE_MOTION_1, defaultIsUpdateMotion);
+
             if (!parameterSet.isSingleMotion)
             {
-                parameterSet.displacementXY2 = XMLUtil.getAttributeDoubleValue(nodeMotion, XYDISPLACEMENT_2,
-                        defaultDisplacementXY2);
-                parameterSet.displacementZ2 = XMLUtil.getAttributeDoubleValue(nodeMotion, ZDISPLACEMENT_2,
-                        defaultDisplacementZ2);
-                parameterSet.isUpdateMotion2 = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_UPDATE_MOTION_2,
-                        defaultIsUpdateMotion2);
-                parameterSet.isDirectedMotion2 = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_DIRECTED_MOTION_1,
-                        defaultIsDirectedMotion2);
-                parameterSet.useMostLikelyModel = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_MOST_LIKELY_MODEL,
-                        defaultUseMostLikelyModel);
+                parameterSet.isDirectedMotion2 = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_DIRECTED_MOTION_2, defaultIsDirectedMotion2);
+                parameterSet.displacementXY2 = XMLUtil.getAttributeDoubleValue(nodeMotion, XYDISPLACEMENT_2, defaultDisplacementXY2);
+                parameterSet.displacementZ2 = XMLUtil.getAttributeDoubleValue(nodeMotion, ZDISPLACEMENT_2, defaultDisplacementZ2);
+                parameterSet.isUpdateMotion2 = XMLUtil.getAttributeBooleanValue(
+                        nodeMotion,
+                        IS_UPDATE_MOTION_2,
+                        XMLUtil.getAttributeBooleanValue(
+                                nodeMotion,
+                                IS_UPDATE_COVARIANCE_2,
+                                defaultIsUpdateMotion2
+                        )
+                );
+                parameterSet.useMostLikelyModel = XMLUtil.getAttributeBooleanValue(nodeMotion, IS_MOST_LIKELY_MODEL, defaultUseMostLikelyModel);
                 parameterSet.immInertia = XMLUtil.getAttributeDoubleValue(nodeMotion, IMM_INERTIA, defaultIMMInertia);
             }
         }
         final Element nodeMHT = XMLUtil.getElement(node, MHTparameterSet.ROOT_MHT);
         if (nodeMHT != null)
         {
-            parameterSet.gateFactor = XMLUtil.getAttributeDoubleValue(nodeMHT, MHTparameterSet.GATE_FACTOR,
-                    defaultGateFactor);
-            parameterSet.numberNewObjects = XMLUtil.getAttributeDoubleValue(nodeMHT, MHTparameterSet.NUMBER_NEW_OBJECTS,
-                    defaultNumberNewObjects);
-            parameterSet.numberInitialObjects = XMLUtil.getAttributeDoubleValue(nodeMHT,
-                    MHTparameterSet.NUMBER_OBJECTS_FIRST_FRAME, defaultNumberInitialObjects);
+            parameterSet.gateFactor = XMLUtil.getAttributeDoubleValue(nodeMHT, MHTparameterSet.GATE_FACTOR, defaultGateFactor);
+            parameterSet.numberNewObjects = XMLUtil.getAttributeDoubleValue(nodeMHT, MHTparameterSet.NUMBER_NEW_OBJECTS, defaultNumberNewObjects);
+            parameterSet.numberInitialObjects = XMLUtil.getAttributeDoubleValue(nodeMHT, MHTparameterSet.NUMBER_OBJECTS_FIRST_FRAME, defaultNumberInitialObjects);
             parameterSet.mhtDepth = XMLUtil.getAttributeIntValue(nodeMHT, MHTparameterSet.MHT_DEPTH, defaultMHTDepth);
         }
         final Element nodeOutput = XMLUtil.getElement(node, MHTparameterSet.ROOT_OUTPUT);
         if (nodeOutput != null)
-            parameterSet.trackGroupName = XMLUtil.getAttributeValue(nodeOutput, MHTparameterSet.TRACK_GROUP_NAME,
-                    defaultTrackGroupName);
+            parameterSet.trackGroupName = XMLUtil.getAttributeValue(nodeOutput, MHTparameterSet.TRACK_GROUP_NAME, defaultTrackGroupName);
 
         return parameterSet;
     }
@@ -219,8 +211,7 @@ public class MHTparameterSet
         if (nodeExistence != null)
         {
             XMLUtil.setAttributeDoubleValue(nodeExistence, MHTparameterSet.TRACK_LENGTH, meanTrackLength);
-            XMLUtil.setAttributeDoubleValue(nodeExistence, MHTparameterSet.CONFIRMATION_THRESHOLD,
-                    confirmationThreshold);
+            XMLUtil.setAttributeDoubleValue(nodeExistence, MHTparameterSet.CONFIRMATION_THRESHOLD, confirmationThreshold);
             XMLUtil.setAttributeDoubleValue(nodeExistence, MHTparameterSet.TERMINATION_THRESHOLD, terminationThreshold);
         }
         final Element nodeMotionModel = XMLUtil.setElement(configurationElement, MHTparameterSet.ROOT_MOTION_MODEL);
@@ -229,28 +220,24 @@ public class MHTparameterSet
             XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_SINGLE_MOTION, isSingleMotion);
             if (isSingleMotion)
             {
+                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_1, isDirectedMotion);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.XYDISPLACEMENT_1, displacementXY);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.ZDISPLACEMENT_1, displacementZ);
                 XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_UPDATE_MOTION_1, isUpdateMotion);
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_1,
-                        isDirectedMotion);
             }
             else
             {
+                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_1, isDirectedMotion);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.XYDISPLACEMENT_1, displacementXY);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.ZDISPLACEMENT_1, displacementZ);
                 XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_UPDATE_MOTION_1, isUpdateMotion);
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_1,
-                        isDirectedMotion);
 
+                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_2, isDirectedMotion2);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.XYDISPLACEMENT_2, displacementXY2);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.ZDISPLACEMENT_2, displacementZ2);
                 XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_UPDATE_MOTION_2, isUpdateMotion2);
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_DIRECTED_MOTION_2,
-                        isDirectedMotion2);
 
-                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_MOST_LIKELY_MODEL,
-                        useMostLikelyModel);
+                XMLUtil.setAttributeBooleanValue(nodeMotionModel, MHTparameterSet.IS_MOST_LIKELY_MODEL, useMostLikelyModel);
                 XMLUtil.setAttributeDoubleValue(nodeMotionModel, MHTparameterSet.IMM_INERTIA, immInertia);
             }
         }
