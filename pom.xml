@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>spot-tracking</artifactId>
-    <version>3.5.4</version>
+    <version>3.5.5</version>
 
     <packaging>jar</packaging>
 
@@ -40,6 +40,16 @@
             <version>5.5.2.0</version>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.bioimageanalysis.icy</groupId>
+                <artifactId>vecmath</artifactId>
+                <version>1.6.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
         
     <repositories>
         <repository>
