@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,6 +18,10 @@
 
 package plugins.nchenouard.particletracking.MHTracker.LinearProgramming;
 
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import plugins.nchenouard.linearprogrammingfullsimplex.CanonicalProgramParameters;
 import plugins.nchenouard.linearprogrammingfullsimplex.CanonicalSimplexProgram;
 import plugins.nchenouard.linearprogrammingfullsimplex.SimplexLEXICO;
@@ -28,6 +32,7 @@ public class HierarchicalLP {
     static double tolerance = 1e-4;
     public static boolean wroteFile = false;
 
+    @Contract("null, _ -> null")
     public static HierarchicalProcedureResult hierarchicalBinarySimplex(final CanonicalSimplexProgram program, final boolean display) {
         if (program == null)
             return null;
@@ -107,7 +112,7 @@ public class HierarchicalLP {
             }
             else {
 //				if (display)
-                System.out.println("Non binary");
+                //System.out.println("Non binary");
                 // fix first non boolean variable to 0 and 1 and solve again in each case
                 final CanonicalSimplexProgram p0 = createSubFixedProblem(program, idxNonBool, 0);
                 HierarchicalProcedureResult result0 = null;
@@ -118,7 +123,7 @@ public class HierarchicalLP {
                         score0 = result0.score;
                 }
                 else
-                    System.out.println("Non feasible sub problem");
+                    IcyLogger.warn(HierarchicalLP.class, "Non feasible sub problem");
                 final CanonicalSimplexProgram p1 = createSubFixedProblem(program, idxNonBool, 1);
                 HierarchicalProcedureResult result1 = null;
                 double score1 = 0;
@@ -128,9 +133,9 @@ public class HierarchicalLP {
                         score1 = result1.score + program.getParameters().c[idxNonBool];
                 }
                 else
-                    System.out.println("Non feasible sub problem");
+                    IcyLogger.warn(HierarchicalLP.class, "Non feasible sub problem");
                 if (result0 == null && result1 == null) {
-                    System.out.println("Both sub problem non feasible");
+                    IcyLogger.warn(HierarchicalLP.class, "Both sub problem non feasible");
                     return null;
                 }
                 if (result0 != null) {
@@ -159,11 +164,12 @@ public class HierarchicalLP {
             }
         }
         else {
-            System.out.println("SOLVE FAILED");
+            IcyLogger.error(HierarchicalLP.class, "SOLVE FAILED");
             return null;
         }
     }
 
+    @Contract("null -> null")
     public static HierarchicalProcedureResult hierarchicalBinarySimplex(final CanonicalSimplexProgram program) {
         if (program == null)
             return null;
@@ -198,7 +204,7 @@ public class HierarchicalLP {
                         score0 = result0.score;
                 }
                 else
-                    System.out.println("Non feasible sub problem");
+                    IcyLogger.warn(HierarchicalLP.class, "Non feasible sub problem");
                 final CanonicalSimplexProgram p1 = createSubFixedProblem(program, idxNonBool, 1);
                 HierarchicalProcedureResult result1 = null;
                 double score1 = 0;
@@ -208,9 +214,9 @@ public class HierarchicalLP {
                         score1 = result1.score + program.getParameters().c[idxNonBool];
                 }
                 else
-                    System.out.println("Non feasible sub problem");
+                    IcyLogger.warn(HierarchicalLP.class, "Non feasible sub problem");
                 if (result0 == null && result1 == null) {
-                    System.out.println("Both sub problem non feasible");
+                    IcyLogger.warn(HierarchicalLP.class, "Both sub problem non feasible");
                     return null;
                 }
                 if (result0 != null) {
@@ -239,11 +245,12 @@ public class HierarchicalLP {
             }
         }
         else {
-            System.out.println("SOLVE FAILED");
+            IcyLogger.error(HierarchicalLP.class, "SOLVE FAILED");
             return null;
         }
     }
 
+    @Contract("null, _, _ -> null")
     private static double[] fillIncompleteSolution(final double[] solution, final int idxNonBool, final double val) {
         if (solution == null)
             return null;
@@ -256,7 +263,7 @@ public class HierarchicalLP {
         return completeSolution;
     }
 
-    private static CanonicalSimplexProgram createSubFixedProblem(final CanonicalSimplexProgram program, final int idxNonBool, final int val) {
+    private static @Nullable CanonicalSimplexProgram createSubFixedProblem(final @NotNull CanonicalSimplexProgram program, final int idxNonBool, final int val) {
         final CanonicalProgramParameters p = program.getParameters();
         final int numVariables = p.c.length;
         final int numConstraints = p.b.length;
@@ -389,5 +396,4 @@ public class HierarchicalLP {
         }
         return null;
     }
-
 }

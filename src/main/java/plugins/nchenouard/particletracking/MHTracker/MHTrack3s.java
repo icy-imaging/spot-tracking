@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 
@@ -28,7 +29,6 @@ import plugins.nchenouard.particletracking.filtering.Predictor;
  * license gpl v3.0
  */
 public class MHTrack3s extends MHTrack2s {
-
     /**
      * Track with three perceivability states:
      * - state 0: do not exist
@@ -63,6 +63,7 @@ public class MHTrack3s extends MHTrack2s {
     }
 
     private MHTrack3s() {
+        //
     }
 
     @Override
@@ -90,7 +91,7 @@ public class MHTrack3s extends MHTrack2s {
     }
 
     @Override
-    public void associate(final Association a, final int t) {
+    public void associate(final @NotNull Association a, final int t) {
         association = a;
         final double kL = tracker.totalGateLikelihood * kineticLikelihood(a.spot, true, tracker.gateFactor);
         final double faL = falseAlarmLikelihood();

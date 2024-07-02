@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,8 +18,12 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
  * A Global Hypothesis is essentially a set of Hypothesis objects with related methods
@@ -52,6 +56,7 @@ public class GlobalHypothesis {
         this.tracker = tracker;
     }
 
+    @Contract(pure = true)
     GlobalHypothesis(
             final HashSet<Association> usedAssociations,
             final LinkedList<Association> realAssociations,
@@ -80,9 +85,8 @@ public class GlobalHypothesis {
                 realAssociations.add(a);
                 this.usedRealSpotsNum[a.t - firstT] = this.usedRealSpotsNum[a.t - firstT] + 1;
             }
-        assert h.leaf != null;
         //this.score += h.leaf.score;
-        setScore(getScore() + h.leaf.score);
+        setScore(getScore() + Objects.requireNonNull(h.leaf).score);
     }
 
     public GlobalHypothesis copy() {
@@ -100,7 +104,7 @@ public class GlobalHypothesis {
         );
     }
 
-    public void copyInto(final GlobalHypothesis ghCopy) {
+    public void copyInto(final @NotNull GlobalHypothesis ghCopy) {
         System.arraycopy(this.usedRealSpotsNum, 0, ghCopy.usedRealSpotsNum, 0, this.usedRealSpotsNum.length);
         ghCopy.usedAssociations.addAll(this.usedAssociations);
         ghCopy.realAssociations.addAll(this.realAssociations);
@@ -129,14 +133,13 @@ public class GlobalHypothesis {
         int numNT = 0;
         for (final Hypothesis h : hyps)//TODO: store num new track in each hypothesis
         {
-            assert h.leaf != null;
-            if (h.leaf.family.rootTrack == null && h.leaf.family.rootNode.association.t == t)
+            if (Objects.requireNonNull(h.leaf).family.rootTrack == null && h.leaf.family.rootNode.association.t == t)
                 numNT++;
         }
         return numNT;
     }
 
-    public void penalizeFD(final int t, final double pFA, final HashSet<Association> originalRealAssociations) {
+    public void penalizeFD(final int t, final double pFA, final @NotNull HashSet<Association> originalRealAssociations) {
         for (final Association a : originalRealAssociations) {
             if (a.t == t && !realAssociations.contains(a)) {
                 //	this.score+= (Math.log(pFA) - a.getBestScore());
@@ -147,7 +150,7 @@ public class GlobalHypothesis {
 
     }
 
-    public void penalizeAllFD(final double pFA, final HashSet<Association> originalRealAssociations) {
+    public void penalizeAllFD(final double pFA, final @NotNull HashSet<Association> originalRealAssociations) {
         for (final Association a : originalRealAssociations) {
             if (!realAssociations.contains(a)) {
                 //	this.score+= (Math.log(pFA) - a.getBestScore());

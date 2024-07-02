@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,11 +18,15 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import icy.system.IcyExceptionHandler;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -84,9 +88,8 @@ public class ClusterSolveTree extends Cluster {
         @Override
         public void run() {
             Task tsk = getTask();
-            assert tsk != null;
             while (run) {
-                final TaskList taskList = tsk.run();
+                final TaskList taskList = Objects.requireNonNull(tsk).run();
                 if (taskList == null || taskList.isEmpty) {
                     tsk = getTask();
                 }
@@ -97,7 +100,7 @@ public class ClusterSolveTree extends Cluster {
             }
         }
 
-        private Task getTask() {
+        private @Nullable Task getTask() {
             waitingTasks.lock.lock();
             if (waitingTasks.isEmpty) {
                 wtc.increaseCount();
@@ -106,7 +109,7 @@ public class ClusterSolveTree extends Cluster {
                         waitingTasks.emptyCondition.await();
                     }
                     catch (final InterruptedException e) {
-                        IcyExceptionHandler.showErrorMessage(e, true);
+                        IcyLogger.error(this.getClass(), e);
                     }
                 }
                 wtc.decreaseCount();
@@ -130,6 +133,7 @@ public class ClusterSolveTree extends Cluster {
         Task t;
         TLinked nextT = null;
 
+        @Contract(pure = true)
         TLinked(final Task t) {
             this.t = t;
         }
@@ -140,6 +144,7 @@ public class ClusterSolveTree extends Cluster {
         TLinked firstT = null;
         TLinked lastT = null;
 
+        @Contract(pure = true)
         public TaskList() {
         }
 
@@ -198,7 +203,7 @@ public class ClusterSolveTree extends Cluster {
             }
         }
 
-        public void insertAtStart(final TaskList tList) {
+        public void insertAtStart(final @NotNull TaskList tList) {
             if (!tList.isEmpty) {
 //				TLinked tl = tList.firstT;
 //				while (tl!=null)
@@ -226,9 +231,9 @@ public class ClusterSolveTree extends Cluster {
             if (firstT == null) {
                 if (lastT.t != t) {
                     if (lastT == null)
-                        System.out.println("ERROR lastT null");
+                        IcyLogger.error(this.getClass(), "ERROR lastT null");
                     else
-                        System.out.println("ERROR ");
+                        IcyLogger.error(this.getClass(), "ERROR ");
                 }
                 lastT = null;
                 isEmpty = true;
@@ -243,8 +248,7 @@ public class ClusterSolveTree extends Cluster {
         final boolean lastFamily;
         final int familyIdx;
 
-        public RecursHypTreeTask(final GlobalHypothesis ghPrev, final Hypothesis hyp, final int currentT, final int familyIdx, final boolean lastFamily) {
-
+        public RecursHypTreeTask(final @NotNull GlobalHypothesis ghPrev, final Hypothesis hyp, final int currentT, final int familyIdx, final boolean lastFamily) {
             gh = ghPrev.copy();
             gh.addHypothesis(hyp);
             this.currentT = currentT;
@@ -291,7 +295,13 @@ public class ClusterSolveTree extends Cluster {
         final int currentT;
         final int familyIdx;
 
-        public RecursHypTreeMandatoryTask(final GlobalHypothesis ghPrev, final Hypothesis hyp, final int currentT, final int familyIdx, final boolean lastFamily) {
+        public RecursHypTreeMandatoryTask(
+                final @NotNull GlobalHypothesis ghPrev,
+                final Hypothesis hyp,
+                final int currentT,
+                final int familyIdx,
+                final boolean lastFamily
+        ) {
             gh = ghPrev.copy();
             gh.addHypothesis(hyp);
             this.lastFamily = lastFamily;
@@ -349,8 +359,8 @@ public class ClusterSolveTree extends Cluster {
         final public Condition emptyCondition = lock.newCondition();
 
         @Override
-        public void insertAtStart(final TaskList tList) {
-            if (tList != null && !tList.isEmpty) {
+        public void insertAtStart(final @NotNull TaskList tList) {
+            if (/*tList != null &&*/ !tList.isEmpty) {
                 lock.lock();
                 super.insertAtStart(tList);
                 emptyCondition.signalAll();
@@ -401,16 +411,13 @@ public class ClusterSolveTree extends Cluster {
 
     WaitingList waitingTasks;
 
-
     ArrayList<ExecutorThread> executorList = new ArrayList<>();
-
 
     int maxNumThread = 4;
     volatile GlobalHypothesis BH;
     int t;
     final ArrayList<Family> mandatoryFamilies = new ArrayList<>(); //families that have a previous validated tracks are mandatory
     final ArrayList<Family> optionalFamilies = new ArrayList<>(); //families that don't have a previous validated tracks are optional
-
 
     public ClusterSolveTree(final HMMMHTracker tracker, final int firstT, final int lastT, final int K) {
         super(tracker, firstT, lastT, K);
@@ -464,7 +471,7 @@ public class ClusterSolveTree extends Cluster {
                 BH = mlSolver.getHypothesis(this, firstT, t, tracker);
                 test = BH;
                 if (BH == null)
-                    System.out.println("BH NULL, ML failed");
+                    IcyLogger.error(this.getClass(), "BH NULL, ML failed");
                 // BEST GLOBAL SOLUTION EXTRACTION ////////////////////////////////////////////////////////////////////////////////////////////////////
                 //create a set of executor threads
                 waitingTasks = new WaitingList();
@@ -475,7 +482,8 @@ public class ClusterSolveTree extends Cluster {
 
                 if (!mandatoryFamilies.isEmpty()) {
                     final int familyIdx = 0;
-                    final Family f = mandatoryFamilies.get(familyIdx);
+                    //final Family f = mandatoryFamilies.get(familyIdx);
+                    final Family f = mandatoryFamilies.getFirst();
                     final boolean lastFamily = (familyIdx == mandatoryFamilies.size() - 1);
                     final GlobalHypothesis gh = new GlobalHypothesis(firstT, t, tracker);
                     final TaskList tskList = new TaskList();
@@ -486,7 +494,8 @@ public class ClusterSolveTree extends Cluster {
                 else {
                     if (!optionalFamilies.isEmpty()) {
                         final int familyIdx = 0;
-                        final Family f = optionalFamilies.get(familyIdx);
+                        //final Family f = optionalFamilies.get(familyIdx);
+                        final Family f = optionalFamilies.getFirst();
                         final boolean lastFamily = (familyIdx == optionalFamilies.size() - 1);
                         final GlobalHypothesis gh = new GlobalHypothesis(firstT, t, tracker);
 //						1/ add hypothesis from this family
@@ -529,7 +538,7 @@ public class ClusterSolveTree extends Cluster {
                         wtc.countWainting.await();
                 }
                 catch (final InterruptedException e) {
-                    IcyExceptionHandler.showErrorMessage(e, true);
+                    IcyLogger.error(this.getClass(), e);
                 }
                 wtc.cntLock.unlock();
                 for (final ExecutorThread e : executorList) {
@@ -545,7 +554,7 @@ public class ClusterSolveTree extends Cluster {
                         e.join();
                     }
                     catch (final InterruptedException e1) {
-                        IcyExceptionHandler.showErrorMessage(e1, true);
+                        IcyLogger.error(this.getClass(), e1);
                     }
                 executorList.clear();
             }
@@ -558,8 +567,7 @@ public class ClusterSolveTree extends Cluster {
                 else if (test.score < BH.score)
                     ;//System.out.println("improvement");
                 else {
-                    System.out.println("decrease!");
-                    System.out.println(test.score + " | " + BH.score);
+                    IcyLogger.trace(this.getClass(), "decrease!", test.score + " | " + BH.score);
                 }
             }
         }
@@ -609,6 +617,4 @@ public class ClusterSolveTree extends Cluster {
             tskList.addLast(new RecursHypTreeMandatoryTask(ghPrev, htemp, currentT, familyIdx, lastFamily));
         return tskList;
     }
-
-
 }

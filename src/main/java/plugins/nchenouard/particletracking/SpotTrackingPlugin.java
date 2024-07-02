@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,17 +18,20 @@
 
 package plugins.nchenouard.particletracking;
 
-import icy.gui.frame.IcyFrame;
-import icy.gui.frame.IcyInternalFrame;
-import icy.gui.frame.progress.AnnounceFrame;
-import icy.gui.frame.progress.ProgressFrame;
-import icy.image.ImageUtil;
-import icy.main.Icy;
-import icy.plugin.abstract_.PluginActionable;
-import icy.resource.ResourceUtil;
-import icy.sequence.Sequence;
-import icy.swimmingPool.SwimmingObject;
-import icy.system.IcyExceptionHandler;
+import org.bioimageanalysis.icy.Icy;
+import org.bioimageanalysis.icy.extension.plugin.abstract_.PluginActionable;
+import org.bioimageanalysis.icy.extension.plugin.annotation_.IcyPluginIcon;
+import org.bioimageanalysis.icy.extension.plugin.annotation_.IcyPluginName;
+import org.bioimageanalysis.icy.gui.frame.IcyFrame;
+import org.bioimageanalysis.icy.gui.frame.IcyInternalFrame;
+import org.bioimageanalysis.icy.gui.frame.progress.AnnounceFrame;
+import org.bioimageanalysis.icy.gui.frame.progress.ProgressFrame;
+import org.bioimageanalysis.icy.model.image.ImageUtil;
+import org.bioimageanalysis.icy.model.sequence.Sequence;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import plugins.fab.trackmanager.TrackGroup;
 import plugins.fab.trackmanager.TrackManager;
 import plugins.fab.trackmanager.TrackSegment;
@@ -70,7 +73,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * date 2013-11-13
  * license gpl v3.0
  */
-
+@IcyPluginName("Spot Tracking")
+@IcyPluginIcon(path = "/plugins/nchenouard/particletracking/simplifiedMHT/detectionIcon.png")
 public class SpotTrackingPlugin extends PluginActionable implements ActionListener {
     // public static String MHT_PLUGIN_CONFIGURATION = SpotTracking.ID_CONFIG;
 
@@ -113,21 +117,22 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
         mainPanel.setLayout(new BorderLayout());
 
         final int iconSize = 100;
-        final ImageIcon detectionIcon = ResourceUtil.getImageIcon(
-                ImageUtil.load(
-                        getResourceAsStream("plugins/nchenouard/particletracking/simplifiedMHT/detectionIcon.png")),
-                iconSize);
-        final ImageIcon mhtIcon = ResourceUtil.getImageIcon(
-                ImageUtil.load(getResourceAsStream("plugins/nchenouard/particletracking/simplifiedMHT/MHTIcon.png")),
-                iconSize);
-        final ImageIcon outputIcon = ResourceUtil.getImageIcon(
-                ImageUtil.load(
-                        getResourceAsStream("plugins/nchenouard/particletracking/simplifiedMHT/trackPoolIcon.png")),
-                iconSize);
-        final ImageIcon workingIcon = ResourceUtil.getImageIcon(
-                ImageUtil
-                        .load(getResourceAsStream("plugins/nchenouard/particletracking/simplifiedMHT/workingIcon.png")),
-                iconSize);
+        final ImageIcon detectionIcon = new ImageIcon(
+                ImageUtil.load(getResourceAsStream("plugins/nchenouard/particletracking/simplifiedMHT/detectionIcon.png"))
+                        .getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH)
+        );
+        final ImageIcon mhtIcon = new ImageIcon(
+                ImageUtil.load(getResourceAsStream("plugins/nchenouard/particletracking/simplifiedMHT/MHTIcon.png"))
+                        .getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH)
+        );
+        final ImageIcon outputIcon = new ImageIcon(
+                ImageUtil.load(getResourceAsStream("plugins/nchenouard/particletracking/simplifiedMHT/trackPoolIcon.png"))
+                        .getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH)
+        );
+        final ImageIcon workingIcon = new ImageIcon(
+                ImageUtil.load(getResourceAsStream("plugins/nchenouard/particletracking/simplifiedMHT/workingIcon.png"))
+                        .getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH)
+        );
 
         simpleGUIPanel = new SimplifiedMHTPanel(detectionIcon, mhtIcon, outputIcon, workingIcon);
         mainPanel.add(simpleGUIPanel, BorderLayout.CENTER);
@@ -171,7 +176,8 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
         // legacy tracker
 
         legacyGUIPanel = new PanelTracking();
-        /*final LegacyTrackerManager legacyTrackerManager = */new LegacyTrackerManager(legacyGUIPanel);
+        /*final LegacyTrackerManager legacyTrackerManager = */
+        new LegacyTrackerManager(legacyGUIPanel);
 
         // set up the menu bar
         final JMenuBar menuBar = new JMenuBar();
@@ -306,7 +312,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
         }
     }
 
-    private void refreshMainPanel(final GUIStateEnum guiState) {
+    private void refreshMainPanel(final @NotNull GUIStateEnum guiState) {
         mainPanel.removeAll();
         switch (guiState) {
             case ADVANCED:
@@ -329,7 +335,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
     }
 
     @Override
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(final @NotNull ActionEvent e) {
         if (e.getSource() instanceof JMenuItem) {
             if (((JMenuItem) e.getSource()).getText().equals(SIMPLEGUI))
                 refreshMainPanel(GUIStateEnum.SIMPLE); // switch to simple GUI
@@ -406,6 +412,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
         return null;
     }
 
+    @SuppressWarnings("resource")
     public static void sendTracksToPool(final TrackGroup trackGroup, final Sequence sequence) {
         SwingUtilities.invokeLater(() -> {
             // Add the given trackGroup
@@ -418,6 +425,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
         });
     }
 
+    @Contract(pure = true)
     static double squaredDistance(final Spot s1, final Spot s2) {
         return SpotTracking.squaredDistance(s1, s2);
     }
@@ -434,7 +442,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
         volatile boolean isRunning = false;
 
         @Override
-        public void actionPerformed(final ActionEvent e) {
+        public void actionPerformed(final @NotNull ActionEvent e) {
             if (e.getSource() == advancedGUIPanel.startTrackingButton
                     || e.getSource() == simpleGUIPanel.runTrackingButton) {
                 if (e.getSource() == advancedGUIPanel.startTrackingButton)
@@ -544,7 +552,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
 
         PanelTracking panelTracking;
 
-        public LegacyTrackerManager(final PanelTracking legacyGUIPanel) {
+        public LegacyTrackerManager(final @NotNull PanelTracking legacyGUIPanel) {
             legacyGUIPanel.trackingStartButton.addActionListener(this);
             this.panelTracking = legacyGUIPanel;
         }
@@ -554,7 +562,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
         }
 
         @Override
-        public void actionPerformed(final ActionEvent e) {
+        public void actionPerformed(final @NotNull ActionEvent e) {
             if (e.getSource() == panelTracking.trackingStartButton) {
                 if (isRunning) {
                     stopLock.lock();
@@ -566,7 +574,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
                             stopCondition.await();
                     }
                     catch (final InterruptedException ie) {
-                        IcyExceptionHandler.showErrorMessage(ie, true);
+                        IcyLogger.error(this.getClass(), ie);
                     }
                     finally {
                         stopLock.unlock();
@@ -640,7 +648,7 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
             }
         }
 
-        public TrackSegment convertTrack2TrackSegment(final Track track, final Object detectionEditor) {
+        public TrackSegment convertTrack2TrackSegment(final @NotNull Track track, final Object detectionEditor) {
             final int firstIndex = track.getFirstIndex();
             int lastIndex = track.getLastIndex();
             for (int i = lastIndex; i > firstIndex; i--) {

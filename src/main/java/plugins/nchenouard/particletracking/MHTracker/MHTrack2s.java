@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -19,6 +19,8 @@
 package plugins.nchenouard.particletracking.MHTracker;
 
 import Jama.Matrix;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.spot.Spot;
@@ -92,7 +94,7 @@ public class MHTrack2s {
 
     public void println(final String str) {
         if (verbose)
-            System.out.println(str);
+            IcyLogger.trace(this.getClass(), str);
     }
 
     public MHTrack2s(final double p1_0, final HMMMHTracker tracker, final Predictor predictor, final Association association, final Family family) {
@@ -116,6 +118,7 @@ public class MHTrack2s {
     }
 
     protected MHTrack2s() {
+        //
     }
 
     public MHTrack2s copy() {
@@ -173,7 +176,7 @@ public class MHTrack2s {
      * @param a Association
      * @return bool
      */
-    public boolean inGate(final Association a) {
+    public boolean inGate(final @NotNull Association a) {
         final double dist = predictor.normalizedInnovation(a.state); // TODO: check the normalized innovation here
         return (dist <= tracker.gateFactor);
     }
@@ -186,7 +189,7 @@ public class MHTrack2s {
         return tracker.pFA;
     }
 
-    public void associate(final Association a, final int t) {
+    public void associate(final @NotNull Association a, final int t) {
         association = a;
         final double kL = tracker.pDpG * kineticLikelihood(a.spot, true, tracker.gateFactor);
         final double faL = falseAlarmLikelihood();

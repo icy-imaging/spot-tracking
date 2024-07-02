@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -32,7 +32,6 @@ import java.util.Vector;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public interface Tracker {
     /**
      * Extend tracks at a given time with a set of spots

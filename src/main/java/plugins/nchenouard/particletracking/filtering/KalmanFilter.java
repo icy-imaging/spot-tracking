@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -20,7 +20,8 @@ package plugins.nchenouard.particletracking.filtering;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
-import icy.system.IcyExceptionHandler;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;
 
@@ -28,7 +29,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
-
 
 /**
  * This abstract class provide a structure for a linear Kalman Filtering estimator (KF)
@@ -41,9 +41,7 @@ import java.util.ArrayList;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public abstract class KalmanFilter implements Predictor {
-
     protected final static double _2PI = 2.0 * Math.PI;
     /**
      * predicted state
@@ -127,7 +125,7 @@ public abstract class KalmanFilter implements Predictor {
      * @param Q Matrix
      * @param R Matrix
      */
-    public KalmanFilter(final Matrix F, final Matrix H, final Matrix Q, final Matrix R) {
+    public KalmanFilter(final @NotNull Matrix F, final Matrix H, final Matrix Q, final Matrix R) {
         if (F.getRowDimension() != F.getColumnDimension())
             throw new IllegalArgumentException("F (transition) is not square");
         if (Q.getRowDimension() != Q.getColumnDimension())
@@ -244,7 +242,7 @@ public abstract class KalmanFilter implements Predictor {
      *
      * @param kf KalmanFilter
      */
-    protected void copyMyDataInKF(final KalmanFilter kf) {
+    protected void copyMyDataInKF(final @NotNull KalmanFilter kf) {
         kf.setTrackingCovariances(Q0.copy());
         if (x_pre != null) kf.x_pre = x_pre.copy();
         if (x_est != null) kf.x_est = x_est.copy();
@@ -270,7 +268,7 @@ public abstract class KalmanFilter implements Predictor {
      * @param z Matrix
      */
     @Override
-    public void correct(final Matrix z) {
+    public void correct(final @NotNull Matrix z) {
         if (z.getRowDimension() != H.getRowDimension())
             throw new IllegalArgumentException("row dimension of z (is " + z.getRowDimension() + " should be " + H.getRowDimension() + ") is not the same as row dimension of H");
         if (z.getColumnDimension() != 1)
@@ -302,12 +300,11 @@ public abstract class KalmanFilter implements Predictor {
                     }
             }
             catch (final RuntimeException e) {
-                System.out.println("error in KalmanFiter.covupdate:");
-                if (x_est == null) System.out.println("xest null");
-                if (x_pre == null) System.out.println("xpre null");
-                if (Q == null) System.out.println("Q null");
-                if (Q0 == null) System.out.println("Q0 null");
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e, "Error in KalmanFiter.covupdate:");
+                if (x_est == null) IcyLogger.error(this.getClass(), "xest null");
+                if (x_pre == null) IcyLogger.error(this.getClass(), "xpre null");
+                if (Q == null) IcyLogger.error(this.getClass(), "Q null");
+                if (Q0 == null) IcyLogger.error(this.getClass(), "Q0 null");
             }
         }
     }
@@ -409,8 +406,7 @@ public abstract class KalmanFilter implements Predictor {
     public LikelihoodMap getLikelihoodMap(final boolean gated, final double gateFactor, final int t, final int width, final int height, final int depth) {
         if (t <= this.t)
             throw new IllegalArgumentException("cannot get past prediction in Kalman Filter");
-        if (this instanceof Predictor2D) {
-            final Predictor2D p2D = (Predictor2D) this;
+        if (this instanceof final Predictor2D p2D) {
             final double xPred = p2D.getXCoordPredicted();
             final double yPred = p2D.getYCoordPredicted();
             final Matrix covMeas = getMeasurementErrorCovariance(t);
@@ -488,8 +484,7 @@ public abstract class KalmanFilter implements Predictor {
     public LikelihoodMap getLikelihoodMap(final double gateFactor, final int t) {
         if (t <= this.t)
             throw new IllegalArgumentException("cannot get past prediction in Kalman Filter");
-        if (this instanceof Predictor2D) {
-            final Predictor2D p2D = (Predictor2D) this;
+        if (this instanceof final Predictor2D p2D) {
             final double xPred = p2D.getXCoordPredicted();
             final double yPred = p2D.getYCoordPredicted();
             final Matrix covMeas = getMeasurementErrorCovariance(t);
@@ -699,7 +694,7 @@ public abstract class KalmanFilter implements Predictor {
      * @param P0 Matrix
      */
     @Override
-    public void init(final Matrix x0, final Matrix P0) {
+    public void init(final @NotNull Matrix x0, final Matrix P0) {
         if (x0.getColumnDimension() != 1)
             throw new IllegalArgumentException("x0 is not a vector");
         if (x0.getRowDimension() != F.getRowDimension())
@@ -770,7 +765,7 @@ public abstract class KalmanFilter implements Predictor {
      * @return double
      */
     @Override
-    public double likelihood(final Matrix z, final boolean gated, final double gateFactor) {
+    public double likelihood(final @NotNull Matrix z, final boolean gated, final double gateFactor) {
         final Matrix z_err = z.minus(z_pre); // local
         // first, check if it's in the rectangular gate (faster)
         if (gated)
@@ -841,7 +836,7 @@ public abstract class KalmanFilter implements Predictor {
      * @return double
      */
     @Override
-    public double loglikelihood(final Matrix z) {
+    public double loglikelihood(final @NotNull Matrix z) {
         final Matrix z_err = z.minus(z_pre);
         return -(Math.log(S.times(_2PI).det()) + z_err.transpose().times(S_1).times(z_err).get(0, 0)) * 0.5;
     }
@@ -865,14 +860,14 @@ public abstract class KalmanFilter implements Predictor {
      * @return double
      */
     @Override
-    public double loglikelihoodOfState(final Matrix x) {
+    public double loglikelihoodOfState(final @NotNull Matrix x) {
         final Matrix x_err = x.minus(x_pre);
         final Matrix P_1 = P_pre.inverse();
         return -(Math.log(P_pre.times(_2PI).det()) + x_err.transpose().times(P_1).times(x_err).get(0, 0)) * 0.5;
     }
 
     @Override
-    public double likelihoodOfState(final Matrix x) {
+    public double likelihoodOfState(final @NotNull Matrix x) {
         final Matrix x_err = x.minus(x_pre); // local
         final Matrix P_1 = P_pre.inverse();
         // first, check if it's in the rectangular gate (faster)
@@ -890,7 +885,7 @@ public abstract class KalmanFilter implements Predictor {
      * @param z Matrix
      * @return double
      */
-    protected double mahalanobis(final Matrix z) {
+    protected double mahalanobis(final @NotNull Matrix z) {
         final Matrix z_err = z.minus(z_pre); // local
         return z_err.transpose().times(S_1).times(z_err).get(0, 0);
     }

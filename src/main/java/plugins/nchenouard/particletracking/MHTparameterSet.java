@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,8 +18,10 @@
 
 package plugins.nchenouard.particletracking;
 
-import icy.util.StringUtil;
-import icy.util.XMLUtil;
+import org.bioimageanalysis.icy.common.string.StringUtil;
+import org.bioimageanalysis.icy.io.xml.XMLUtil;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import plugins.nchenouard.spot.DetectionResult;
@@ -33,7 +35,6 @@ import plugins.nchenouard.spot.DetectionResult;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class MHTparameterSet {
     // detection parameters
     public DetectionResult detectionResults = null;
@@ -128,6 +129,7 @@ public class MHTparameterSet {
     public String trackGroupName;
     public final static String defaultTrackGroupName = "mht-tracks-1";
 
+    @Contract(pure = true)
     public MHTparameterSet() {
         numberOfFalseDetections = defaultNumberOfFalseDetections;
         detectionRate = defaultDetectionRate;
@@ -152,7 +154,7 @@ public class MHTparameterSet {
         trackGroupName = defaultTrackGroupName;
     }
 
-    public static MHTparameterSet loadFromXML(final Node node) {
+    public static @NotNull MHTparameterSet loadFromXML(final Node node) {
         final MHTparameterSet parameterSet = new MHTparameterSet();
         final Element nodeDetection = XMLUtil.getElement(node, ROOT_DETECTION_INPUT);
         if (nodeDetection != null) {

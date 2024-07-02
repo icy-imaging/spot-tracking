@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -17,6 +17,9 @@
  */
 
 package plugins.nchenouard.particletracking.MHTracker;
+
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,8 +58,11 @@ public class SolveMLAssociation {
             if (hSelected != null)
                 gh.addHypothesis(hSelected);
             else {
-                System.out.println(trk.association.getLast().followingSegments.isEmpty() + " " + lastT + " " + trk.association.getLast().association.t + trk.association.getLast().confirmed);
-                System.out.println("probleme in SolveMLAssociation, no selected hypothesis ");
+                IcyLogger.error(
+                        this.getClass(),
+                        "problem in SolveMLAssociation, no selected hypothesis.",
+                        trk.association.getLast().followingSegments.isEmpty() + " " + lastT + " " + trk.association.getLast().association.t + trk.association.getLast().confirmed
+                        );
                 return null;
             }
         }
@@ -80,7 +86,7 @@ public class SolveMLAssociation {
 
     // only mandatory tracks are extended
     // the remaining detections are considered false
-    public void solve2(final int firstT, final int lastT, final ArrayList<Family> mandatoryFamilies) {
+    public void solve2(final int firstT, final int lastT,final @NotNull ArrayList<Family> mandatoryFamilies) {
 //		first create tracks from mandatory families
         final ArrayList<Association> usedAssociations = new ArrayList<>();
         for (final Family f : mandatoryFamilies) {
@@ -93,7 +99,7 @@ public class SolveMLAssociation {
             if (!trk.followingTracks.isEmpty())
                 currentTrackList.add(trk);
             else if (!f.rootNode.terminated)
-                System.out.println("error in solveML: following tracks is empty");
+                IcyLogger.error(this.getClass(), "Error in solveML: following tracks is empty.");
         }
 
         for (int t = firstT + 1; t <= lastT; t++) {
@@ -139,12 +145,11 @@ public class SolveMLAssociation {
                     }
                 }
                 else {
-                    System.out.println("error in SolveMLAssociation: no best track");
+                    IcyLogger.error(this.getClass(), "Error in SolveMLAssociation: no best track.");
                 }
             }
         }
     }
-
 
     //ne fonctionne pas toujours car on peut creer une track qui au final ne peut pas etre continuee car les associations suivantes sont deja prises
     //et les predictions ne sont pas possibles car la track n'aurait pas ete confirmee avec
@@ -152,7 +157,7 @@ public class SolveMLAssociation {
             final int firstT,
             final int lastT,
             final HashMap<Integer, ArrayList<Family>> concurrentFamilies,
-            final ArrayList<Family> mandatoryFamilies,
+            final @NotNull ArrayList<Family> mandatoryFamilies,
             final ArrayList<Family> optionalFamilies
     ) {
         //first create tracks with mandatory families
@@ -225,7 +230,7 @@ public class SolveMLAssociation {
                     }
                 }
                 else {
-                    System.out.println("error in SolveMLAssociation: no best track");
+                    IcyLogger.error(this.getClass(), "Error in SolveMLAssociation: no best track.");
                 }
             }
             //now try to create new tracks with real association that are missing
@@ -250,7 +255,7 @@ public class SolveMLAssociation {
 
     static class LowerThan implements Comparator<MHTrack2s> {
         @Override
-        public int compare(final MHTrack2s t1, final MHTrack2s t2) {
+        public int compare(final @NotNull MHTrack2s t1, final MHTrack2s t2) {
             if (t1.association.isPrediction) {
                 if (t2.association.isPrediction) {
                     return Double.compare(t2.associationLikelihood, t1.associationLikelihood);

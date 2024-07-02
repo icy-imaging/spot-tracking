@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,8 +18,9 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import icy.system.IcyExceptionHandler;
-import icy.util.XMLUtil;
+import org.bioimageanalysis.icy.io.xml.XMLUtil;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import plugins.nchenouard.particletracking.MHTparameterSet;
@@ -40,7 +41,6 @@ import java.text.ParseException;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class TargetExistencePanel extends JPanel {
     final DefaultMutableTreeNode node = new DefaultMutableTreeNode("Target existence");
 
@@ -49,7 +49,6 @@ public class TargetExistencePanel extends JPanel {
     NumberFormat probaFormat = NumberFormat.getNumberInstance();
     final protected JFormattedTextField confirmationTF = new JFormattedTextField(probaFormat);
     final protected JFormattedTextField terminationTF = new JFormattedTextField(probaFormat);
-
 
     public TargetExistencePanel() {
         probaFormat.setMinimumFractionDigits(1);
@@ -101,7 +100,6 @@ public class TargetExistencePanel extends JPanel {
 
     public double getConfirmationThreshold() throws ParseException {
         return probaFormat.parse(confirmationTF.getText()).doubleValue();
-
     }
 
     public double getTerminationThreshold() throws ParseException {
@@ -123,14 +121,14 @@ public class TargetExistencePanel extends JPanel {
                 XMLUtil.setAttributeDoubleValue(nodeDetection, MHTparameterSet.CONFIRMATION_THRESHOLD, c);
             }
             catch (final Exception e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
             try {
                 final double c = getTerminationThreshold();
                 XMLUtil.setAttributeDoubleValue(nodeDetection, MHTparameterSet.TERMINATION_THRESHOLD, c);
             }
             catch (final Exception e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
         }
     }
@@ -143,34 +141,34 @@ public class TargetExistencePanel extends JPanel {
                 confirmationTF.setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.CONFIRMATION_THRESHOLD, getConfirmationThreshold()));
             }
             catch (final ParseException e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
             try {
                 terminationTF.setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.TERMINATION_THRESHOLD, getTerminationThreshold()));
             }
             catch (final ParseException e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
         }
     }
 
-    public void fillParameterSet(final MHTparameterSet parameterSet) {
+    public void fillParameterSet(final @NotNull MHTparameterSet parameterSet) {
         try {
             parameterSet.terminationThreshold = getTerminationThreshold();
         }
         catch (final ParseException e) {
-            IcyExceptionHandler.showErrorMessage(e, true);
+            IcyLogger.error(this.getClass(), e);
         }
         try {
             parameterSet.confirmationThreshold = getConfirmationThreshold();
         }
         catch (final ParseException e) {
-            IcyExceptionHandler.showErrorMessage(e, true);
+            IcyLogger.error(this.getClass(), e);
         }
         parameterSet.meanTrackLength = getMeanTrackLength();
     }
 
-    public void setParameters(final MHTparameterSet parameterSet) {
+    public void setParameters(final @NotNull MHTparameterSet parameterSet) {
         spinnerMeanTrackLength.getModel().setValue(parameterSet.meanTrackLength);
         confirmationTF.setValue(parameterSet.confirmationThreshold);
         terminationTF.setValue(parameterSet.terminationThreshold);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,14 +18,14 @@
 
 package plugins.nchenouard.particletracking.simplifiedMHT;
 
-import icy.gui.frame.progress.AnnounceFrame;
-import icy.main.Icy;
-import icy.plugin.PluginDescriptor;
-import icy.plugin.PluginLauncher;
-import icy.plugin.PluginLoader;
-import icy.swimmingPool.SwimmingObject;
-import icy.swimmingPool.SwimmingPoolEvent;
-import icy.swimmingPool.SwimmingPoolEventType;
+import org.bioimageanalysis.icy.Icy;
+import org.bioimageanalysis.icy.extension.plugin.PluginDescriptor;
+import org.bioimageanalysis.icy.extension.plugin.PluginLauncher;
+import org.bioimageanalysis.icy.extension.plugin.PluginLoader;
+import org.bioimageanalysis.icy.gui.frame.progress.AnnounceFrame;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEventType;
 import plugins.fab.spotDetector.SpotDetector;
 import plugins.fab.trackmanager.TrackGroup;
 import plugins.nchenouard.particletracking.DetectionChooser;
@@ -81,6 +81,7 @@ public class SimplifiedMHTPanel extends JPanel {
 
     SpotDetector s;
 
+    @SuppressWarnings("resource")
     public SimplifiedMHTPanel(final ImageIcon detectionIconImage, final ImageIcon parametersIconImage, final ImageIcon outputIconImage, final ImageIcon runIconImage) {
         this.setLayout(new GridBagLayout());
         int h = 0;
@@ -246,6 +247,7 @@ public class SimplifiedMHTPanel extends JPanel {
         trackGroupNameTF.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(final KeyEvent arg0) {
+                //
             }
 
             @Override
@@ -255,6 +257,7 @@ public class SimplifiedMHTPanel extends JPanel {
 
             @Override
             public void keyPressed(final KeyEvent arg0) {
+                //
             }
         });
         eastOutputPanel.add(trackGroupNameTF, BorderLayout.SOUTH);

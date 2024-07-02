@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,7 +18,9 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import icy.system.IcyExceptionHandler;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -46,7 +48,7 @@ public class Family {
     MHTrack2s lastSelectedLeaf = null;
     IdCluster cluster = null;
 
-    protected void recursUpdate(final MHTrack2s trk) {
+    protected void recursUpdate(final @NotNull MHTrack2s trk) {
         //since it is validated confirm the track
         trk.confirmed = true;
         //update used associations
@@ -73,7 +75,7 @@ public class Family {
         recursUpdate(track);
     }
 
-    Vector<Hypothesis> getCompatibleHypothesis(final GlobalHypothesis gh) {
+    Vector<Hypothesis> getCompatibleHypothesis(final @NotNull GlobalHypothesis gh) {
         final Vector<Hypothesis> hypList = new Vector<>();
         if (!gh.usedAssociations.contains(this.rootNode.association)) {
             if (!rootNode.followingSegments.isEmpty())
@@ -85,7 +87,7 @@ public class Family {
         return hypList;
     }
 
-    void recursCompatibleHypotheses(final GlobalHypothesis gh, final MHTrack2s node, final Vector<Hypothesis> hypList) {
+    void recursCompatibleHypotheses(final @NotNull GlobalHypothesis gh, final @NotNull MHTrack2s node, final Vector<Hypothesis> hypList) {
         if (!gh.usedAssociations.contains(node.association)) {
             if (!node.followingSegments.isEmpty())
                 for (final MHTrack2s trk : node.followingSegments) {
@@ -96,7 +98,8 @@ public class Family {
         }
     }
 
-    private boolean belowBound(final GlobalHypothesis gh, final double bestScore, final MHTrack2s node) {
+    @Contract(pure = true)
+    private boolean belowBound(final @NotNull GlobalHypothesis gh, final double bestScore, final @NotNull MHTrack2s node) {
         return gh.score + node.bestScore < bestScore;
     }
 
@@ -129,7 +132,7 @@ public class Family {
                 tc.countAndDeathEquality.await();
         }
         catch (final InterruptedException e) {
-            IcyExceptionHandler.showErrorMessage(e, true);
+            IcyLogger.error(this.getClass(), e);
         }
         finally {
             tc.lock.unlock();
@@ -173,7 +176,6 @@ public class Family {
         hypList.sort(new HypothesisComparator());
     }
 
-
     void recursCompatibleHypotheses(final GlobalHypothesis gh, final double bestScore, final MHTrack2s node, final Vector<Hypothesis> hypList, final ThreadCounter tc, final ExecutorService executor) {
         if (!belowBound(gh, bestScore, this.rootNode)) {
             if (!gh.usedAssociations.contains(node.association)) {
@@ -200,7 +202,6 @@ public class Family {
             }
         }
     }
-
 
     public void buildHypothesesAndResetBestScores() {
         final ArrayList<Association> measurementsList = new ArrayList<>();
@@ -231,20 +232,18 @@ public class Family {
             double bnf = 0;//best non feasible score
             for (final Association a : hyp.usedAssociations)
                 bnf += a.getBestScore();
-            assert hyp.leaf != null;
-            hyp.leaf.bestScore = hyp.leaf.score - bnf - rootScore;
+            Objects.requireNonNull(hyp.leaf).bestScore = hyp.leaf.score - bnf - rootScore;
         }
     }
 
     private void putScoresOnNodes() {
         for (final Hypothesis h : hypotheses) {
             //h.leaf.bestScore = h.leaf.score;
-            assert h.leaf != null;
-            recursPutScoresOnNodes(h.leaf);
+            recursPutScoresOnNodes(Objects.requireNonNull(h.leaf));
         }
     }
 
-    private void recursPutScoresOnNodes(final MHTrack2s node) {
+    private void recursPutScoresOnNodes(final @NotNull MHTrack2s node) {
         if (node.precedingSegment != null) {
             if (node.precedingSegment.bestScore < node.bestScore) {
                 node.precedingSegment.bestScore = node.bestScore;
@@ -253,9 +252,8 @@ public class Family {
         }
     }
 
-    protected void recursBuildHyp(final Hypothesis h, final LinkedList<Hypothesis> hList) {
-        assert h.leaf != null;
-        for (final MHTrack2s nextTrk : h.leaf.followingSegments) {
+    protected void recursBuildHyp(final @NotNull Hypothesis h, final LinkedList<Hypothesis> hList) {
+        for (final MHTrack2s nextTrk : Objects.requireNonNull(h.leaf).followingSegments) {
             nextTrk.resetBestScore();
             final ArrayList<Association> associationList = new ArrayList<>(h.usedAssociations);
             associationList.add(nextTrk.association);
@@ -290,7 +288,15 @@ public class Family {
         Vector<Hypothesis> hypList;
         double bestScore;
 
-        public RecursCompatibleThr(final GlobalHypothesis gh, final double bestScore, final MHTrack2s trk, final Vector<Hypothesis> hypList, final ThreadCounter tc, final ExecutorService executor) {
+        @Contract(pure = true)
+        public RecursCompatibleThr(
+                final GlobalHypothesis gh,
+                final double bestScore,
+                final MHTrack2s trk,
+                final Vector<Hypothesis> hypList,
+                final ThreadCounter tc,
+                final ExecutorService executor
+        ) {
             this.tc = tc;
             this.gh = gh;
             this.trk = trk;
@@ -308,10 +314,8 @@ public class Family {
 
     static class HypothesisComparator implements Comparator<Hypothesis> {
         @Override
-        public int compare(final Hypothesis o1, final Hypothesis o2) {
-            assert o1.leaf != null;
-            assert o2.leaf != null;
-            if (o1.leaf.score > o2.leaf.score)
+        public int compare(final @NotNull Hypothesis o1, final @NotNull Hypothesis o2) {
+            if (Objects.requireNonNull(o1.leaf).score > Objects.requireNonNull(o2.leaf).score)
                 return 1;
             else if (o1.leaf.score < o2.leaf.score)
                 return -1;

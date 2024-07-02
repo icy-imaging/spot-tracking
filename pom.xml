@@ -7,11 +7,11 @@
     <parent>
 		<artifactId>pom-icy</artifactId>
         <groupId>org.bioimageanalysis.icy</groupId>
-        <version>2.2.0</version>
+        <version>3.0.0-a.1</version>
     </parent>
 
     <artifactId>spot-tracking</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.0-a.1</version>
 
     <name>Spot Tracking</name>
     <description>
@@ -20,6 +20,14 @@
     </description>
 	
     <dependencies>
+        <dependency>
+            <groupId>org.bioimageanalysis.icy</groupId>
+            <artifactId>jama</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bioimageanalysis.icy</groupId>
+            <artifactId>spot-detection-utilities</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
             <artifactId>track-manager</artifactId>
@@ -37,7 +45,7 @@
     <repositories>
         <repository>
             <id>icy</id>
-            <url>https://icy-nexus.pasteur.fr/repository/Icy/</url>
+            <url>https://nexus-icy.pasteur.cloud/repository/icy/</url>
         </repository>
     </repositories>
 </project>

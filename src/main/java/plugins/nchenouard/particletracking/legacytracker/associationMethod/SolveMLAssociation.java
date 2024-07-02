@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,11 +18,11 @@
 
 package plugins.nchenouard.particletracking.legacytracker.associationMethod;
 
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.spot.Spot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
 
 /**
  * Solve the assignment problem by local ML maximization, as described in
@@ -38,7 +38,6 @@ import java.util.Arrays;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class SolveMLAssociation extends AssignProblemSolver {
     public final static int methoId = 0;
     protected final boolean addNewObjects;
@@ -47,19 +46,19 @@ public class SolveMLAssociation extends AssignProblemSolver {
         this.addNewObjects = addNewObjects;
     }
 
-    protected void solve1(final AssignProblem pb) {
-        final Track track = pb.tracks.get(0);
-        final Spot spot = pb.detections.get(0);
+    protected void solve1(final @NotNull AssignProblem pb) {
+        final Track track = pb.tracks.getFirst();
+        final Spot spot = pb.detections.getFirst();
         track.associate(spot, pb.t);
     }
 
     protected void solve2(final AssignProblem pb) {
         if (addNewObjects)
-            pb.tracksToBeCreated.add(pb.detections.get(0));
+            pb.tracksToBeCreated.add(pb.detections.getFirst());
     }
 
-    protected void solve3(final AssignProblem pb) {
-        pb.tracksToBeProlongated.add(pb.tracks.get(0));
+    protected void solve3(final @NotNull AssignProblem pb) {
+        pb.tracksToBeProlongated.add(pb.tracks.getFirst());
     }
 
     protected void solve4(final AssignProblem pb, final int num) {
@@ -74,7 +73,7 @@ public class SolveMLAssociation extends AssignProblemSolver {
         asignOpt(pb, numTracks, numDetect);
     }
 
-    public void asignOpt(final AssignProblem pb, final int numTracks, final int numDetect) {
+    public void asignOpt(final @NotNull AssignProblem pb, final int numTracks, final int numDetect) {
         final int[] tm = assignOptMax(pb.likelihoods);
         final ArrayList<Integer> usedDetection = new ArrayList<>();
         for (int j = 0; j < numTracks; j++) {
@@ -92,7 +91,7 @@ public class SolveMLAssociation extends AssignProblemSolver {
     }
 
     @Override
-    public void solve(final AssignProblem pb) {
+    public void solve(final @NotNull AssignProblem pb) {
         final int numTracks = pb.tracks.size();
         final int numDetect = pb.detections.size();
 
@@ -144,7 +143,7 @@ public class SolveMLAssociation extends AssignProblemSolver {
     }
 
 
-    protected int[] assignOptMax(final double[][] d) {
+    protected int[] assignOptMax(final double @NotNull [] @NotNull [] d) {
         if (d.length == 0 || d[0].length == 0)
             return null;
         final int trackNumber = d[0].length;
@@ -191,7 +190,7 @@ public class SolveMLAssociation extends AssignProblemSolver {
         return tm;
     }
 
-    protected int[] assignOptMin(final double[][] d) {
+    protected int[] assignOptMin(final double @NotNull [] @NotNull [] d) {
         if (d.length == 0 || d[0].length == 0)
             return null;
         final int trackNumber = d[0].length;

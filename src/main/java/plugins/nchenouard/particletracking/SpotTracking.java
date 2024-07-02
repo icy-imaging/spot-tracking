@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,9 +18,12 @@
 
 package plugins.nchenouard.particletracking;
 
-import icy.gui.frame.progress.CancelableProgressFrame;
-import icy.main.Icy;
-import icy.util.XMLUtil;
+import org.bioimageanalysis.icy.Icy;
+import org.bioimageanalysis.icy.gui.frame.progress.CancelableProgressFrame;
+import org.bioimageanalysis.icy.io.xml.XMLUtil;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import plugins.fab.trackmanager.TrackGroup;
@@ -51,7 +54,12 @@ public class SpotTracking {
      * @param updateMotion   bool
      * @return MHTparameterSet
      */
-    public static MHTparameterSet estimateParameters(final DetectionResult detections, final boolean directedMotion, final boolean singleMotion, final boolean updateMotion) {
+    public static @NotNull MHTparameterSet estimateParameters(
+            final DetectionResult detections,
+            final boolean directedMotion,
+            final boolean singleMotion,
+            final boolean updateMotion
+    ) {
         final MHTparameterSet parameters = new MHTparameterSet();
 
         estimateParameters(parameters, detections, directedMotion, singleMotion, updateMotion);
@@ -69,7 +77,13 @@ public class SpotTracking {
      * @param updateMotion   bool
      * @return bool
      */
-    public static boolean estimateParameters(final MHTparameterSet parameters, final DetectionResult detections, final boolean directedMotion, final boolean singleMotion, final boolean updateMotion) {
+    public static boolean estimateParameters(
+            final @NotNull MHTparameterSet parameters,
+            final DetectionResult detections,
+            final boolean directedMotion,
+            final boolean singleMotion,
+            final boolean updateMotion
+    ) {
         parameters.isDirectedMotion = directedMotion;
         parameters.isSingleMotion = singleMotion;
         parameters.isUpdateMotion = updateMotion;
@@ -85,8 +99,7 @@ public class SpotTracking {
         final int maxNumDetections = 10000;
         int numDetections = 0;
         int numT = 0;
-        for (int t = parameters.detectionResults.getFirstFrameTime(); t < parameters.detectionResults
-                .getLastFrameTime(); t++) {
+        for (int t = parameters.detectionResults.getFirstFrameTime(); t < parameters.detectionResults.getLastFrameTime(); t++) {
             numDetections += parameters.detectionResults.getDetectionsAtT(t).size();
             numT++;
             if (numDetections > maxNumDetections)
@@ -227,8 +240,7 @@ public class SpotTracking {
         }
 
         parameters.numberInitialObjects = numTrackFirstFrame;
-        parameters.numberNewObjects = (numNewTracks / (1d + parameters.detectionResults.getLastFrameTime()
-                - parameters.detectionResults.getFirstFrameTime()));
+        parameters.numberNewObjects = (numNewTracks / (1d + parameters.detectionResults.getLastFrameTime() - parameters.detectionResults.getFirstFrameTime()));
 
         // compute number of false detections per frame
         int numFalseDetections = 0;
@@ -239,8 +251,7 @@ public class SpotTracking {
             }
         }
 
-        parameters.numberOfFalseDetections = (int) (Math.round(numFalseDetections / (1d
-                + parameters.detectionResults.getLastFrameTime() - parameters.detectionResults.getFirstFrameTime())));
+        parameters.numberOfFalseDetections = (int) (Math.round(numFalseDetections / (1d + parameters.detectionResults.getLastFrameTime() - parameters.detectionResults.getFirstFrameTime())));
 
         // re estimate diffusion //TODO: do this with MSDs to account for directed periods
         // if (isSingleMotion && !isDirectedMotion)
@@ -293,14 +304,14 @@ public class SpotTracking {
      * @param file File
      * @return MHTparameterSet
      */
-    public static MHTparameterSet loadParameters(final File file) {
+    public static @NotNull MHTparameterSet loadParameters(final File file) {
         final Document document = XMLUtil.loadDocument(file);
         final Element root = XMLUtil.getRootElement(document);
 
         if (root == null)
             throw new IllegalArgumentException("can't find: <root> tag.");
 
-        final Element configurationElement = XMLUtil.getElements(root, ID_CONFIG).get(0);
+        final Element configurationElement = XMLUtil.getElements(root, ID_CONFIG).getFirst();
         if (configurationElement == null)
             throw new IllegalArgumentException("can't find: <root><" + ID_CONFIG + "> tag.");
 
@@ -313,7 +324,7 @@ public class SpotTracking {
      * @param path String
      * @return MHTparameterSet
      */
-    public static MHTparameterSet loadParameters(final String path) {
+    public static @NotNull MHTparameterSet loadParameters(final String path) {
         return loadParameters(new File(path));
     }
 
@@ -323,7 +334,7 @@ public class SpotTracking {
      * @param value MHTparameterSet
      * @param f     file
      */
-    public static void saveParameters(final MHTparameterSet value, final File f) {
+    public static void saveParameters(final MHTparameterSet value, final @NotNull File f) {
         saveParameters(value, f.getAbsolutePath());
     }
 
@@ -354,7 +365,13 @@ public class SpotTracking {
      * @param showProgress bool
      * @return TrackGroup
      */
-    public static TrackGroup executeTracking(final MHTparameterSet parameters, final DetectionResult dr, final boolean multiThread, final boolean showProgress) throws IllegalArgumentException {
+    @Contract("_, null, _, _ -> fail")
+    public static @NotNull TrackGroup executeTracking(
+            final MHTparameterSet parameters,
+            final DetectionResult dr,
+            final boolean multiThread,
+            final boolean showProgress
+    ) throws IllegalArgumentException {
         if (dr == null)
             throw new IllegalArgumentException("Tracking requires to specify a set of detections. You can use the Spot Detector plugin to create some.");
         if (dr.getNumberOfDetection() < 1)
@@ -374,9 +391,10 @@ public class SpotTracking {
         final boolean headless = Icy.getMainInterface().isHeadLess();
 
         for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++) {
-            if (headless) {
+            IcyLogger.info(SpotTracking.class, "Track extraction at frame " + t);
+            /*if (headless) {
                 System.out.print("Track extraction at frame " + t + "\r");
-            }
+            }*/
 
             if (progress != null) {
                 progress.setMessage("Track extraction at frame " + t);
@@ -391,9 +409,9 @@ public class SpotTracking {
             mhtracker.track(t, dr.getDetectionsAtT(t));
         }
 
-        if (headless) {
+        /*if (headless) {
             System.out.println();
-        }
+        }*/
 
         if (progress != null)
             progress.close();
@@ -417,11 +435,18 @@ public class SpotTracking {
      * @param showProgress bool
      * @return TrackGroup
      */
-    public static TrackGroup executeTracking(final MHTparameterSet parameters, final DetectionResult dr, final boolean showProgress) throws IllegalArgumentException {
+    @Contract("_, null, _ -> fail")
+    public static @NotNull TrackGroup executeTracking(final MHTparameterSet parameters, final DetectionResult dr, final boolean showProgress) throws IllegalArgumentException {
         return executeTracking(parameters, dr, true, showProgress);
     }
 
-    protected static HMMMHTracker buildTracker(final MHTparameterSet parameters, final DetectionResult dr, final int dim, final double volume, final boolean multithreaded) throws IllegalArgumentException {
+    protected static HMMMHTracker buildTracker(
+            final @NotNull MHTparameterSet parameters,
+            final DetectionResult dr,
+            final int dim,
+            final double volume,
+            final boolean multithreaded
+    ) throws IllegalArgumentException {
         final double probaDetect = parameters.detectionRate;
         if (probaDetect < 0 || probaDetect > 1)
             throw new IllegalArgumentException("The probability of detection for each particle has to lie between 0 and 1");
@@ -454,9 +479,9 @@ public class SpotTracking {
                 if (dim == 3) {
                     final double[] trackingCovariances = new double[3];
 
-                    trackingCovariances[0] = parameters.displacementXY;
-                    trackingCovariances[1] = parameters.displacementXY;
-                    trackingCovariances[2] = parameters.displacementZ;
+                    trackingCovariances[0] = Math.pow(parameters.displacementXY, 2);
+                    trackingCovariances[1] = Math.pow(parameters.displacementXY, 2);
+                    trackingCovariances[2] = Math.pow(parameters.displacementZ, 2);
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number.");
 
@@ -470,8 +495,8 @@ public class SpotTracking {
                 else {
                     final double[] trackingCovariances = new double[2];
 
-                    trackingCovariances[0] = parameters.displacementXY;
-                    trackingCovariances[1] = parameters.displacementXY;
+                    trackingCovariances[0] = Math.pow(parameters.displacementXY, 2);
+                    trackingCovariances[1] = Math.pow(parameters.displacementXY, 2);
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number.");
 
@@ -485,12 +510,12 @@ public class SpotTracking {
             else {
                 if (dim == 3) {
                     final double[] trackingCovariances = new double[3];
-                    final double displacementXY = parameters.displacementXY;
-                    final double displacementZ = parameters.displacementZ;
+                    final double displacementXY = Math.pow(parameters.displacementXY, 2);
+                    final double displacementZ = Math.pow(parameters.displacementZ, 2);
 
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
-                    trackingCovariances[2] = displacementZ * displacementZ;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
+                    trackingCovariances[2] = displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
@@ -502,10 +527,10 @@ public class SpotTracking {
                 }
                 else {
                     final double[] trackingCovariances = new double[2];
-                    final double displacementXY = parameters.displacementXY;
+                    final double displacementXY = Math.pow(parameters.displacementXY, 2);
 
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
@@ -533,14 +558,14 @@ public class SpotTracking {
                 // first model
                 if (parameters.isDirectedMotion) {
                     final double[] trackingCovariances = new double[3];
-                    final double displacementXY = parameters.displacementXY;
-                    final double displacementZ = parameters.displacementZ;
+                    final double displacementXY = Math.pow(parameters.displacementXY, 2);
+                    final double displacementZ = Math.pow(parameters.displacementZ, 2);
 
                     // FIXME: why we are using square distance here while we were using single distance for single
                     // motion model ??
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
-                    trackingCovariances[2] = displacementZ * displacementZ;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
+                    trackingCovariances[2] = displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number.");
 
@@ -553,12 +578,12 @@ public class SpotTracking {
                 }
                 else {
                     final double[] trackingCovariances = new double[3];
-                    final double displacementXY = parameters.displacementXY;
-                    final double displacementZ = parameters.displacementZ;
+                    final double displacementXY = Math.pow(parameters.displacementXY, 2);
+                    final double displacementZ = Math.pow(parameters.displacementZ, 2);
 
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
-                    trackingCovariances[2] = displacementZ * displacementZ;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
+                    trackingCovariances[2] = displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
@@ -572,14 +597,14 @@ public class SpotTracking {
                 // second model
                 if (parameters.isDirectedMotion2) {
                     final double[] trackingCovariances = new double[3];
-                    final double displacementXY = parameters.displacementXY2;
-                    final double displacementZ = parameters.displacementZ2;
+                    final double displacementXY = Math.pow(parameters.displacementXY2, 2);
+                    final double displacementZ = Math.pow(parameters.displacementZ2, 2);
 
                     // FIXME: why we are using square distance here while we were using single distance for single
                     // motion model ??
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
-                    trackingCovariances[2] = displacementZ * displacementZ;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
+                    trackingCovariances[2] = displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number.");
 
@@ -592,12 +617,12 @@ public class SpotTracking {
                 }
                 else {
                     final double[] trackingCovariances = new double[3];
-                    final double displacementXY = parameters.displacementXY2;
-                    final double displacementZ = parameters.displacementZ2;
+                    final double displacementXY = Math.pow(parameters.displacementXY2, 2);
+                    final double displacementZ = Math.pow(parameters.displacementZ2, 2);
 
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
-                    trackingCovariances[2] = displacementZ * displacementZ;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
+                    trackingCovariances[2] = displacementZ;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0 || trackingCovariances[2] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
@@ -625,12 +650,12 @@ public class SpotTracking {
                 // first model
                 if (parameters.isDirectedMotion) {
                     final double[] trackingCovariances = new double[2];
-                    final double displacementXY = parameters.displacementXY;
+                    final double displacementXY = Math.pow(parameters.displacementXY, 2);
 
                     // FIXME: why we are using square distance here while we were using single distance for single
                     // motion model ??
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
@@ -643,10 +668,10 @@ public class SpotTracking {
                 }
                 else {
                     final double[] trackingCovariances = new double[2];
-                    final double displacementXY = parameters.displacementXY;
+                    final double displacementXY = Math.pow(parameters.displacementXY, 2);
 
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
@@ -660,12 +685,12 @@ public class SpotTracking {
                 // second model
                 if (parameters.isDirectedMotion2) {
                     final double[] trackingCovariances = new double[2];
-                    final double displacementXY = parameters.displacementXY2;
+                    final double displacementXY = Math.pow(parameters.displacementXY2, 2);
 
                     // FIXME: why we are using square distance here while we were using single distance for single
                     // motion model ??
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
@@ -678,10 +703,10 @@ public class SpotTracking {
                 }
                 else {
                     final double[] trackingCovariances = new double[2];
-                    final double displacementXY = parameters.displacementXY2;
+                    final double displacementXY = Math.pow(parameters.displacementXY2, 2);
 
-                    trackingCovariances[0] = displacementXY * displacementXY / 2;
-                    trackingCovariances[1] = displacementXY * displacementXY / 2;
+                    trackingCovariances[0] = displacementXY;
+                    trackingCovariances[1] = displacementXY;
                     if (trackingCovariances[0] < 0 || trackingCovariances[1] < 0)
                         throw new IllegalArgumentException("The expected particle displacement has to be a positive number");
 
@@ -731,7 +756,11 @@ public class SpotTracking {
         }
     }
 
-    public static HMMMHTracker buildTracker(final MHTparameterSet parameters, final DetectionResult dr, final boolean multiThread) throws IllegalArgumentException {
+    public static HMMMHTracker buildTracker(
+            final MHTparameterSet parameters,
+            final @NotNull DetectionResult dr,
+            final boolean multiThread
+    ) throws IllegalArgumentException {
         int dim = 2;
         final double volume;// = 256 * 256;
 
@@ -780,10 +809,10 @@ public class SpotTracking {
         return buildTracker(parameters, dr, true);
     }
 
-    static double squaredDistance(final Spot s1, final Spot s2) {
+    @Contract(pure = true)
+    static double squaredDistance(final @NotNull Spot s1, final @NotNull Spot s2) {
         return (s1.mass_center.x - s2.mass_center.x) * (s1.mass_center.x - s2.mass_center.x)
                 + (s1.mass_center.y - s2.mass_center.y) * (s1.mass_center.y - s2.mass_center.y)
                 + (s1.mass_center.z - s2.mass_center.z) * (s1.mass_center.z - s2.mass_center.z);
     }
-
 }

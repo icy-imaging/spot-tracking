@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,10 +18,8 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import icy.gui.frame.progress.AnnounceFrame;
-import icy.util.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.bioimageanalysis.icy.gui.frame.progress.AnnounceFrame;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.MHTparameterSet;
 
 import javax.swing.*;
@@ -41,7 +39,6 @@ import java.util.ArrayList;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class MotionModelPanel extends JPanel {
     DefaultMutableTreeNode node = new DefaultMutableTreeNode("Motion model");
 
@@ -343,10 +340,10 @@ public class MotionModelPanel extends JPanel {
             parameterSet.isUpdateMotion = singleMotionPanel.isUpdateMotion();
         }
         else {
-            parameterSet.isDirectedMotion = multipleMotionPanel.getSingleMotionPanels().get(0).isDirectedMotion();
-            parameterSet.displacementXY = multipleMotionPanel.getSingleMotionPanels().get(0).getDisplacementXY();
-            parameterSet.displacementZ = multipleMotionPanel.getSingleMotionPanels().get(0).getDisplacementZ();
-            parameterSet.isUpdateMotion = multipleMotionPanel.getSingleMotionPanels().get(0).isUpdateMotion();
+            parameterSet.isDirectedMotion = multipleMotionPanel.getSingleMotionPanels().getFirst().isDirectedMotion();
+            parameterSet.displacementXY = multipleMotionPanel.getSingleMotionPanels().getFirst().getDisplacementXY();
+            parameterSet.displacementZ = multipleMotionPanel.getSingleMotionPanels().getFirst().getDisplacementZ();
+            parameterSet.isUpdateMotion = multipleMotionPanel.getSingleMotionPanels().getFirst().isUpdateMotion();
 
             parameterSet.isDirectedMotion2 = multipleMotionPanel.getSingleMotionPanels().get(1).isDirectedMotion();
             parameterSet.displacementXY2 = multipleMotionPanel.getSingleMotionPanels().get(1).getDisplacementXY();
@@ -358,7 +355,7 @@ public class MotionModelPanel extends JPanel {
         }
     }
 
-    public void setParameters(final MHTparameterSet parameterSet) {
+    public void setParameters(final @NotNull MHTparameterSet parameterSet) {
         setSingleMotion(parameterSet.isSingleMotion);
         if (parameterSet.isSingleMotion) {
             singleMotionPanel.setDirectedMotion(parameterSet.isDirectedMotion);
@@ -367,7 +364,7 @@ public class MotionModelPanel extends JPanel {
             singleMotionPanel.setUpdateMotion(parameterSet.isUpdateMotion);
         }
         else {
-            SingleMotionPanel panel = multipleMotionPanel.getSingleMotionPanels().get(0);
+            SingleMotionPanel panel = multipleMotionPanel.getSingleMotionPanels().getFirst();
             panel.setDirectedMotion(parameterSet.isDirectedMotion);
             panel.setDisplacementXY(parameterSet.displacementXY);
             panel.setDisplacementZ(parameterSet.displacementZ);

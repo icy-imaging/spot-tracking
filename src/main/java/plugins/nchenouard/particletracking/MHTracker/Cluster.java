@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,7 +18,8 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import icy.system.IcyExceptionHandler;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -26,14 +27,13 @@ import java.util.Map.Entry;
 /**
  * A group of Family objects which share some common detections and related methods to solve the tracking problem for them
  * <p>
- * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
+ * Part of the Spot Tracking plugin for ICY: <a href="https://icy.bioimageanalysis.org/plugin/Spot_Tracking">https://icy.bioimageanalysis.org/plugin/Spot_Tracking</a>
  *
  * @author Nicolas Chenouard (nicolas.chenouard@gmail.com).
  * @version 3.1
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class Cluster implements AutoCloseable {
     HashSet<Association> realAssociations = new HashSet<>();
     HashMap<Integer, ArrayList<Family>> concurrentFamilies = new HashMap<>();
@@ -68,6 +68,7 @@ public class Cluster implements AutoCloseable {
     }
 
 
+    @SuppressWarnings("BusyWait")
     public void buildAndApplyBestHypTree(final int t) {
         int firstTtemp = -1;
         final boolean buildAndApplyBestHyp;
@@ -105,7 +106,8 @@ public class Cluster implements AutoCloseable {
 
             if (!mandatoryFamilies.isEmpty()) {
                 final int familyIdx = 0;
-                final Family f = mandatoryFamilies.get(familyIdx);
+                //final Family f = mandatoryFamilies.get(familyIdx);
+                final Family f = mandatoryFamilies.getFirst();
                 final boolean lastFamily = (familyIdx == mandatoryFamilies.size() - 1);
                 for (final Hypothesis htemp : f.hypotheses) {
                     final Thread thr = new Thread(() -> {
@@ -171,7 +173,7 @@ public class Cluster implements AutoCloseable {
                             thr.join();
                         }
                         catch (final InterruptedException e1) {
-                            IcyExceptionHandler.showErrorMessage(e1, true);
+                            IcyLogger.error(this.getClass(), e1);
                         }
                 }
 //				for (Thread thr:thrList)
@@ -184,7 +186,8 @@ public class Cluster implements AutoCloseable {
             else {
                 if (!optionalFamilies.isEmpty()) {
                     final int familyIdx = 0;
-                    final Family f = optionalFamilies.get(familyIdx);
+                    //final Family f = optionalFamilies.get(familyIdx);
+                    final Family f = optionalFamilies.getFirst();
                     final boolean lastFamily = (familyIdx == optionalFamilies.size() - 1);
 
 //					ArrayList<Thread> thrList = new ArrayList<Thread>();
@@ -233,7 +236,7 @@ public class Cluster implements AutoCloseable {
                                 thr.join();
                             }
                             catch (final InterruptedException e1) {
-                                IcyExceptionHandler.showErrorMessage(e1, true);
+                                IcyLogger.error(this.getClass(), e1);
                             }
                     }
                     // 2/ do not add hypothesis from this family
@@ -284,7 +287,7 @@ public class Cluster implements AutoCloseable {
                 Thread.sleep(250);
             }
             catch (final InterruptedException e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
         }
 
@@ -343,7 +346,8 @@ public class Cluster implements AutoCloseable {
                 //utiliser obligatoirement une hypothese par famille obligatoire
                 if (!mandatoryFamilies.isEmpty()) {
                     final int familyIdx = 0;
-                    final Family f = mandatoryFamilies.get(familyIdx);
+                    //final Family f = mandatoryFamilies.get(familyIdx);
+                    final Family f = mandatoryFamilies.getFirst();
                     final boolean lastFamily = (familyIdx == mandatoryFamilies.size() - 1);
                     for (final Hypothesis hyp : f.hypotheses) {
                         final GlobalHypothesis gh = new GlobalHypothesis(firstT, t, tracker);
@@ -402,7 +406,8 @@ public class Cluster implements AutoCloseable {
                 {
                     if (!optionalFamilies.isEmpty()) {
                         final int familyIdx = 0;
-                        final Family f = optionalFamilies.get(familyIdx);
+                        //final Family f = optionalFamilies.get(familyIdx);
+                        final Family f = optionalFamilies.getFirst();
                         final boolean lastFamily = (familyIdx == optionalFamilies.size() - 1);
 
 //						1/ add hypothesis from this family
@@ -481,7 +486,7 @@ public class Cluster implements AutoCloseable {
 //				}
             }
             else
-                System.err.print("error bestHyp null");
+                IcyLogger.error(this.getClass(), "Error bestHyp null");
         }
         else {
             println("no need to build hyp");
@@ -499,7 +504,7 @@ public class Cluster implements AutoCloseable {
         else return 0;
     }
 
-    protected void penalizeFD(final GlobalHypothesis gh, final int t) {
+    protected void penalizeFD(final @NotNull GlobalHypothesis gh, final int t) {
         gh.penalizeFD(t, tracker.pFA, realAssociations);
 //		int numFD = getRealSpotsNum(t)- gh.getRealSpotsNumAtT(t);
         //gh.penalize(tracker.computeFalseDetectionsPoissonPenalization(numFD));
@@ -511,7 +516,7 @@ public class Cluster implements AutoCloseable {
         //gh.penalize(tracker.computeNewTrackPenalization(numNT, t));
     }
 
-    protected void penalizeFD(final GlobalHypothesis gh, final int numFD, final int t) {
+    protected void penalizeFD(final @NotNull GlobalHypothesis gh, final int numFD, final int t) {
         gh.penalizeFD(t, tracker.pFA, realAssociations);
         //gh.penalize(tracker.computeFalseDetectionsPenalization(numFD));
     }
@@ -572,7 +577,7 @@ public class Cluster implements AutoCloseable {
                         thr.join();
                     }
                     catch (final InterruptedException e) {
-                        IcyExceptionHandler.showErrorMessage(e, true);
+                        IcyLogger.error(this.getClass(), e);
                     }
             }
         }
@@ -689,7 +694,7 @@ public class Cluster implements AutoCloseable {
         }
     }
 
-    protected boolean areCompatible(final GlobalHypothesis gh, final Hypothesis h) {
+    protected boolean areCompatible(final GlobalHypothesis gh, final @NotNull Hypothesis h) {
         final long t1 = System.currentTimeMillis();
         boolean compatible = true;
         for (final Association s : h.usedAssociations)
@@ -703,8 +708,14 @@ public class Cluster implements AutoCloseable {
         return compatible;
     }
 
-    protected void recursBuildBestGlobalHypWithMandatoryFamiliesTree(final GlobalHypothesis ghPrev, final int familyIdx, final int currentT, final int t, final ArrayList<Family> mFamilies, final ArrayList<Family> oFamilies) {
-
+    protected void recursBuildBestGlobalHypWithMandatoryFamiliesTree(
+            final GlobalHypothesis ghPrev,
+            final int familyIdx,
+            final int currentT,
+            final int t,
+            final @NotNull ArrayList<Family> mFamilies,
+            final ArrayList<Family> oFamilies
+    ) {
         final Family f = mFamilies.get(familyIdx);
         final boolean lastFamily = (familyIdx == mFamilies.size() - 1);
         final Vector<Hypothesis> compatibleHypothesis = f.getCompatibleHypothesis(ghPrev);
@@ -770,12 +781,19 @@ public class Cluster implements AutoCloseable {
                     thr.join();
                 }
                 catch (final InterruptedException e) {
-                    IcyExceptionHandler.showErrorMessage(e, true);
+                    IcyLogger.error(this.getClass(), e);
                 }
         }
     }
 
-    protected void recursBuildBestGlobalHypWithMandatoryFamilies(final GlobalHypothesis ghPrev, final int familyIdx, final int currentT, final int t, final ArrayList<Family> mFamilies, final ArrayList<Family> oFamilies) {
+    protected void recursBuildBestGlobalHypWithMandatoryFamilies(
+            final GlobalHypothesis ghPrev,
+            final int familyIdx,
+            final int currentT,
+            final int t,
+            final @NotNull ArrayList<Family> mFamilies,
+            final ArrayList<Family> oFamilies
+    ) {
         final Family f = mFamilies.get(familyIdx);
         final boolean lastFamily = (familyIdx == mFamilies.size() - 1);
         for (final Hypothesis hyp : f.hypotheses) {
@@ -835,7 +853,7 @@ public class Cluster implements AutoCloseable {
         }
     }
 
-    public void recursPrintPerceiv(final MHTrack2s trk) {
+    public void recursPrintPerceiv(final @NotNull MHTrack2s trk) {
 //		PluginConsole.println(" "+trk.perceiv);
         if (trk.precedingSegment != null) {
             recursPrintPerceiv(trk.precedingSegment);
@@ -851,8 +869,7 @@ public class Cluster implements AutoCloseable {
 
             final LinkedList<Family> validatedFamilies = new LinkedList<>();
             for (final Hypothesis h : bestHypSafe.bestHyp.hyps) {
-                assert h.leaf != null;
-                final Family family = h.leaf.family;
+                final Family family = Objects.requireNonNull(h.leaf).family;
                 family.lastSelectedLeaf = h.leaf;
                 final MHTrack2s oldRoot = family.rootNode;
                 println("leaf time " + t + " new root time" + newRootTime + " old root time " + oldRoot.association.t);
@@ -933,7 +950,7 @@ public class Cluster implements AutoCloseable {
 
     protected void println(final String text) {
         if (verbose)
-            System.out.println(text);
+            IcyLogger.trace(this.getClass(), text);
     }
 
     /*@Override
@@ -959,7 +976,13 @@ public class Cluster implements AutoCloseable {
     }
 
     //cette version fonctionne mais donne un resultat errone car quand les branches sont longues, c'est la branche d'arret de la track qui a le meilleur score!
-    public GlobalHypothesis getMLHypothesis(final int firstT, final int lastT, final HMMMHTracker tracker, final ArrayList<Family> mandatoryFamilies, final ArrayList<Family> optionalFamilies) {
+    public GlobalHypothesis getMLHypothesis(
+            final int firstT,
+            final int lastT,
+            final HMMMHTracker tracker,
+            final @NotNull ArrayList<Family> mandatoryFamilies,
+            final ArrayList<Family> optionalFamilies
+    ) {
         final GlobalHypothesis gh = new GlobalHypothesis(firstT, lastT, tracker);
         if (!mandatoryFamilies.isEmpty()) {
             final ArrayList<Family> lFamilies = new ArrayList<>(mandatoryFamilies);

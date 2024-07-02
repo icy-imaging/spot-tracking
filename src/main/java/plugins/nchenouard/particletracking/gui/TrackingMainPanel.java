@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import icy.swimmingPool.SwimmingObject;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
 import plugins.nchenouard.particletracking.MHTparameterSet;
 import plugins.nchenouard.spot.DetectionResult;
 
@@ -39,7 +39,6 @@ import java.awt.*;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class TrackingMainPanel extends JPanel implements TreeSelectionListener {
     JPanel centerPane = new JPanel(new CardLayout());
 
@@ -378,7 +377,7 @@ public class TrackingMainPanel extends JPanel implements TreeSelectionListener {
         final int cnt = this.detectionInputPanel.detectionChooser.getItemCount();
         for (int i = 0; i < cnt; i++) {
             final Object o = this.detectionInputPanel.detectionChooser.getItemAt(i);
-            if (o instanceof DetectionResult) {
+            if (o != null) {
                 if (o == dr) {
                     this.detectionInputPanel.detectionChooser.setSelectedIndex(i);
                     break;

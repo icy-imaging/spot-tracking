@@ -1,25 +1,24 @@
-/* Copyright (c) 2012 Kevin L. Stern
+/*
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of Icy.
+ * Icy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Icy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with Icy. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package plugins.nchenouard.particletracking.MHTracker.LinearProgramming;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
@@ -64,7 +63,7 @@ public class HungarianAlgorithm {
      *                   worker i to job j, for all i, j. The cost matrix must not be
      *                   irregular in the sense that all rows must be the same length.
      */
-    public HungarianAlgorithm(final double[][] costMatrix) {
+    public HungarianAlgorithm(final double @NotNull [] @NotNull [] costMatrix) {
         this.dim = Math.max(costMatrix.length, costMatrix[0].length);
         this.rows = costMatrix.length;
         this.cols = costMatrix[0].length;

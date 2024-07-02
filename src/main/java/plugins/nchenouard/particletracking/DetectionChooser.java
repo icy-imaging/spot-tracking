@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,10 +18,12 @@
 
 package plugins.nchenouard.particletracking;
 
-import icy.main.Icy;
-import icy.swimmingPool.SwimmingObject;
-import icy.swimmingPool.SwimmingPoolEvent;
-import icy.swimmingPool.SwimmingPoolListener;
+import org.bioimageanalysis.icy.Icy;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolListener;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.spot.DetectionResult;
 
 import javax.swing.*;
@@ -55,11 +57,13 @@ public class DetectionChooser extends JComboBox<DetectionResult> implements Swim
             this.detectionResults = detectionResults;
         }
 
+        @Contract(pure = true)
         @Override
         public DetectionResult getElementAt(final int index) {
             return detectionResults.get(index);
         }
 
+        @Contract(pure = true)
         @Override
         public int getSize() {
             return detectionResults.size();
@@ -137,18 +141,18 @@ public class DetectionChooser extends JComboBox<DetectionResult> implements Swim
         setSelectedItem(oldSelected);
     }
 
-    private ArrayList<DetectionResult> getDetectionResultList() {
+    private @NotNull ArrayList<DetectionResult> getDetectionResultList() {
 
         final ArrayList<DetectionResult> detectionResultList = new ArrayList<>();
 
         final ArrayList<SwimmingObject> objects = Icy.getMainInterface().getSwimmingPool().getObjects();
 
         for (final SwimmingObject so : objects) {
-            System.out.println(so.getObject());
+            //IcyLogger.debug(this.getClass(), so.getObject().toString());
             final Object o = so.getObject();
-            System.out.println(o instanceof DetectionResult);
+            //IcyLogger.debug(this.getClass(), String.valueOf(o instanceof DetectionResult));
             if (so.getObject() instanceof DetectionResult) {
-                // System.out.println("Object added: " + so.getObject() );
+                //IcyLogger.debug(this.getClass(), "Object added: " + so.getObject() );
                 detectionResultList.add((DetectionResult) so.getObject());
             }
         }

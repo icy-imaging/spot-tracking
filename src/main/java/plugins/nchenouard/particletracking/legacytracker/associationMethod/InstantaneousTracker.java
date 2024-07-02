@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,8 +18,9 @@
 
 package plugins.nchenouard.particletracking.legacytracker.associationMethod;
 
-import icy.system.IcyExceptionHandler;
-import icy.system.thread.Processor;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.bioimageanalysis.icy.system.thread.Processor;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.particletracking.legacytracker.Tracker;
 import plugins.nchenouard.spot.Spot;
@@ -84,7 +85,13 @@ public class InstantaneousTracker implements Tracker {
     int trackCount = 0;
     int maxConsecutivePred;
 
-    public InstantaneousTracker(final AssignProblemSolver assignementSolver, final Predictor predictor, final boolean gateLikelihood, final double gateFactor, final int maxConsecutivePred) {
+    public InstantaneousTracker(
+            final AssignProblemSolver assignementSolver,
+            final @NotNull Predictor predictor,
+            final boolean gateLikelihood,
+            final double gateFactor,
+            final int maxConsecutivePred
+    ) {
         this.assignementSolver = assignementSolver;
         this.predictor = predictor;
         this.gateLikelihood = gateLikelihood;
@@ -94,7 +101,7 @@ public class InstantaneousTracker implements Tracker {
         this.maxConsecutivePred = maxConsecutivePred;
     }
 
-    protected double[][] computeLikelihoodTable(final int t, final ArrayList<Track> activeTracks, final ArrayList<Spot> spots) {
+    protected double[][] computeLikelihoodTable(final int t, final @NotNull ArrayList<Track> activeTracks, final @NotNull ArrayList<Spot> spots) {
         final int numTracks = activeTracks.size();
         final int numDetect = spots.size();
         if (numTracks == 0 || numDetect == 0)
@@ -117,7 +124,7 @@ public class InstantaneousTracker implements Tracker {
         return likelihoods;
     }
 
-    protected double[][] computeLikelihoodTable(final int t, final ArrayList<Track> activeTracks, final ArrayList<Spot> spots, final double gateFactor) {
+    protected double[][] computeLikelihoodTable(final int t, final @NotNull ArrayList<Track> activeTracks, final @NotNull ArrayList<Spot> spots, final double gateFactor) {
         final int numTracks = activeTracks.size();
         final int numDetect = spots.size();
         if (numTracks == 0 || numDetect == 0)
@@ -140,7 +147,7 @@ public class InstantaneousTracker implements Tracker {
         return likelihoods;
     }
 
-    protected double[][] computeInnovationTable(final int t, final ArrayList<Track> activeTracks, final ArrayList<Spot> spots) {
+    protected double[][] computeInnovationTable(final int t, final @NotNull ArrayList<Track> activeTracks, final @NotNull ArrayList<Spot> spots) {
         final int numTracks = activeTracks.size();
         final int numDetect = spots.size();
 
@@ -156,7 +163,13 @@ public class InstantaneousTracker implements Tracker {
         return innovations;
     }
 
-    protected ArrayList<AssignProblem> createIndependentProblems(final int t, final double[][] likelihoods, final double[][] innovations, final ArrayList<Track> activeTracks, final ArrayList<Spot> detections) {
+    protected ArrayList<AssignProblem> createIndependentProblems(
+            final int t,
+            final double[][] likelihoods,
+            final double[][] innovations,
+            final @NotNull ArrayList<Track> activeTracks,
+            final @NotNull ArrayList<Spot> detections
+    ) {
         // TODO: check that likelihood is not null ie detections.size() > 0
         final int n_pred = activeTracks.size();
         final int n_meas = detections.size();
@@ -307,7 +320,7 @@ public class InstantaneousTracker implements Tracker {
         return track;
     }
 
-    protected ArrayList<Track> filterTracks(final ArrayList<Track> tracks, final int t) {
+    protected ArrayList<Track> filterTracks(final @NotNull ArrayList<Track> tracks, final int t) {
         synchronized (tracks) {
             final ArrayList<Track> activeTracks = new ArrayList<>();
             for (final Track track : tracks)
@@ -322,7 +335,7 @@ public class InstantaneousTracker implements Tracker {
     }
 
 
-    protected void initTracks(final ArrayList<Spot> spots, final int t) {
+    protected void initTracks(final @NotNull ArrayList<Spot> spots, final int t) {
         for (final Spot spot : spots) {
             final Track track = createTrack(spot, t);
             if (track != null)
@@ -332,7 +345,7 @@ public class InstantaneousTracker implements Tracker {
         }
     }
 
-    protected void postProcess(final AssignProblem pb, final int t) {
+    protected void postProcess(final @NotNull AssignProblem pb, final int t) {
 //		Create new tracks
         initTracks(pb.tracksToBeCreated, t);
         // Prolongate lonely tracks
@@ -353,7 +366,7 @@ public class InstantaneousTracker implements Tracker {
                     thr.join();
                 }
                 catch (final InterruptedException e) {
-                    IcyExceptionHandler.showErrorMessage(e, true);
+                    IcyLogger.error(this.getClass(), e);
                 }
             listThreads.clear();
         }
@@ -365,21 +378,28 @@ public class InstantaneousTracker implements Tracker {
 
 
     protected void preProcess(final ArrayList<AssignProblem> problems, final AssignProblem pb, final int t) {
-
+        //
     }
 
-    protected void preProcessProblems(final ArrayList<AssignProblem> problems, final int t, final boolean parallel) {
+    protected void preProcessProblems(final @NotNull ArrayList<AssignProblem> problems, final int t, final boolean parallel) {
         for (final AssignProblem p : problems) {
             preProcess(problems, p, t);
         }
     }
 
-    protected void prolongateTracks(final ArrayList<Track> tracks, final int t) {
+    protected void prolongateTracks(final @NotNull ArrayList<Track> tracks, final int t) {
         for (final Track track : tracks)
             track.prolongate(t);
     }
 
-    protected void recursAddMeasurement(final int measIndex, final double[][] likelihood, final HashSet<Integer> pred, final HashSet<Integer> meas, final boolean[] trackIsBusy, final boolean[] measIsBusy) {
+    protected void recursAddMeasurement(
+            final int measIndex,
+            final double[][] likelihood,
+            final HashSet<Integer> pred,
+            final HashSet<Integer> meas,
+            final boolean[] trackIsBusy,
+            final boolean @NotNull [] measIsBusy
+    ) {
         if (!measIsBusy[measIndex]) {
             measIsBusy[measIndex] = true;
             meas.add(measIndex);
@@ -391,7 +411,14 @@ public class InstantaneousTracker implements Tracker {
         }
     }
 
-    protected void recursAddTrack(final int trackIndex, final double[][] likelihood, final HashSet<Integer> pred, final HashSet<Integer> meas, final boolean[] trackIsBusy, final boolean[] measIsBusy) {
+    protected void recursAddTrack(
+            final int trackIndex,
+            final double[][] likelihood,
+            final HashSet<Integer> pred,
+            final HashSet<Integer> meas,
+            final boolean @NotNull [] trackIsBusy,
+            final boolean[] measIsBusy
+    ) {
         if (!trackIsBusy[trackIndex]) {
             trackIsBusy[trackIndex] = true;
             pred.add(trackIndex);
@@ -403,10 +430,10 @@ public class InstantaneousTracker implements Tracker {
         }
     }
 
-    Processor processor = new Processor(1000000, 8);
+    //Processor processor = new Processor(1000000, 8);
 
     // FIXME: 04/09/2023 Parallel process not working
-    protected void solveProblems(final ArrayList<AssignProblem> problems, boolean parallel) {
+    protected void solveProblems(final @NotNull ArrayList<AssignProblem> problems, boolean parallel) {
         for (final AssignProblem p : problems)
             assignementSolver.solve(p);
     }

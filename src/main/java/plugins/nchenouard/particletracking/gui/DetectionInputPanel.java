@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,10 +18,11 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import icy.swimmingPool.SwimmingObject;
-import icy.swimmingPool.SwimmingPoolEvent;
-import icy.swimmingPool.SwimmingPoolEventType;
-import icy.util.XMLUtil;
+import org.bioimageanalysis.icy.io.xml.XMLUtil;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEventType;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import plugins.nchenouard.particletracking.DetectionChooser;
@@ -50,7 +51,6 @@ public class DetectionInputPanel extends JPanel {
     final public JSpinner rateDetectionSpinner = new JSpinner();
 
     public DetectionInputPanel() {
-
         this.setLayout(new BorderLayout());
 
         final JPanel pane = new JPanel();
@@ -128,13 +128,13 @@ public class DetectionInputPanel extends JPanel {
         }
     }
 
-    public void fillParameterSet(final MHTparameterSet parameterSet) {
+    public void fillParameterSet(final @NotNull MHTparameterSet parameterSet) {
         parameterSet.numberOfFalseDetections = getNumberOfFalseDetections();
         parameterSet.detectionRate = getDetectionRate();
         parameterSet.detectionResults = detectionChooser.getSelectedDetectionResult();
     }
 
-    public void setParameters(final MHTparameterSet parameterSet) {
+    public void setParameters(final @NotNull MHTparameterSet parameterSet) {
         detectionChooser.setSelectedItem(parameterSet.detectionResults);
         numberFalseDetectionsSpinner.getModel().setValue(parameterSet.numberOfFalseDetections);
         rateDetectionSpinner.getModel().setValue(parameterSet.detectionRate);

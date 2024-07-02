@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,7 +18,8 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import icy.system.IcyExceptionHandler;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -33,7 +34,7 @@ public class FixedThreadPool {
     RunningThread[] runningThreads;
     int numThreads;
 
-    public FixedThreadPool(final Task[] threadPool) {
+    public FixedThreadPool(final Task @NotNull [] threadPool) {
         this.threadPool = threadPool;
         this.finishedTasks = new boolean[threadPool.length];
     }
@@ -55,7 +56,7 @@ public class FixedThreadPool {
                 throw new Exception("ERRR " + numStoppedThreads + " " + numThreads);
         }
         catch (final Exception e) {
-            IcyExceptionHandler.showErrorMessage(e, true);
+            IcyLogger.error(this.getClass(), e);
         }
     }
 
@@ -66,7 +67,7 @@ public class FixedThreadPool {
                     wait();
                 }
                 catch (final InterruptedException e) {
-                    IcyExceptionHandler.showErrorMessage(e, true);
+                    IcyLogger.error(this.getClass(), e);
                 }
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
 
 package plugins.nchenouard.particletracking.legacytracker;
 
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.spot.Detection;
 import plugins.nchenouard.spot.Point3D;
 import plugins.nchenouard.spot.Spot;
@@ -34,7 +35,6 @@ import java.util.ArrayList;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class SpotTrack extends Detection {
     public double minIntensity;
     public double maxIntensity;
@@ -52,7 +52,15 @@ public class SpotTrack extends Detection {
         setColor(Color.red);
     }
 
-    public SpotTrack(final Spot spot, final int t, final boolean real, final double minIntensity, final double maxIntensity, final double meanIntensity, final ArrayList<Point3D> point3DList) {
+    public SpotTrack(
+            final @NotNull Spot spot,
+            final int t,
+            final boolean real,
+            final double minIntensity,
+            final double maxIntensity,
+            final double meanIntensity,
+            final ArrayList<Point3D> point3DList
+    ) {
         super(spot.mass_center.x, spot.mass_center.y, spot.mass_center.z, t);
 
         if (real) {

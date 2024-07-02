@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
 import plugins.nchenouard.linearprogrammingfullsimplex.CanonicalSimplexProgram;
 import plugins.nchenouard.linearprogrammingfullsimplex.SimplexLEXICO;
 import plugins.nchenouard.particletracking.MHTracker.LinearProgramming.HierarchicalLP;
@@ -26,6 +27,7 @@ import plugins.nchenouard.particletracking.MHTracker.LinearProgramming.Hierarchi
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 /**
  * Specialized Cluster object which contains some Linear Programming (LP) methods to solve the tracking problem using a custom implementation of the optimizer
@@ -116,7 +118,7 @@ public class ClusterSolveLPCustom extends Cluster {
                         mandatoryAssociations.add(rootAssociation);
                     }
                     else
-                        System.out.println("Error: rootrack without association!");
+                        IcyLogger.error(this.getClass(), "Error: rootrack without association!");
                 }
             }
             for (final Family f : flist) {
@@ -140,8 +142,7 @@ public class ClusterSolveLPCustom extends Cluster {
                     for (final Hypothesis h : f.hypotheses) {
                         // build a table indicating which association the hypothesis is using
                         final boolean[] detectionTab = new boolean[associations.size() + mandatoryAssociations.size()];
-                        assert h.leaf != null;
-                        double s = h.leaf.score;
+                        double s = Objects.requireNonNull(h.leaf).score;
                         // and correct leaf score for detection it is using
                         int cnt = 0;
                         for (final Association a : associations) {
@@ -174,7 +175,7 @@ public class ClusterSolveLPCustom extends Cluster {
 
         // now create the corresponding lp problem
         final int numVariables = tuples.size(); // the number of variables is the number of tuples
-        final int numConstraintsDetections = tuples.get(0).length; // the number of constraints is the number of detections (each is used once)
+        final int numConstraintsDetections = tuples.getFirst().length; // the number of constraints is the number of detections (each is used once)
 
         // Simplex solving:
         // * N-length vector c, solve the LP { max cx : Ax <= b, x >= 0 }.
@@ -300,8 +301,7 @@ public class ClusterSolveLPCustom extends Cluster {
                     optionalFamilies.add(f);// families that do not have a previous ValidatedTrack are optional
                 else {
                     mandatoryFamilies.add(f); // families that already have a previous ValidatedTrack are mandatory
-                    println("mandatory family : begin = " + f.rootTrack.associations.getFirst().t + " root time "
-                            + f.rootTime);
+                    println("mandatory family : begin = " + f.rootTrack.associations.getFirst().t + " root time " + f.rootTime);
                 }
             }
             final SolveMLAssociation mlSolver = new SolveMLAssociation();

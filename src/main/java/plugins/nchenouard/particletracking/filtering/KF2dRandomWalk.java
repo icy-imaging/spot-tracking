@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -19,7 +19,8 @@
 package plugins.nchenouard.particletracking.filtering;
 
 import Jama.Matrix;
-import icy.system.IcyExceptionHandler;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;
 
@@ -50,7 +51,7 @@ public class KF2dRandomWalk extends KalmanFilter implements Predictor2D {
     }
 
     @Override
-    Matrix buildX0(final Matrix firstElement) {
+    Matrix buildX0(final @NotNull Matrix firstElement) {
         final Matrix x0 = new Matrix(2, 1);
         x0.set(0, 0, firstElement.get(0, 0));  // X_t
         x0.set(1, 0, firstElement.get(1, 0));  // Y_t
@@ -67,7 +68,7 @@ public class KF2dRandomWalk extends KalmanFilter implements Predictor2D {
     }
 
     @Override
-    public void setTrackingCovariances(final double[] trackingCov) {
+    public void setTrackingCovariances(final double @NotNull [] trackingCov) {
         Q.set(0, 0, trackingCov[0]);
         Q.set(1, 1, trackingCov[1]);
         refVarX = trackingCov[0];
@@ -229,12 +230,11 @@ public class KF2dRandomWalk extends KalmanFilter implements Predictor2D {
 //				}
             }
             catch (final RuntimeException e) {
-                System.out.println("error in KalmanFiter.covupdate:");
-                if (x_est == null) System.out.println("xest null");
-                if (x_pre == null) System.out.println("xpre null");
-                if (Q == null) System.out.println("Q null");
-                if (Q0 == null) System.out.println("Q0 null");
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e, "Error in KalmanFiter.covupdate:");
+                if (x_est == null) IcyLogger.error(this.getClass(), "xest null");
+                if (x_pre == null) IcyLogger.error(this.getClass(), "xpre null");
+                if (Q == null) IcyLogger.error(this.getClass(), "Q null");
+                if (Q0 == null) IcyLogger.error(this.getClass(), "Q0 null");
             }
         }
     }

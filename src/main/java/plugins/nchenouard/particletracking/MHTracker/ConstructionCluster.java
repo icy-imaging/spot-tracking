@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -31,7 +31,6 @@ import java.util.HashSet;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class ConstructionCluster {
     final ArrayList<Family> families = new ArrayList<>();
     final HashSet<Association> associations = new HashSet<>();

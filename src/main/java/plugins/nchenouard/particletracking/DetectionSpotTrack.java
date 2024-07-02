@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
 
 package plugins.nchenouard.particletracking;
 
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.spot.Detection;
 import plugins.nchenouard.spot.Spot;
 
@@ -35,7 +36,7 @@ import plugins.nchenouard.spot.Spot;
 public class DetectionSpotTrack extends Detection {
     public Spot spot;
 
-    public DetectionSpotTrack(final Spot detection, final int t) {
+    public DetectionSpotTrack(final @NotNull Spot detection, final int t) {
         super(detection.mass_center.x, detection.mass_center.y, detection.mass_center.z, t);
         this.spot = detection;
     }

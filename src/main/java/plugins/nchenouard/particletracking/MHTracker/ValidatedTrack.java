@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,6 +18,8 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 
 /**
@@ -34,7 +36,7 @@ public class ValidatedTrack {
     LinkedList<Association> associations = new LinkedList<>();
     Family family;
 
-    ValidatedTrack(final Family family) {
+    ValidatedTrack(final @NotNull Family family) {
         this.family = family;
         if (family.rootNode != null)
             associations.add(family.rootNode.association);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,7 +18,8 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import icy.util.XMLUtil;
+import org.bioimageanalysis.icy.io.xml.XMLUtil;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import plugins.nchenouard.particletracking.MHTparameterSet;
@@ -37,7 +38,6 @@ import java.awt.*;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class TracksOutputPanel extends JPanel {
     final DefaultMutableTreeNode node = new DefaultMutableTreeNode("Output");
 
@@ -84,11 +84,11 @@ public class TracksOutputPanel extends JPanel {
         }
     }
 
-    public void fillParameterSet(final MHTparameterSet parameterSet) {
+    public void fillParameterSet(final @NotNull MHTparameterSet parameterSet) {
         parameterSet.trackGroupName = trackGroupTF.getText();
     }
 
-    public void setParameters(final MHTparameterSet parameterSet) {
+    public void setParameters(final @NotNull MHTparameterSet parameterSet) {
         trackGroupTF.setText(parameterSet.trackGroupName);
     }
 }

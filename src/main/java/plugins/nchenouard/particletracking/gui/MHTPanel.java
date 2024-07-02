@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,8 +18,9 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import icy.system.IcyExceptionHandler;
-import icy.util.XMLUtil;
+import org.bioimageanalysis.icy.io.xml.XMLUtil;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import plugins.nchenouard.particletracking.MHTparameterSet;
@@ -40,7 +41,6 @@ import java.text.ParseException;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class MHTPanel extends JPanel {
     final DefaultMutableTreeNode node = new DefaultMutableTreeNode("Tracking algorithm");
 
@@ -136,7 +136,7 @@ public class MHTPanel extends JPanel {
                 XMLUtil.setAttributeDoubleValue(nodeMHT, MHTparameterSet.GATE_FACTOR, getGateFactor());
             }
             catch (final ParseException e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
         }
     }
@@ -148,7 +148,7 @@ public class MHTPanel extends JPanel {
                 gateFactorTF.setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.GATE_FACTOR, getGateFactor()));
             }
             catch (final ParseException e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
             numberNewTrackSpinner.getModel().setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.NUMBER_NEW_OBJECTS, getNumbeNewTracks()));
             numberInitialTrackSpinner.getModel().setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.NUMBER_OBJECTS_FIRST_FRAME, getNumberInitialTracks()));
@@ -156,7 +156,7 @@ public class MHTPanel extends JPanel {
         }
     }
 
-    public void fillParameterSet(final MHTparameterSet parameterSet) {
+    public void fillParameterSet(final @NotNull MHTparameterSet parameterSet) {
         parameterSet.numberNewObjects = getNumbeNewTracks();
         parameterSet.numberInitialObjects = getNumberInitialTracks();
         parameterSet.mhtDepth = getMHTDepth();
@@ -164,11 +164,11 @@ public class MHTPanel extends JPanel {
             parameterSet.gateFactor = getGateFactor();
         }
         catch (final ParseException e) {
-            IcyExceptionHandler.showErrorMessage(e, true);
+            IcyLogger.error(this.getClass(), e);
         }
     }
 
-    public void setParameters(final MHTparameterSet parameterSet) {
+    public void setParameters(final @NotNull MHTparameterSet parameterSet) {
         gateFactorTF.setValue(parameterSet.gateFactor);
         numberNewTrackSpinner.getModel().setValue(parameterSet.numberNewObjects);
         numberInitialTrackSpinner.getModel().setValue(parameterSet.numberInitialObjects);

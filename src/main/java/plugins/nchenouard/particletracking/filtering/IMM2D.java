@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 package plugins.nchenouard.particletracking.filtering;
 
 import Jama.Matrix;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;
 
@@ -66,7 +68,7 @@ public class IMM2D implements Predictor {
      * @param immInertia    immInertia
      * @param predictors    List of Predictor2D
      */
-    public IMM2D(final LikelihoodTypes predictorType, final double immInertia, final List<Predictor2D> predictors) {
+    public IMM2D(final LikelihoodTypes predictorType, final double immInertia, final @NotNull List<Predictor2D> predictors) {
         r = predictors.size();
         inertia = immInertia;
         x_est = new Matrix(dim, 1);
@@ -102,7 +104,7 @@ public class IMM2D implements Predictor {
      *
      * @param toCopy IMM2D object
      */
-    public IMM2D(final IMM2D toCopy) {
+    public IMM2D(final @NotNull IMM2D toCopy) {
         this.dim = toCopy.dim;
         this.r = toCopy.r;
         this.likelihoodType = toCopy.likelihoodType;
@@ -253,18 +255,11 @@ public class IMM2D implements Predictor {
 
     @Override
     public double likelihood(final Spot s, final boolean gated, final double gateFactor) {
-        final double l;
-        switch (likelihoodType) {
-            case IMM_MAX_LIKELIHOOD:
-                l = likelihoodMax(s, gated, gateFactor);
-                break;
-            case IMM_WEIGHTED_LIKELIHOOD:
-                l = likelihoodMean(s, gated, gateFactor);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
-        }
-        return l;
+        return switch (likelihoodType) {
+            case IMM_MAX_LIKELIHOOD -> likelihoodMax(s, gated, gateFactor);
+            case IMM_WEIGHTED_LIKELIHOOD -> likelihoodMean(s, gated, gateFactor);
+            //default -> throw new IllegalArgumentException("Unknown IMM likelihood type.");
+        };
     }
 
     /**
@@ -277,18 +272,11 @@ public class IMM2D implements Predictor {
      **/
     @Override
     public double likelihood(final Matrix z, final boolean gated, final double gateFactor) {
-        final double l;
-        switch (likelihoodType) {
-            case IMM_MAX_LIKELIHOOD:
-                l = likelihoodMax(z, gated, gateFactor);
-                break;
-            case IMM_WEIGHTED_LIKELIHOOD:
-                l = likelihoodMean(z, gated, gateFactor);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
-        }
-        return l;
+        return switch (likelihoodType) {
+            case IMM_MAX_LIKELIHOOD -> likelihoodMax(z, gated, gateFactor);
+            case IMM_WEIGHTED_LIKELIHOOD -> likelihoodMean(z, gated, gateFactor);
+            //default -> throw new IllegalArgumentException("Unknown IMM likelihood type.");
+        };
     }
 
     /**
@@ -423,8 +411,7 @@ public class IMM2D implements Predictor {
                 }
                 break;
             }
-            default:
-                System.err.println("Unknown likelihood type in IMM2D");
+            //default: IcyLogger.error(this.getClass(), "Unknown likelihood type in IMM2D");
         }
     }
 
@@ -486,8 +473,7 @@ public class IMM2D implements Predictor {
                 }
                 break;
             }
-            default:
-                System.err.println("Unknown likelihood type in IMM2D");
+            //default: IcyLogger.error(this.getClass(), "Unknown likelihood type in IMM2D");
         }
     }
 
@@ -508,65 +494,40 @@ public class IMM2D implements Predictor {
 
     @Override
     public double loglikelihood(final Matrix z) {
-        final double l;
-        switch (likelihoodType) {
-            case IMM_MAX_LIKELIHOOD:
-                l = likelihoodMax(z, false, 10);
-                break;
-            case IMM_WEIGHTED_LIKELIHOOD:
-                l = likelihoodMean(z, false, 10);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
-        }
+        final double l = switch (likelihoodType) {
+            case IMM_MAX_LIKELIHOOD -> likelihoodMax(z, false, 10);
+            case IMM_WEIGHTED_LIKELIHOOD -> likelihoodMean(z, false, 10);
+            //default -> throw new IllegalArgumentException("Unknown IMM likelihood type.");
+        };
         return Math.log(l);
     }
 
     @Override
     public double loglikelihood(final Spot s) {
-        final double l;
-        switch (likelihoodType) {
-            case IMM_MAX_LIKELIHOOD:
-                l = likelihoodMax(s, false, 10);
-                break;
-            case IMM_WEIGHTED_LIKELIHOOD:
-                l = likelihoodMean(s, false, 10);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
-        }
+        final double l = switch (likelihoodType) {
+            case IMM_MAX_LIKELIHOOD -> likelihoodMax(s, false, 10);
+            case IMM_WEIGHTED_LIKELIHOOD -> likelihoodMean(s, false, 10);
+            //default -> throw new IllegalArgumentException("Unknown IMM likelihood type.");
+        };
         return Math.log(l); //TODO compute directly log likelihood without using an exponential
     }
 
     @Override
     public double likelihoodOfState(final Matrix x) {
-        final double l;
-        switch (likelihoodType) {
-            case IMM_MAX_LIKELIHOOD:
-                l = likelihoodMaxOfState(x);
-                break;
-            case IMM_WEIGHTED_LIKELIHOOD:
-                l = likelihoodMeanOfState(x);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
-        }
-        return l;
+        return switch (likelihoodType) {
+            case IMM_MAX_LIKELIHOOD -> likelihoodMaxOfState(x);
+            case IMM_WEIGHTED_LIKELIHOOD -> likelihoodMeanOfState(x);
+            //default -> throw new IllegalArgumentException("Unknown IMM likelihood type.");
+        };
     }
 
     @Override
     public double loglikelihoodOfState(final Matrix x) {
-        final double l;
-        switch (likelihoodType) {
-            case IMM_MAX_LIKELIHOOD:
-                l = likelihoodMaxOfState(x);
-                break;
-            case IMM_WEIGHTED_LIKELIHOOD:
-                l = likelihoodMeanOfState(x);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
-        }
+        final double l = switch (likelihoodType) {
+            case IMM_MAX_LIKELIHOOD -> likelihoodMaxOfState(x);
+            case IMM_WEIGHTED_LIKELIHOOD -> likelihoodMeanOfState(x);
+            //default -> throw new IllegalArgumentException("Unknown IMM likelihood type.");
+        };
         return Math.log(l);
     }
 
@@ -579,7 +540,6 @@ public class IMM2D implements Predictor {
     public double likelihoodMaxOfState(final Matrix x) {
         return filter_i[maxLikelihoodIndex].likelihoodOfState(x);
     }
-
 
     /**
      * LikelihoodMean = sum(l_i*)
@@ -633,23 +593,22 @@ public class IMM2D implements Predictor {
     }
 
     @Override
-    public Spot buildSpotFromState(final Matrix state) {
+    public Spot buildSpotFromState(final @NotNull Matrix state) {
         return new Spot(state.get(0, 0), state.get(1, 0), 0);
     }
 
     @Override
     public double getTotalGateLikelihood(final boolean gated, final double gateFactor) {
         double likelihood = 0;
-        switch (likelihoodType) {
-            case IMM_MAX_LIKELIHOOD:
-                return filter_i[maxLikelihoodIndex].getTotalGateLikelihood(gated, gateFactor);
-            case IMM_WEIGHTED_LIKELIHOOD:
+        return switch (likelihoodType) {
+            case IMM_MAX_LIKELIHOOD -> filter_i[maxLikelihoodIndex].getTotalGateLikelihood(gated, gateFactor);
+            case IMM_WEIGHTED_LIKELIHOOD -> {
                 for (int i = 0; i < r; i++)
                     likelihood += filter_i[i].getTotalGateLikelihood(gated, gateFactor) * m_est_i[i];
-                return likelihood;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
-        }
+                yield likelihood;
+            }
+            //default -> throw new IllegalArgumentException("Unknown IMM likelihood type.");
+        };
     }
 
     public double[] getWeights() {
@@ -814,7 +773,7 @@ public class IMM2D implements Predictor {
                 return filter_i[maxLikelihoodIndex].getCurrentPredictedStateAsSpot();
             }
             default:
-                System.err.println("Unknown likelihood type in IMM2D");
+                IcyLogger.error(this.getClass(), "Unknown likelihood type in IMM2D");
                 return null;
         }
     }
@@ -837,8 +796,7 @@ public class IMM2D implements Predictor {
                 for (int i = 0; i < r; i++)
                     l += filter_i[i].getMinLikelihoodInGate(gateFactor, t) * m_est_i[i];
                 break;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
+            //default: throw new IllegalArgumentException("Unknown IMM likelihood type.");
         }
         return l;
     }
@@ -860,8 +818,7 @@ public class IMM2D implements Predictor {
                 for (int i = 0; i < r; i++)
                     l += filter_i[i].getCurrentMinLikelihoodInGate(gateFactor) * m_est_i[i];
                 break;
-            default:
-                throw new IllegalArgumentException("Unknown IMM likelihood type.");
+            //default: throw new IllegalArgumentException("Unknown IMM likelihood type.");
         }
         return l;
     }

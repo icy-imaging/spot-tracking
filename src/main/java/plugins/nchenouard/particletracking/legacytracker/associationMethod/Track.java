@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -19,6 +19,8 @@
 package plugins.nchenouard.particletracking.legacytracker.associationMethod;
 
 import Jama.Matrix;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.filtering.*;
 import plugins.nchenouard.spot.Spot;
 
@@ -34,13 +36,13 @@ import java.util.ArrayList;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class Track {
     public static class Association {
         Matrix state;
         Spot spot;
         boolean isPrediction;
 
+        @Contract(pure = true)
         Association(final Matrix state, final Spot spot, final boolean isPrediction) {
             this.state = state;
             this.spot = spot;
@@ -59,6 +61,7 @@ public class Track {
     protected int firstIndex;// = -1; // first index in the sequence
     protected int lastIndex;// = -1; // last  index in the sequence
 
+    @Contract(pure = true)
     public Track() {
         this.associations = new ArrayList<>();
         this.firstIndex = 0;
@@ -66,6 +69,7 @@ public class Track {
         gateFactor = 3;
     }
 
+    @Contract(pure = true)
     public Track(final int id, final Predictor predictor, final int firstIndex, final double gateFactor) {
         this.id = id;
         this.associations = new ArrayList<>();
@@ -80,7 +84,7 @@ public class Track {
         add(measurement, spot, isPrediction);
     }
 
-    public void add(final Matrix state, final Spot spot, final boolean isPrediction) {
+    public void add(final @NotNull Matrix state, final Spot spot, final boolean isPrediction) {
         if (state.getColumnDimension() != 1)
             throw new IllegalArgumentException("state must be a vector");
         if (isPrediction)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,6 +18,8 @@
 
 package plugins.nchenouard.particletracking.MHTracker.LinearProgramming;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.LinkedList;
 
 /**
@@ -30,7 +32,6 @@ import java.util.LinkedList;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class IncompleteLProblem {
     public double scoreCorrection = 0; // a score correction term st the final score to consider is cx + scoreCorrection
     public double previousBestScore = 0;
@@ -38,6 +39,7 @@ public class IncompleteLProblem {
 
     public SimplexProblem sp;
 
+    @Contract(pure = true)
     public IncompleteLProblem(final int[] fixedValues) {
         this.fixedValues = fixedValues;
     }
@@ -212,6 +214,5 @@ public class IncompleteLProblem {
             problem.A = modifiedConstraints;
             problem.b = modifiedConstraintValue;
         }
-
     }
 }

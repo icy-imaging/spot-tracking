@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,10 +18,10 @@
 
 package plugins.nchenouard.particletracking.legacytracker.gui;
 
-import icy.gui.component.pool.SwimmingObjectChooser;
-import icy.swimmingPool.SwimmingObject;
-import icy.swimmingPool.SwimmingPoolEvent;
-import icy.swimmingPool.SwimmingPoolEventType;
+import org.bioimageanalysis.icy.gui.component.combo.SwimmingObjectChooser;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
+import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEventType;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.particletracking.legacytracker.Tracker;
 import plugins.nchenouard.particletracking.legacytracker.associationMethod.AssignProblemSolver;

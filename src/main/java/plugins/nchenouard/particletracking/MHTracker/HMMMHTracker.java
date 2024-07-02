@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,7 +18,9 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import icy.system.IcyExceptionHandler;
+import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import plugins.fab.trackmanager.TrackSegment;
 import plugins.nchenouard.particletracking.DetectionSpotTrack;
 import plugins.nchenouard.particletracking.SpotTrackingPlugin;
@@ -87,6 +89,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         Association a;
         Family f;
 
+        @Contract(pure = true)
         public FamilyAndAssociation(final Association a, final Family f) {
             this.a = a;
             this.f = f;
@@ -94,7 +97,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
     }
 
     public HMMMHTracker(
-            final List<Predictor> predictors,
+            final @NotNull List<Predictor> predictors,
             final double volume,
             final double gateFactor,
             final double probaDetect,
@@ -111,7 +114,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         this.Pd = probaDetect;
         this.K = Math.max(treeDepth, 0);
 
-        totalGateLikelihood = predictors.get(0).getTotalGateLikelihood(true, gateFactor);
+        totalGateLikelihood = predictors.getFirst().getTotalGateLikelihood(true, gateFactor);
         pDpG = Pd * totalGateLikelihood;
         pFA = densityFalseDetection;
         pNT = densityNewTrack;
@@ -136,6 +139,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         MHTrack2s.INIT_Pt = this.pt;
     }
 
+    @SuppressWarnings("resource")
     protected void hypothesisFormation() {
         if (parallelComputing) {
             final int processors = Runtime.getRuntime().availableProcessors();
@@ -157,7 +161,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
                 latch.await();
             }
             catch (final InterruptedException E) {
-                IcyExceptionHandler.showErrorMessage(E, true);
+                IcyLogger.error(this.getClass(), E);
             }
             // FixedThreadPool.Task[] runArray = new FixedThreadPool.Task[families.size()];
             // int cnt = 0;
@@ -442,9 +446,9 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
             // remove last virtual detections of a track segment
             boolean stop = false;
             while (!stop && !detections.isEmpty()) {
-                final Detection d = detections.get(detections.size() - 1);
+                final Detection d = detections.getLast();
                 if (d.getDetectionType() == Detection.DETECTIONTYPE_VIRTUAL_DETECTION)
-                    detections.remove(detections.size() - 1);
+                    detections.removeLast();
                 else
                     stop = true;
             }
@@ -459,13 +463,14 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
 
     protected void println(final String text) {
         if (verbose)
-            System.out.println(text);
+            IcyLogger.trace(this.getClass(), text);
     }
 
     static class BuildHypTask implements FixedThreadPool.Task {
         Cluster clusterTask;
         int tTask;
 
+        @Contract(pure = true)
         public BuildHypTask(final Cluster cluster, final int tt) {
             this.clusterTask = cluster;
             this.tTask = tt;
@@ -478,6 +483,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
 
     }
 
+    @SuppressWarnings("resource")
     protected void buildAndApplyGlobalHyp(final int t) {
         // ArrayList<Family> fCopy = families;
         final ArrayList<Family> fCopy = new ArrayList<>(families);
@@ -514,7 +520,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
                 latch.await();
             }
             catch (final InterruptedException e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
 
             // FixedThreadPool.Task[] runArray = new FixedThreadPool.Task[trackClusters.size()];
@@ -551,7 +557,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         println("num families after hypothesis selection : " + families.size());
     }
 
-    protected TrackSegment recursBuildTrackSegments(final MHTrack2s trk, final ArrayList<TrackSegment> tsList) {
+    protected TrackSegment recursBuildTrackSegments(final @NotNull MHTrack2s trk, final ArrayList<TrackSegment> tsList) {
         final Association a = trk.association;
 //        Detection detect = new Detection(a.spot.mass_center.x, a.spot.mass_center.y, a.spot.mass_center.z, a.t);
         final Detection detect = new DetectionSpotTrack(a.spot, a.t);
@@ -570,10 +576,10 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         return ts;
     }
 
-    protected ArrayList<Association> createAssociations(final Vector<Spot> spotsVector, final int t) {
+    protected ArrayList<Association> createAssociations(final @NotNull Vector<Spot> spotsVector, final int t) {
         final ArrayList<Association> associations = new ArrayList<>(spotsVector.size());
         // for (Predictor predictor:initPredictors)
-        final Predictor predictor = initPredictors.get(0);
+        final Predictor predictor = initPredictors.getFirst();
         final double lpFA = Math.log(pFA);
         for (final Spot s : spotsVector)
             associations.add(new Association(predictor.buildMeasurementMatrix(s), s, false, t, lpFA));
@@ -669,8 +675,10 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
     }
 
     protected void tracksGlobalPruning() {
+        //
     }
 
+    @SuppressWarnings("resource")
     protected void tracksFormation(final ArrayList<Association> associations, final int t) {
         if (parallelComputing) {
             final int processors = Runtime.getRuntime().availableProcessors();
@@ -706,7 +714,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
                 latch.await();
             }
             catch (final InterruptedException e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
             // then try to create new candidate tracks just from previous and current spots
             // ExecutorService service2 = Executors.newSingleThreadExecutor();
@@ -737,7 +745,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
                 latch2.await();
             }
             catch (final InterruptedException e) {
-                IcyExceptionHandler.showErrorMessage(e, true);
+                IcyLogger.error(this.getClass(), e);
             }
             // LinkedList<Thread> thrList = new LinkedList<Thread>();
             // for (Family f:families)
@@ -857,7 +865,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         // TODO: tracks that have just been created may not have been updated
     }
 
-    protected void tryToContinueTrack(final MHTrack2s trk, final Association a, final int t, final Family family) {
+    protected void tryToContinueTrack(final @NotNull MHTrack2s trk, final Association a, final int t, final Family family) {
         if (trk.inGate(a))// TODO: check how the normalized innovation is computed by the predictor
         {
             final MHTrack2s newTrack = trk.createPotentialTrack(a, t);
@@ -900,22 +908,19 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
     }
 
     public static void printMonitoring() {
-        System.out.println("======= MHT monitoring =======");
-        System.out.println("total time " + totalElapseTime + " | 100");
-        System.out.println("tracks formation " + tracksFormationTime + " | "
-                + ((double) tracksFormationTime / totalElapseTime));
-        System.out.println("create Clusters " + createClustersTime + " | "
-                + ((double) createClustersTime / totalElapseTime));
-        System.out.println("hypotheses formation " + hypothesesFormationTime + " | "
-                + ((double) hypothesesFormationTime / totalElapseTime));
-        System.out.println("build Global hypotheses " + buildGHTime + " | " + ((double) buildGHTime / totalElapseTime));
-        System.out.println("ml formation time " + MLFormationTime + " | "
-                + ((double) MLFormationTime / totalElapseTime));
-        System.out.println("compatible hypotheses time " + compatibleHypTime + " | "
-                + ((double) compatibleHypTime / totalElapseTime));
-        System.out.println("compatibility " + compatibleElapseTime + " | "
-                + ((double) compatibleElapseTime / totalElapseTime));
-        System.out.println("apply hyp " + applyHypTime + " | " + ((double) applyHypTime / totalElapseTime));
+        IcyLogger.info(
+                HMMMHTracker.class,
+                "======= MHT monitoring =======",
+                "total time " + totalElapseTime + " | 100",
+                "tracks formation " + tracksFormationTime + " | " + ((double) tracksFormationTime / totalElapseTime),
+                "create Clusters " + createClustersTime + " | " + ((double) createClustersTime / totalElapseTime),
+                "hypotheses formation " + hypothesesFormationTime + " | " + ((double) hypothesesFormationTime / totalElapseTime),
+                "build Global hypotheses " + buildGHTime + " | " + ((double) buildGHTime / totalElapseTime),
+                "ml formation time " + MLFormationTime + " | " + ((double) MLFormationTime / totalElapseTime),
+                "compatible hypotheses time " + compatibleHypTime + " | " + ((double) compatibleHypTime / totalElapseTime),
+                "compatibility " + compatibleElapseTime + " | " + ((double) compatibleElapseTime / totalElapseTime),
+                "apply hyp " + applyHypTime + " | " + ((double) applyHypTime / totalElapseTime)
+        );
     }
 
     @Override

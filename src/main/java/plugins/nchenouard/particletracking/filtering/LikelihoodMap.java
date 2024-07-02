@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -18,6 +18,8 @@
 
 package plugins.nchenouard.particletracking.filtering;
 
+import org.jetbrains.annotations.Contract;
+
 /**
  * A map of the likelihood for target position in space
  * <p>
@@ -28,7 +30,6 @@ package plugins.nchenouard.particletracking.filtering;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class LikelihoodMap {
     /**
      * likelihood values as a 1d array in the xyz convention
@@ -75,6 +76,7 @@ public class LikelihoodMap {
      * @param offsetZ     int
      * @param likelihoods array of double
      */
+    @Contract(pure = true)
     public LikelihoodMap(final int width, final int height, final int depth, final int offsetX, final int offsetY, final int offsetZ, final double[] likelihoods) {
         this.width = width;
         this.height = height;
@@ -96,6 +98,7 @@ public class LikelihoodMap {
      * @param offsetY int
      * @param offsetZ int
      */
+    @Contract(pure = true)
     public LikelihoodMap(final int width, final int height, final int depth, final int offsetX, final int offsetY, final int offsetZ) {
         this(width, height, depth, offsetX, offsetY, offsetZ, new double[width * height * depth]);
     }
@@ -107,6 +110,7 @@ public class LikelihoodMap {
      * @param height int
      * @param depth  int
      */
+    @Contract(pure = true)
     public LikelihoodMap(final int width, final int height, final int depth) {
         this(width, height, depth, 0, 0, 0);
     }
@@ -117,6 +121,7 @@ public class LikelihoodMap {
      * @param width  int
      * @param height int
      */
+    @Contract(pure = true)
     public LikelihoodMap(final int width, final int height) {
         this(width, height, 1, 0, 0, 0);
     }
@@ -129,6 +134,7 @@ public class LikelihoodMap {
      * @param offsetX int
      * @param offsetY int
      */
+    @Contract(pure = true)
     public LikelihoodMap(final int width, final int height, final int offsetX, final int offsetY) {
         this(width, height, 1, offsetX, offsetY, 0);
     }

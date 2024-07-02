@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023. Institut Pasteur.
+ * Copyright (c) 2010-2024. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 package plugins.nchenouard.particletracking.filtering;
 
 import Jama.Matrix;
+import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;
 
@@ -32,7 +33,6 @@ import plugins.nchenouard.spot.Spot;
  * date 2013-11-13
  * license gpl v3.0
  */
-
 public class KF3dDirected extends KalmanFilter implements Predictor3D {
     public KF3dDirected() {
         initMatrices();
@@ -73,10 +73,11 @@ public class KF3dDirected extends KalmanFilter implements Predictor3D {
     }
 
     @Override
-    public void setTrackingCovariances(final double[] trackingCov) {
+    public void setTrackingCovariances(final double @NotNull [] trackingCov) {
         Q.set(0, 0, trackingCov[0]);
         Q.set(2, 2, trackingCov[1]);
-        Q.set(4, 2, trackingCov[2]);
+        //Q.set(4, 2, trackingCov[2]); // TODO: 18/10/2023 Maybe an error ? Q.set(4, 4, ...) instead of Q.set(4, 2, ...) ?
+        Q.set(4, 4, trackingCov[2]);
         Q0 = Q;
     }
 
@@ -146,7 +147,7 @@ public class KF3dDirected extends KalmanFilter implements Predictor3D {
     }
 
     @Override
-    public void correct(final Matrix z) {
+    public void correct(final @NotNull Matrix z) {
         if (this.t - t0 == 1) {
             //update the velocity with the observed displacement
             final Matrix x0 = x_est;
@@ -202,7 +203,7 @@ public class KF3dDirected extends KalmanFilter implements Predictor3D {
     }
 
     @Override
-    public void setCurrentStateErrorCovariance3D(final Matrix m) {
+    public void setCurrentStateErrorCovariance3D(final @NotNull Matrix m) {
         P_est.set(0, 0, m.get(0, 0));
         P_est.set(0, 2, m.get(0, 1));
         P_est.set(0, 4, m.get(0, 2));
@@ -215,7 +216,7 @@ public class KF3dDirected extends KalmanFilter implements Predictor3D {
     }
 
     @Override
-    public void setCurrentEstimatedState3D(final Matrix m) {
+    public void setCurrentEstimatedState3D(final @NotNull Matrix m) {
         x_est.set(0, 0, m.get(0, 0));
         x_est.set(2, 0, m.get(1, 0));
         x_est.set(4, 0, m.get(2, 0));
