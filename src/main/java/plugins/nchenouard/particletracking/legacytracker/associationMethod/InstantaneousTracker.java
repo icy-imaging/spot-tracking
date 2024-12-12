@@ -19,7 +19,6 @@
 package plugins.nchenouard.particletracking.legacytracker.associationMethod;
 
 import org.bioimageanalysis.icy.system.logging.IcyLogger;
-import org.bioimageanalysis.icy.system.thread.Processor;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.particletracking.legacytracker.Tracker;

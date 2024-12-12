@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import plugins.fab.trackmanager.TrackSegment;
 import plugins.nchenouard.particletracking.DetectionSpotTrack;
-import plugins.nchenouard.particletracking.SpotTrackingPlugin;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.particletracking.legacytracker.StoppableTracker;
 import plugins.nchenouard.spot.Detection;

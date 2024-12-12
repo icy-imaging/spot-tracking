@@ -62,7 +62,7 @@ public class SolveMLAssociation {
                         this.getClass(),
                         "problem in SolveMLAssociation, no selected hypothesis.",
                         trk.association.getLast().followingSegments.isEmpty() + " " + lastT + " " + trk.association.getLast().association.t + trk.association.getLast().confirmed
-                        );
+                );
                 return null;
             }
         }
@@ -86,7 +86,7 @@ public class SolveMLAssociation {
 
     // only mandatory tracks are extended
     // the remaining detections are considered false
-    public void solve2(final int firstT, final int lastT,final @NotNull ArrayList<Family> mandatoryFamilies) {
+    public void solve2(final int firstT, final int lastT, final @NotNull ArrayList<Family> mandatoryFamilies) {
 //		first create tracks from mandatory families
         final ArrayList<Association> usedAssociations = new ArrayList<>();
         for (final Family f : mandatoryFamilies) {

@@ -185,7 +185,7 @@ public abstract class KalmanFilter implements Predictor {
      * @param gateFactor double
      * @return Area
      */
-    //TODO: in 3D we should return a 3 ellipsoid
+    //TODO: in 3D we should return a 3D ellipsoid
     private Area builtEllipse(final Matrix z_pre, Matrix S, final double gateFactor) {
         S = S.getMatrix(0, 1, 0, 1);
         //int sx = (int) (gateFactor*Math.sqrt(S.get(0, 0)));

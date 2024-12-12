@@ -615,7 +615,8 @@ public class IMM3D implements Predictor {
                 for (int i = 0; i < r; i++)
                     innov += filter_i[i].normalizedInnovation(m) * m_est_i[i];
                 return innov;
-            default: throw new IllegalArgumentException("Unknown IMM likelihood type.");
+            default:
+                throw new IllegalArgumentException("Unknown IMM likelihood type.");
         }
     }
 
