@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -175,7 +175,7 @@ public class ClusterSolveLPCustom extends Cluster {
 
         // now create the corresponding lp problem
         final int numVariables = tuples.size(); // the number of variables is the number of tuples
-        final int numConstraintsDetections = tuples.getFirst().length; // the number of constraints is the number of detections (each is used once)
+        final int numConstraintsDetections = tuples.get(0).length; // the number of constraints is the number of detections (each is used once)
 
         // Simplex solving:
         // * N-length vector c, solve the LP { max cx : Ax <= b, x >= 0 }.

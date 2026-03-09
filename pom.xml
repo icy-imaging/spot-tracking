@@ -7,23 +7,82 @@
     <parent>
 		<artifactId>pom-icy</artifactId>
         <groupId>org.bioimageanalysis.icy</groupId>
-        <version>3.0.0-a.4</version>
+        <version>3.0.0-a.5</version>
     </parent>
 
     <artifactId>spot-tracking</artifactId>
-    <version>4.0.0-a.3</version>
+    <version>4.0.0-a.5</version>
 
     <name>Spot Tracking</name>
     <description>
         This plugin ships automated methods for extracting trajectories of multiples objects in a sequence of 2D or 3D images.
         Up to version 2 it was known as the ‘Probabilistic particle tracker’ plugin.
     </description>
+    <url>https://icy.bioimageanalysis.org/</url>
+    <inceptionYear>2011</inceptionYear>
+
+    <scm>
+        <url>https://gitlab.pasteur.fr/bia/icy/extensions/spot-tracking</url>
+        <tag>v${project.version}</tag>
+    </scm>
+
+    <issueManagement>
+        <system>GitLab Issues</system>
+        <url>https://gitlab.pasteur.fr/bia/icy/extensions/spot-tracking/-/issues</url>
+    </issueManagement>
+    <ciManagement>
+        <system>GitLab CI</system>
+        <url>https://gitlab.pasteur.fr/bia/icy/extensions/spot-tracking/-/pipelines</url>
+    </ciManagement>
+
+    <organization>
+        <name>Institut Pasteur</name>
+        <url>https://www.pasteur.fr/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>GNU LGPLv3</name>
+            <url>https://www.gnu.org/licenses/lgpl-3.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>tmusset</id>
+            <name>Thomas Musset</name>
+            <organization>Institut Pasteur</organization>
+            <organizationUrl>https://pasteur.fr</organizationUrl>
+            <url>https://icy.bioimageanalysis.org/author/tmusset/</url>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>Nicolas Chenouard</name>
+            <roles>
+                <role>founder</role>
+            </roles>
+        </contributor>
+        <contributor>
+            <name>Stéphane Dallongeville</name>
+        </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>Icy</name>
+            <post>icy.team@pasteur.fr</post>
+        </mailingList>
+    </mailingLists>
+
+    <properties>
+        <license.licenseName>GNU LGPLv3</license.licenseName>
+        <license.copyrightOwners>Institut Pasteur</license.copyrightOwners>
+    </properties>
 	
     <dependencies>
-        <dependency>
-            <groupId>org.bioimageanalysis.icy</groupId>
-            <artifactId>jama</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
             <artifactId>spot-detection-utilities</artifactId>
@@ -39,6 +98,12 @@
         <dependency>
             <groupId>org.bioimageanalysis.icy</groupId>
             <artifactId>spot-detector</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>gov.nist.math</groupId>
+            <artifactId>jama</artifactId>
+            <version>1.0.3</version>
         </dependency>
     </dependencies>
 </project>

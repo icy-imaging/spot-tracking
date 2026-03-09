@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -113,7 +113,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         this.Pd = probaDetect;
         this.K = Math.max(treeDepth, 0);
 
-        totalGateLikelihood = predictors.getFirst().getTotalGateLikelihood(true, gateFactor);
+        totalGateLikelihood = predictors.get(0).getTotalGateLikelihood(true, gateFactor);
         pDpG = Pd * totalGateLikelihood;
         pFA = densityFalseDetection;
         pNT = densityNewTrack;
@@ -445,9 +445,9 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
             // remove last virtual detections of a track segment
             boolean stop = false;
             while (!stop && !detections.isEmpty()) {
-                final Detection d = detections.getLast();
+                final Detection d = detections.get(detections.size() - 1);
                 if (d.getDetectionType() == Detection.DETECTIONTYPE_VIRTUAL_DETECTION)
-                    detections.removeLast();
+                    detections.remove(detections.size() - 1);
                 else
                     stop = true;
             }
@@ -578,7 +578,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
     protected ArrayList<Association> createAssociations(final @NotNull Vector<Spot> spotsVector, final int t) {
         final ArrayList<Association> associations = new ArrayList<>(spotsVector.size());
         // for (Predictor predictor:initPredictors)
-        final Predictor predictor = initPredictors.getFirst();
+        final Predictor predictor = initPredictors.get(0);
         final double lpFA = Math.log(pFA);
         for (final Spot s : spotsVector)
             associations.add(new Association(predictor.buildMeasurementMatrix(s), s, false, t, lpFA));

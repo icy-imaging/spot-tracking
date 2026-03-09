@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -483,7 +483,7 @@ public class ClusterSolveTree extends Cluster {
                 if (!mandatoryFamilies.isEmpty()) {
                     final int familyIdx = 0;
                     //final Family f = mandatoryFamilies.get(familyIdx);
-                    final Family f = mandatoryFamilies.getFirst();
+                    final Family f = mandatoryFamilies.get(0);
                     final boolean lastFamily = (familyIdx == mandatoryFamilies.size() - 1);
                     final GlobalHypothesis gh = new GlobalHypothesis(firstT, t, tracker);
                     final TaskList tskList = new TaskList();
@@ -495,7 +495,7 @@ public class ClusterSolveTree extends Cluster {
                     if (!optionalFamilies.isEmpty()) {
                         final int familyIdx = 0;
                         //final Family f = optionalFamilies.get(familyIdx);
-                        final Family f = optionalFamilies.getFirst();
+                        final Family f = optionalFamilies.get(0);
                         final boolean lastFamily = (familyIdx == optionalFamilies.size() - 1);
                         final GlobalHypothesis gh = new GlobalHypothesis(firstT, t, tracker);
 //						1/ add hypothesis from this family

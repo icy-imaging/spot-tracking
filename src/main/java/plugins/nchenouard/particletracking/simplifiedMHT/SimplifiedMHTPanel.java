@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -19,9 +19,9 @@
 package plugins.nchenouard.particletracking.simplifiedMHT;
 
 import org.bioimageanalysis.icy.Icy;
+import org.bioimageanalysis.icy.extension.ExtensionLoader;
 import org.bioimageanalysis.icy.extension.plugin.PluginDescriptor;
 import org.bioimageanalysis.icy.extension.plugin.PluginLauncher;
-import org.bioimageanalysis.icy.extension.plugin.PluginLoader;
 import org.bioimageanalysis.icy.gui.frame.progress.AnnounceFrame;
 import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
 import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
@@ -133,7 +133,7 @@ public class SimplifiedMHTPanel extends JPanel {
         final JButton launchDetectorButton = new JButton("Run the Spot Detector plugin");
         launchDetectorButton.setToolTipText("Runs the Spot Detector plugin in order to create a set of locations for spot targets over the whole image sequence.");
         launchDetectorButton.addActionListener(arg0 -> {
-            final PluginDescriptor plugin = PluginLoader.getPlugin("plugins.fab.spotDetector.SpotDetector");
+            final PluginDescriptor plugin = ExtensionLoader.getPlugin("plugins.fab.spotDetector.SpotDetector");
             if (plugin != null) PluginLauncher.start(plugin);
             else
                 JOptionPane.showMessageDialog(detectionDescriptionPanel,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -107,7 +107,7 @@ public class Cluster implements AutoCloseable {
             if (!mandatoryFamilies.isEmpty()) {
                 final int familyIdx = 0;
                 //final Family f = mandatoryFamilies.get(familyIdx);
-                final Family f = mandatoryFamilies.getFirst();
+                final Family f = mandatoryFamilies.get(0);
                 final boolean lastFamily = (familyIdx == mandatoryFamilies.size() - 1);
                 for (final Hypothesis htemp : f.hypotheses) {
                     final Thread thr = new Thread(() -> {
@@ -187,7 +187,7 @@ public class Cluster implements AutoCloseable {
                 if (!optionalFamilies.isEmpty()) {
                     final int familyIdx = 0;
                     //final Family f = optionalFamilies.get(familyIdx);
-                    final Family f = optionalFamilies.getFirst();
+                    final Family f = optionalFamilies.get(0);
                     final boolean lastFamily = (familyIdx == optionalFamilies.size() - 1);
 
 //					ArrayList<Thread> thrList = new ArrayList<Thread>();
@@ -347,7 +347,7 @@ public class Cluster implements AutoCloseable {
                 if (!mandatoryFamilies.isEmpty()) {
                     final int familyIdx = 0;
                     //final Family f = mandatoryFamilies.get(familyIdx);
-                    final Family f = mandatoryFamilies.getFirst();
+                    final Family f = mandatoryFamilies.get(0);
                     final boolean lastFamily = (familyIdx == mandatoryFamilies.size() - 1);
                     for (final Hypothesis hyp : f.hypotheses) {
                         final GlobalHypothesis gh = new GlobalHypothesis(firstT, t, tracker);
@@ -407,7 +407,7 @@ public class Cluster implements AutoCloseable {
                     if (!optionalFamilies.isEmpty()) {
                         final int familyIdx = 0;
                         //final Family f = optionalFamilies.get(familyIdx);
-                        final Family f = optionalFamilies.getFirst();
+                        final Family f = optionalFamilies.get(0);
                         final boolean lastFamily = (familyIdx == optionalFamilies.size() - 1);
 
 //						1/ add hypothesis from this family

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -47,18 +47,18 @@ public class SolveMLAssociation extends AssignProblemSolver {
     }
 
     protected void solve1(final @NotNull AssignProblem pb) {
-        final Track track = pb.tracks.getFirst();
-        final Spot spot = pb.detections.getFirst();
+        final Track track = pb.tracks.get(0);
+        final Spot spot = pb.detections.get(0);
         track.associate(spot, pb.t);
     }
 
     protected void solve2(final AssignProblem pb) {
         if (addNewObjects)
-            pb.tracksToBeCreated.add(pb.detections.getFirst());
+            pb.tracksToBeCreated.add(pb.detections.get(0));
     }
 
     protected void solve3(final @NotNull AssignProblem pb) {
-        pb.tracksToBeProlongated.add(pb.tracks.getFirst());
+        pb.tracksToBeProlongated.add(pb.tracks.get(0));
     }
 
     protected void solve4(final AssignProblem pb, final int num) {

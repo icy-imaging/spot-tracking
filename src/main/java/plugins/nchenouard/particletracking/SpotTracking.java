@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -311,7 +311,7 @@ public class SpotTracking {
         if (root == null)
             throw new IllegalArgumentException("can't find: <root> tag.");
 
-        final Element configurationElement = XMLUtil.getElements(root, ID_CONFIG).getFirst();
+        final Element configurationElement = XMLUtil.getElements(root, ID_CONFIG).get(0);
         if (configurationElement == null)
             throw new IllegalArgumentException("can't find: <root><" + ID_CONFIG + "> tag.");
 

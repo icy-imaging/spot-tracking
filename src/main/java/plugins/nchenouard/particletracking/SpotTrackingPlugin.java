@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@ package plugins.nchenouard.particletracking;
 
 import org.bioimageanalysis.icy.Icy;
 import org.bioimageanalysis.icy.extension.plugin.abstract_.PluginActionable;
-import org.bioimageanalysis.icy.extension.plugin.annotation_.IcyPluginIcon;
 import org.bioimageanalysis.icy.extension.plugin.annotation_.IcyPluginName;
 import org.bioimageanalysis.icy.gui.frame.IcyFrame;
 import org.bioimageanalysis.icy.gui.frame.IcyInternalFrame;
@@ -74,7 +73,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * license gpl v3.0
  */
 @IcyPluginName("Spot Tracking")
-@IcyPluginIcon(path = "/plugins/nchenouard/particletracking/simplifiedMHT/detectionIcon.png")
 public class SpotTrackingPlugin extends PluginActionable implements ActionListener {
     // public static String MHT_PLUGIN_CONFIGURATION = SpotTracking.ID_CONFIG;
 

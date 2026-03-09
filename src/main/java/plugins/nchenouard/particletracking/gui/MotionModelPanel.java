@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2024. Institut Pasteur.
+ * Copyright (c) 2010-2026. Institut Pasteur.
  *
  * This file is part of Icy.
  * Icy is free software: you can redistribute it and/or modify
@@ -340,10 +340,10 @@ public class MotionModelPanel extends JPanel {
             parameterSet.isUpdateMotion = singleMotionPanel.isUpdateMotion();
         }
         else {
-            parameterSet.isDirectedMotion = multipleMotionPanel.getSingleMotionPanels().getFirst().isDirectedMotion();
-            parameterSet.displacementXY = multipleMotionPanel.getSingleMotionPanels().getFirst().getDisplacementXY();
-            parameterSet.displacementZ = multipleMotionPanel.getSingleMotionPanels().getFirst().getDisplacementZ();
-            parameterSet.isUpdateMotion = multipleMotionPanel.getSingleMotionPanels().getFirst().isUpdateMotion();
+            parameterSet.isDirectedMotion = multipleMotionPanel.getSingleMotionPanels().get(0).isDirectedMotion();
+            parameterSet.displacementXY = multipleMotionPanel.getSingleMotionPanels().get(0).getDisplacementXY();
+            parameterSet.displacementZ = multipleMotionPanel.getSingleMotionPanels().get(0).getDisplacementZ();
+            parameterSet.isUpdateMotion = multipleMotionPanel.getSingleMotionPanels().get(0).isUpdateMotion();
 
             parameterSet.isDirectedMotion2 = multipleMotionPanel.getSingleMotionPanels().get(1).isDirectedMotion();
             parameterSet.displacementXY2 = multipleMotionPanel.getSingleMotionPanels().get(1).getDisplacementXY();
@@ -364,7 +364,7 @@ public class MotionModelPanel extends JPanel {
             singleMotionPanel.setUpdateMotion(parameterSet.isUpdateMotion);
         }
         else {
-            SingleMotionPanel panel = multipleMotionPanel.getSingleMotionPanels().getFirst();
+            SingleMotionPanel panel = multipleMotionPanel.getSingleMotionPanels().get(0);
             panel.setDirectedMotion(parameterSet.isDirectedMotion);
             panel.setDisplacementXY(parameterSet.displacementXY);
             panel.setDisplacementZ(parameterSet.displacementZ);
