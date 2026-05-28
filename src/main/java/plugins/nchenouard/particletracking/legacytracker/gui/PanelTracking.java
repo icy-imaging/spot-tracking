@@ -18,10 +18,10 @@
 
 package plugins.nchenouard.particletracking.legacytracker.gui;
 
-import org.bioimageanalysis.icy.gui.component.combo.SwimmingObjectChooser;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEventType;
+import fr.icy.gui.component.combo.SwimmingObjectChooser;
+import fr.icy.model.swimmingPool.SwimmingObject;
+import fr.icy.model.swimmingPool.SwimmingPoolEvent;
+import fr.icy.model.swimmingPool.SwimmingPoolEventType;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.particletracking.legacytracker.Tracker;
 import plugins.nchenouard.particletracking.legacytracker.associationMethod.AssignProblemSolver;

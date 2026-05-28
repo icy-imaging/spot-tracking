@@ -18,7 +18,7 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import org.bioimageanalysis.icy.gui.frame.progress.AnnounceFrame;
+import fr.icy.gui.frame.progress.AnnounceFrame;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.MHTparameterSet;
 

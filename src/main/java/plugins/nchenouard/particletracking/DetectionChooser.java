@@ -18,10 +18,10 @@
 
 package plugins.nchenouard.particletracking;
 
-import org.bioimageanalysis.icy.Icy;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolListener;
+import fr.icy.Icy;
+import fr.icy.model.swimmingPool.SwimmingObject;
+import fr.icy.model.swimmingPool.SwimmingPoolEvent;
+import fr.icy.model.swimmingPool.SwimmingPoolListener;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.spot.DetectionResult;

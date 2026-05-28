@@ -18,10 +18,10 @@
 
 package plugins.nchenouard.particletracking;
 
-import org.bioimageanalysis.icy.Icy;
-import org.bioimageanalysis.icy.gui.frame.progress.CancelableProgressFrame;
-import org.bioimageanalysis.icy.io.xml.XMLUtil;
-import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import fr.icy.Icy;
+import fr.icy.gui.frame.progress.CancelableProgressFrame;
+import fr.icy.io.xml.XMLUtil;
+import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;

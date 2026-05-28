@@ -18,7 +18,7 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
+import fr.icy.model.swimmingPool.SwimmingObject;
 import plugins.nchenouard.particletracking.MHTparameterSet;
 import plugins.nchenouard.spot.DetectionResult;
 

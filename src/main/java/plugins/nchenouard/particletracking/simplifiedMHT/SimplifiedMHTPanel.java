@@ -18,14 +18,14 @@
 
 package plugins.nchenouard.particletracking.simplifiedMHT;
 
-import org.bioimageanalysis.icy.Icy;
-import org.bioimageanalysis.icy.extension.ExtensionLoader;
-import org.bioimageanalysis.icy.extension.plugin.PluginDescriptor;
-import org.bioimageanalysis.icy.extension.plugin.PluginLauncher;
-import org.bioimageanalysis.icy.gui.frame.progress.AnnounceFrame;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEventType;
+import fr.icy.Icy;
+import fr.icy.extension.ExtensionLoader;
+import fr.icy.extension.plugin.PluginDescriptor;
+import fr.icy.extension.plugin.PluginLauncher;
+import fr.icy.gui.frame.progress.AnnounceFrame;
+import fr.icy.model.swimmingPool.SwimmingObject;
+import fr.icy.model.swimmingPool.SwimmingPoolEvent;
+import fr.icy.model.swimmingPool.SwimmingPoolEventType;
 import plugins.fab.spotDetector.SpotDetector;
 import plugins.fab.trackmanager.TrackGroup;
 import plugins.nchenouard.particletracking.DetectionChooser;

@@ -18,7 +18,7 @@
 
 package plugins.nchenouard.particletracking.MHTracker.LinearProgramming;
 
-import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -18,7 +18,7 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import org.bioimageanalysis.icy.io.xml.XMLUtil;
+import fr.icy.io.xml.XMLUtil;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

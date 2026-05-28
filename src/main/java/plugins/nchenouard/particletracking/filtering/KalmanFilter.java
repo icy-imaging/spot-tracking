@@ -20,7 +20,7 @@ package plugins.nchenouard.particletracking.filtering;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
-import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;

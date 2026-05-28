@@ -18,8 +18,8 @@
 
 package plugins.nchenouard.particletracking;
 
-import org.bioimageanalysis.icy.common.string.StringUtil;
-import org.bioimageanalysis.icy.io.xml.XMLUtil;
+import fr.icy.common.string.StringUtil;
+import fr.icy.io.xml.XMLUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;

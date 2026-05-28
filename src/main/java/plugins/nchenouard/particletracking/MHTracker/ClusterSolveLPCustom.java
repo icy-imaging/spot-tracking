@@ -18,7 +18,7 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import org.bioimageanalysis.icy.system.logging.IcyLogger;
+import fr.icy.system.logging.IcyLogger;
 import plugins.nchenouard.linearprogrammingfullsimplex.CanonicalSimplexProgram;
 import plugins.nchenouard.linearprogrammingfullsimplex.SimplexLEXICO;
 import plugins.nchenouard.particletracking.MHTracker.LinearProgramming.HierarchicalLP;

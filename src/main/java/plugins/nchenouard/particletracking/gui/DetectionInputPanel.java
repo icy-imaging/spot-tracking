@@ -18,10 +18,10 @@
 
 package plugins.nchenouard.particletracking.gui;
 
-import org.bioimageanalysis.icy.io.xml.XMLUtil;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingObject;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEvent;
-import org.bioimageanalysis.icy.model.swimmingPool.SwimmingPoolEventType;
+import fr.icy.io.xml.XMLUtil;
+import fr.icy.model.swimmingPool.SwimmingObject;
+import fr.icy.model.swimmingPool.SwimmingPoolEvent;
+import fr.icy.model.swimmingPool.SwimmingPoolEventType;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
