@@ -19,7 +19,6 @@
 package plugins.nchenouard.particletracking.gui;
 
 import fr.icy.io.xml.XMLUtil;
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,6 +29,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Panel for general MHT parameters control
@@ -42,6 +43,8 @@ import java.text.ParseException;
  * license gpl v3.0
  */
 public class MHTPanel extends JPanel {
+    private static final Logger LOGGER = Logger.getLogger(MHTPanel.class.getName());
+
     final DefaultMutableTreeNode node = new DefaultMutableTreeNode("Tracking algorithm");
 
     final protected NumberFormat gateFactorFormat = NumberFormat.getNumberInstance();
@@ -136,7 +139,8 @@ public class MHTPanel extends JPanel {
                 XMLUtil.setAttributeDoubleValue(nodeMHT, MHTparameterSet.GATE_FACTOR, getGateFactor());
             }
             catch (final ParseException e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Unable to save gate factor to XML.", e);
             }
         }
     }
@@ -148,7 +152,8 @@ public class MHTPanel extends JPanel {
                 gateFactorTF.setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.GATE_FACTOR, getGateFactor()));
             }
             catch (final ParseException e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Unable to load gate factor from XML.", e);
             }
             numberNewTrackSpinner.getModel().setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.NUMBER_NEW_OBJECTS, getNumbeNewTracks()));
             numberInitialTrackSpinner.getModel().setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.NUMBER_OBJECTS_FIRST_FRAME, getNumberInitialTracks()));
@@ -164,7 +169,8 @@ public class MHTPanel extends JPanel {
             parameterSet.gateFactor = getGateFactor();
         }
         catch (final ParseException e) {
-            IcyLogger.error(this.getClass(), e);
+            if (LOGGER.isLoggable(Level.SEVERE))
+                LOGGER.log(Level.SEVERE, "Unable to get gate factor.", e);
         }
     }
 

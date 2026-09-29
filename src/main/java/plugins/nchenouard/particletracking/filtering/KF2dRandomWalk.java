@@ -19,10 +19,12 @@
 package plugins.nchenouard.particletracking.filtering;
 
 import Jama.Matrix;
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 2D Kalman filter corresponding to random walk (diffusion)
@@ -36,6 +38,8 @@ import plugins.nchenouard.spot.Spot;
  */
 
 public class KF2dRandomWalk extends KalmanFilter implements Predictor2D {
+    private static final Logger LOGGER = Logger.getLogger(KF2dRandomWalk.class.getName());
+
     double refVarX = 9;
     double refVarY = 9;
 
@@ -230,11 +234,13 @@ public class KF2dRandomWalk extends KalmanFilter implements Predictor2D {
 //				}
             }
             catch (final RuntimeException e) {
-                IcyLogger.error(this.getClass(), e, "Error in KalmanFiter.covupdate:");
-                if (x_est == null) IcyLogger.error(this.getClass(), "xest null");
-                if (x_pre == null) IcyLogger.error(this.getClass(), "xpre null");
-                if (Q == null) IcyLogger.error(this.getClass(), "Q null");
-                if (Q0 == null) IcyLogger.error(this.getClass(), "Q0 null");
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Error in KalmanFiter.covupdate:", e);
+                    if (x_est == null) LOGGER.log(Level.SEVERE, "xest null");
+                    if (x_pre == null) LOGGER.log(Level.SEVERE, "xpre null");
+                    if (Q == null) LOGGER.log(Level.SEVERE, "Q null");
+                    if (Q0 == null) LOGGER.log(Level.SEVERE, "Q0 null");
+                }
             }
         }
     }

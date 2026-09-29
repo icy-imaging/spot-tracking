@@ -18,13 +18,14 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A Family object represents a tree of track segments with a shared root node (association)
@@ -37,6 +38,8 @@ import java.util.concurrent.Executors;
  * license gpl v3.0
  */
 public class Family {
+    private static final Logger LOGGER = Logger.getLogger(Family.class.getName());
+
     MHTrack2s rootNode;
     ValidatedTrack rootTrack;
     double trackScore = 0;
@@ -132,7 +135,8 @@ public class Family {
                 tc.countAndDeathEquality.await();
         }
         catch (final InterruptedException e) {
-            IcyLogger.error(this.getClass(), e);
+            if (LOGGER.isLoggable(Level.SEVERE))
+                LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
         }
         finally {
             tc.lock.unlock();

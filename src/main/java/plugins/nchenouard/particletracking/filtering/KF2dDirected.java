@@ -24,7 +24,7 @@ import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;
 
 /**
- * 2D Kalaman filter corresponding to directed motion
+ * 2D Kalman filter corresponding to directed motion
  * <p>
  * Part of the Spot Tracking plugin for ICY: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
  *

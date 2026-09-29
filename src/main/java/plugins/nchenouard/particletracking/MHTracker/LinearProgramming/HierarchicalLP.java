@@ -18,7 +18,6 @@
 
 package plugins.nchenouard.particletracking.MHTracker.LinearProgramming;
 
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,8 +26,12 @@ import plugins.nchenouard.linearprogrammingfullsimplex.CanonicalSimplexProgram;
 import plugins.nchenouard.linearprogrammingfullsimplex.SimplexLEXICO;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HierarchicalLP {
+    private static final Logger LOGGER = Logger.getLogger(HierarchicalLP.class.getName());
+
     static double tolerance = 1e-4;
     public static boolean wroteFile = false;
 
@@ -122,8 +125,10 @@ public class HierarchicalLP {
                     if (result0 != null)
                         score0 = result0.score;
                 }
-                else
-                    IcyLogger.warn(HierarchicalLP.class, "Non feasible sub problem");
+                else {
+                    if (LOGGER.isLoggable(Level.WARNING))
+                        LOGGER.log(Level.WARNING, "Non feasible sub problem");
+                }
                 final CanonicalSimplexProgram p1 = createSubFixedProblem(program, idxNonBool, 1);
                 HierarchicalProcedureResult result1 = null;
                 double score1 = 0;
@@ -132,10 +137,13 @@ public class HierarchicalLP {
                     if (result1 != null)
                         score1 = result1.score + program.getParameters().c[idxNonBool];
                 }
-                else
-                    IcyLogger.warn(HierarchicalLP.class, "Non feasible sub problem");
+                else {
+                    if (LOGGER.isLoggable(Level.WARNING))
+                        LOGGER.log(Level.WARNING, "Non feasible sub problem");
+                }
                 if (result0 == null && result1 == null) {
-                    IcyLogger.warn(HierarchicalLP.class, "Both sub problem non feasible");
+                    if (LOGGER.isLoggable(Level.WARNING))
+                        LOGGER.log(Level.WARNING, "Both sub problem non feasible");
                     return null;
                 }
                 if (result0 != null) {
@@ -164,7 +172,8 @@ public class HierarchicalLP {
             }
         }
         else {
-            IcyLogger.error(HierarchicalLP.class, "SOLVE FAILED");
+            if (LOGGER.isLoggable(Level.SEVERE))
+                LOGGER.log(Level.SEVERE, "SOLVE FAILED");
             return null;
         }
     }
@@ -203,8 +212,10 @@ public class HierarchicalLP {
                     if (result0 != null)
                         score0 = result0.score;
                 }
-                else
-                    IcyLogger.warn(HierarchicalLP.class, "Non feasible sub problem");
+                else {
+                    if (LOGGER.isLoggable(Level.WARNING))
+                        LOGGER.log(Level.WARNING, "Non feasible sub problem");
+                }
                 final CanonicalSimplexProgram p1 = createSubFixedProblem(program, idxNonBool, 1);
                 HierarchicalProcedureResult result1 = null;
                 double score1 = 0;
@@ -213,10 +224,13 @@ public class HierarchicalLP {
                     if (result1 != null)
                         score1 = result1.score + program.getParameters().c[idxNonBool];
                 }
-                else
-                    IcyLogger.warn(HierarchicalLP.class, "Non feasible sub problem");
+                else {
+                    if (LOGGER.isLoggable(Level.WARNING))
+                        LOGGER.log(Level.WARNING, "Non feasible sub problem");
+                }
                 if (result0 == null && result1 == null) {
-                    IcyLogger.warn(HierarchicalLP.class, "Both sub problem non feasible");
+                    if (LOGGER.isLoggable(Level.WARNING))
+                        LOGGER.log(Level.WARNING, "Both sub problem non feasible");
                     return null;
                 }
                 if (result0 != null) {
@@ -245,7 +259,8 @@ public class HierarchicalLP {
             }
         }
         else {
-            IcyLogger.error(HierarchicalLP.class, "SOLVE FAILED");
+            if (LOGGER.isLoggable(Level.SEVERE))
+                LOGGER.log(Level.SEVERE, "SOLVE FAILED");
             return null;
         }
     }

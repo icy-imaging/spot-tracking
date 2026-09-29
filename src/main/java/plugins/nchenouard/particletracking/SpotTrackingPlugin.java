@@ -28,7 +28,6 @@ import fr.icy.gui.frame.progress.ProgressFrame;
 import fr.icy.model.image.ImageUtil;
 import fr.icy.model.sequence.Sequence;
 import fr.icy.model.swimmingPool.SwimmingObject;
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import plugins.fab.trackmanager.TrackGroup;
@@ -57,6 +56,8 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Particle tracking plugin for ICY that uses the multiple hypothesis tracking algorithm
@@ -74,6 +75,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @IcyPluginName("Spot Tracking")
 public class SpotTrackingPlugin extends PluginActionable implements ActionListener {
+    private static final Logger LOGGER = Logger.getLogger(SpotTrackingPlugin.class.getName());
+
     // public static String MHT_PLUGIN_CONFIGURATION = SpotTracking.ID_CONFIG;
 
     private enum GUIStateEnum {
@@ -572,7 +575,9 @@ public class SpotTrackingPlugin extends PluginActionable implements ActionListen
                             stopCondition.await();
                     }
                     catch (final InterruptedException ie) {
-                        IcyLogger.error(this.getClass(), ie);
+                        if (LOGGER.isLoggable(Level.SEVERE)) {
+                            LOGGER.log(Level.SEVERE, "Thread interrupted.", ie);
+                        }
                     }
                     finally {
                         stopLock.unlock();

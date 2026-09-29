@@ -19,7 +19,6 @@
 package plugins.nchenouard.particletracking.filtering;
 
 import Jama.Matrix;
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;
@@ -27,6 +26,8 @@ import plugins.nchenouard.spot.Spot;
 import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is an implementation of the Interacting Multiple Model estimator (IMM) for 2D predictors
@@ -39,6 +40,8 @@ import java.util.List;
  * license gpl v3.0
  */
 public class IMM2D implements Predictor {
+    private static final Logger LOGGER = Logger.getLogger(IMM2D.class.getName());
+
     public enum LikelihoodTypes {IMM_MAX_LIKELIHOOD, IMM_WEIGHTED_LIKELIHOOD}
 
     public double inertia;
@@ -772,7 +775,8 @@ public class IMM2D implements Predictor {
                 return filter_i[maxLikelihoodIndex].getCurrentPredictedStateAsSpot();
             }
             default:
-                IcyLogger.error(this.getClass(), "Unknown likelihood type in IMM2D");
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Unknown likelihood type in IMM2D");
                 return null;
         }
     }

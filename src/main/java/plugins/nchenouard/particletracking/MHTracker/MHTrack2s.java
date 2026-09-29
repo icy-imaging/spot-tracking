@@ -19,13 +19,14 @@
 package plugins.nchenouard.particletracking.MHTracker;
 
 import Jama.Matrix;
-import fr.icy.system.logging.IcyLogger;
+import fr.icy.shared.logging.CustomLevel;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.spot.Spot;
 
 import java.util.LinkedList;
+import java.util.logging.Logger;
 
 /**
  * Track with two perceivability states:
@@ -40,6 +41,8 @@ import java.util.LinkedList;
  * license gpl v3.0
  */
 public class MHTrack2s {
+    private static final Logger LOGGER = Logger.getLogger(MHTrack2s.class.getName());
+
     Predictor predictor;
     double likelihood; //likelihood of the associations until now
     double associationLikelihood; // likelihood of the current association
@@ -90,11 +93,9 @@ public class MHTrack2s {
     protected double pObs;
     protected double pPredObs;
 
-    boolean verbose = false;
-
     public void println(final String str) {
-        if (verbose)
-            IcyLogger.trace(this.getClass(), str);
+        if (LOGGER.isLoggable(CustomLevel.TRACE))
+            LOGGER.log(CustomLevel.TRACE, str);
     }
 
     public MHTrack2s(final double p1_0, final HMMMHTracker tracker, final Predictor predictor, final Association association, final Family family) {

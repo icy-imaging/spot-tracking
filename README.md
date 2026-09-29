@@ -1,4 +1,4 @@
-![Version 4.0.0 alpha 7](https://img.shields.io/badge/v4.0.0-alpha_7-royalblue)
+![Version 4.0.0 alpha 8](https://img.shields.io/badge/v4.0.0-alpha_8-royalblue)
 ![Java 17+](https://img.shields.io/badge/OpenJDK-17+-5382A1?labelColor=E76F00)
 [![License: LGPL v3](https://img.shields.io/badge/LGPLv3-008033?logo=GPLv3&logoSize=auto)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Twitter](https://img.shields.io/twitter/follow/Icy_BioImaging)](https://x.com/Icy_BioImaging)
@@ -27,8 +27,6 @@ However, for optimal control of the methods, a dedicated interface can give acce
 The tracking methods are freely provided for use and modification. By using the provided methods you agree to properly reference the scientific work at their roots in any written or oral communication exposing a work that took advantage of them. The exact reference is: Nicolas Chenouard, Isabelle Bloch, Jean-Christophe Olivo-Marin, "Multiple Hypothesis Tracking for Cluttered Biological Image Sequences," IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 35, no. 11, pp. 2736–3750, Nov., 2013
 <br>
 Pubmed link: https://pubmed.ncbi.nlm.nih.gov/24051732/
-<br>
-More detailed user documentation can be found on the Spot Tracking documentation page on the Icy website: https://icy.bioimageanalysis.org/plugin/spot-tracking/
 
 ## Installation instructions
 
@@ -53,9 +51,9 @@ More detailed user documentation can be found on the Spot Tracking documentation
 Add this dependency block in your `pom.xml`
 ```xml
 <dependency>
-    <groupId>fr.icy.extensions</groupId>
+    <groupId>fr.icy.extension</groupId>
     <artifactId>spot-tracking</artifactId>
-    <version>${fr.icy.extensions.spot-tracking.version}</version>
+    <version>${fr.icy.extension.spot-tracking.version}</version>
 </dependency>
 ```
 

@@ -18,7 +18,6 @@
 
 package plugins.nchenouard.particletracking.legacytracker.associationMethod;
 
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.filtering.Predictor;
 import plugins.nchenouard.particletracking.legacytracker.Tracker;
@@ -28,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of the tracking algorithm described in:
@@ -44,6 +45,8 @@ import java.util.Vector;
  * license gpl v3.0
  */
 public class InstantaneousTracker implements Tracker {
+    private static final Logger LOGGER = Logger.getLogger(InstantaneousTracker.class.getName());
+
     class PostProcessThr extends Thread {
         final AssignProblem p;
         final int t;
@@ -365,7 +368,8 @@ public class InstantaneousTracker implements Tracker {
                     thr.join();
                 }
                 catch (final InterruptedException e) {
-                    IcyLogger.error(this.getClass(), e);
+                    if (LOGGER.isLoggable(Level.SEVERE))
+                        LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
                 }
             listThreads.clear();
         }

@@ -19,7 +19,6 @@
 package plugins.nchenouard.particletracking.gui;
 
 import fr.icy.io.xml.XMLUtil;
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,6 +29,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Panel for configuring the model of target existence (perceivability)
@@ -42,6 +43,8 @@ import java.text.ParseException;
  * license gpl v3.0
  */
 public class TargetExistencePanel extends JPanel {
+    private static final Logger LOGGER = Logger.getLogger(TargetExistencePanel.class.getName());
+
     final DefaultMutableTreeNode node = new DefaultMutableTreeNode("Target existence");
 
     final protected JSpinner spinnerMeanTrackLength = new JSpinner();
@@ -121,14 +124,16 @@ public class TargetExistencePanel extends JPanel {
                 XMLUtil.setAttributeDoubleValue(nodeDetection, MHTparameterSet.CONFIRMATION_THRESHOLD, c);
             }
             catch (final Exception e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Unable to save confirmation threshold to XML.", e);
             }
             try {
                 final double c = getTerminationThreshold();
                 XMLUtil.setAttributeDoubleValue(nodeDetection, MHTparameterSet.TERMINATION_THRESHOLD, c);
             }
             catch (final Exception e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Unable to save termination threshold to XML.", e);
             }
         }
     }
@@ -141,13 +146,15 @@ public class TargetExistencePanel extends JPanel {
                 confirmationTF.setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.CONFIRMATION_THRESHOLD, getConfirmationThreshold()));
             }
             catch (final ParseException e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Unable to load confirmation threshold from XML.", e);
             }
             try {
                 terminationTF.setValue(XMLUtil.getAttributeDoubleValue(nodeDetection, MHTparameterSet.TERMINATION_THRESHOLD, getTerminationThreshold()));
             }
             catch (final ParseException e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Unable to load termination threshold from XML.", e);
             }
         }
     }
@@ -157,13 +164,15 @@ public class TargetExistencePanel extends JPanel {
             parameterSet.terminationThreshold = getTerminationThreshold();
         }
         catch (final ParseException e) {
-            IcyLogger.error(this.getClass(), e);
+            if (LOGGER.isLoggable(Level.SEVERE))
+                LOGGER.log(Level.SEVERE, "Unable to get termination threshold.", e);
         }
         try {
             parameterSet.confirmationThreshold = getConfirmationThreshold();
         }
         catch (final ParseException e) {
-            IcyLogger.error(this.getClass(), e);
+            if (LOGGER.isLoggable(Level.SEVERE))
+                LOGGER.log(Level.SEVERE, "Unable to get confirmation threshold.", e);
         }
         parameterSet.meanTrackLength = getMeanTrackLength();
     }

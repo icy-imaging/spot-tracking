@@ -18,7 +18,7 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import fr.icy.system.logging.IcyLogger;
+import fr.icy.shared.logging.CustomLevel;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Specialized Cluster object which contains some Linear Programming (LP) methods to solve the tracking problem using a tree exploration implementation (slow)
@@ -42,6 +44,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * license gpl v3.0
  */
 public class ClusterSolveTree extends Cluster {
+    private static final Logger LOGGER = Logger.getLogger(ClusterSolveTree.class.getName());
+
     public class WaitingThreadCounter {
         public Lock cntLock = new ReentrantLock();
         final public Condition countWainting = cntLock.newCondition();
@@ -109,7 +113,8 @@ public class ClusterSolveTree extends Cluster {
                         waitingTasks.emptyCondition.await();
                     }
                     catch (final InterruptedException e) {
-                        IcyLogger.error(this.getClass(), e);
+                        if (LOGGER.isLoggable(Level.SEVERE))
+                            LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
                     }
                 }
                 wtc.decreaseCount();
@@ -230,10 +235,8 @@ public class ClusterSolveTree extends Cluster {
             firstT = firstT.nextT;
             if (firstT == null) {
                 if (lastT.t != t) {
-                    if (lastT == null)
-                        IcyLogger.error(this.getClass(), "ERROR lastT null");
-                    else
-                        IcyLogger.error(this.getClass(), "ERROR ");
+                    if (LOGGER.isLoggable(Level.SEVERE))
+                        LOGGER.log(Level.SEVERE, "Error popTask.");
                 }
                 lastT = null;
                 isEmpty = true;
@@ -470,8 +473,10 @@ public class ClusterSolveTree extends Cluster {
                 mlSolver.solve(firstT, t, concurrentFamilies, mandatoryFamilies, optionalFamilies);
                 BH = mlSolver.getHypothesis(this, firstT, t, tracker);
                 test = BH;
-                if (BH == null)
-                    IcyLogger.error(this.getClass(), "BH NULL, ML failed");
+                if (BH == null) {
+                    if (LOGGER.isLoggable(Level.SEVERE))
+                        LOGGER.log(Level.SEVERE, "BH is null, ML failed.");
+                }
                 // BEST GLOBAL SOLUTION EXTRACTION ////////////////////////////////////////////////////////////////////////////////////////////////////
                 //create a set of executor threads
                 waitingTasks = new WaitingList();
@@ -538,7 +543,8 @@ public class ClusterSolveTree extends Cluster {
                         wtc.countWainting.await();
                 }
                 catch (final InterruptedException e) {
-                    IcyLogger.error(this.getClass(), e);
+                    if (LOGGER.isLoggable(Level.SEVERE))
+                        LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
                 }
                 wtc.cntLock.unlock();
                 for (final ExecutorThread e : executorList) {
@@ -554,7 +560,8 @@ public class ClusterSolveTree extends Cluster {
                         e.join();
                     }
                     catch (final InterruptedException e1) {
-                        IcyLogger.error(this.getClass(), e1);
+                        if (LOGGER.isLoggable(Level.SEVERE))
+                            LOGGER.log(Level.SEVERE, "Thread interrupted.", e1);
                     }
                 executorList.clear();
             }
@@ -567,7 +574,8 @@ public class ClusterSolveTree extends Cluster {
                 else if (test.score < BH.score)
                     ;//System.out.println("improvement");
                 else {
-                    IcyLogger.trace(this.getClass(), "decrease!", test.score + " | " + BH.score);
+                    if (LOGGER.isLoggable(CustomLevel.TRACE))
+                        LOGGER.log(CustomLevel.TRACE, "decrease!", test.score + " | " + BH.score);
                 }
             }
         }

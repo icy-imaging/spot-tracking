@@ -20,7 +20,6 @@ package plugins.nchenouard.particletracking.filtering;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 import plugins.nchenouard.particletracking.VirtualSpot;
 import plugins.nchenouard.spot.Spot;
@@ -29,6 +28,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This abstract class provide a structure for a linear Kalman Filtering estimator (KF)
@@ -42,6 +43,8 @@ import java.util.ArrayList;
  * license gpl v3.0
  */
 public abstract class KalmanFilter implements Predictor {
+    private static final Logger LOGGER = Logger.getLogger(KalmanFilter.class.getName());
+
     protected final static double _2PI = 2.0 * Math.PI;
     /**
      * predicted state
@@ -300,11 +303,13 @@ public abstract class KalmanFilter implements Predictor {
                     }
             }
             catch (final RuntimeException e) {
-                IcyLogger.error(this.getClass(), e, "Error in KalmanFiter.covupdate:");
-                if (x_est == null) IcyLogger.error(this.getClass(), "xest null");
-                if (x_pre == null) IcyLogger.error(this.getClass(), "xpre null");
-                if (Q == null) IcyLogger.error(this.getClass(), "Q null");
-                if (Q0 == null) IcyLogger.error(this.getClass(), "Q0 null");
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Error in KalmanFiter.covupdate:", e);
+                    if (x_est == null) LOGGER.log(Level.SEVERE, "xest null");
+                    if (x_pre == null) LOGGER.log(Level.SEVERE, "xpre null");
+                    if (Q == null) LOGGER.log(Level.SEVERE, "Q null");
+                    if (Q0 == null) LOGGER.log(Level.SEVERE, "Q0 null");
+                }
             }
         }
     }

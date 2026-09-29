@@ -18,12 +18,15 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FixedThreadPool {
+    private static final Logger LOGGER = Logger.getLogger(FixedThreadPool.class.getName());
+
     Task[] threadPool;
     boolean[] finishedTasks;
     int nextThread = 0;
@@ -51,13 +54,9 @@ public class FixedThreadPool {
         for (final Thread thr : runningThreads)
             thr.start();
         waitForTermination();
-        try {
-            if (numStoppedThreads < numThreads)
-                throw new Exception("ERRR " + numStoppedThreads + " " + numThreads);
-        }
-        catch (final Exception e) {
-            IcyLogger.error(this.getClass(), e);
-        }
+        if (numStoppedThreads < numThreads)
+            if (LOGGER.isLoggable(Level.SEVERE))
+                LOGGER.log(Level.SEVERE, "Number os stopped threads (" + numStoppedThreads + ") is inferior to number of threads (" + numThreads + ")");
     }
 
     void waitForTermination() {
@@ -67,7 +66,8 @@ public class FixedThreadPool {
                     wait();
                 }
                 catch (final InterruptedException e) {
-                    IcyLogger.error(this.getClass(), e);
+                    if (LOGGER.isLoggable(Level.SEVERE))
+                        LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
                 }
             }
         }

@@ -18,11 +18,13 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import fr.icy.system.logging.IcyLogger;
+import fr.icy.shared.logging.CustomLevel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A group of Family objects which share some common detections and related methods to solve the tracking problem for them
@@ -35,6 +37,8 @@ import java.util.Map.Entry;
  * license gpl v3.0
  */
 public class Cluster implements AutoCloseable {
+    private static final Logger LOGGER = Logger.getLogger(Cluster.class.getName());
+
     HashSet<Association> realAssociations = new HashSet<>();
     HashMap<Integer, ArrayList<Family>> concurrentFamilies = new HashMap<>();
     final int firstTime;
@@ -173,7 +177,8 @@ public class Cluster implements AutoCloseable {
                             thr.join();
                         }
                         catch (final InterruptedException e1) {
-                            IcyLogger.error(this.getClass(), e1);
+                            if (LOGGER.isLoggable(Level.SEVERE))
+                                LOGGER.log(Level.SEVERE, "Thread interrupted.", e1);
                         }
                 }
 //				for (Thread thr:thrList)
@@ -236,7 +241,8 @@ public class Cluster implements AutoCloseable {
                                 thr.join();
                             }
                             catch (final InterruptedException e1) {
-                                IcyLogger.error(this.getClass(), e1);
+                                if (LOGGER.isLoggable(Level.SEVERE))
+                                    LOGGER.log(Level.SEVERE, "Thread interrupted.", e1);
                             }
                     }
                     // 2/ do not add hypothesis from this family
@@ -287,7 +293,8 @@ public class Cluster implements AutoCloseable {
                 Thread.sleep(250);
             }
             catch (final InterruptedException e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
             }
         }
 
@@ -485,8 +492,10 @@ public class Cluster implements AutoCloseable {
 //				println("------------------");
 //				}
             }
-            else
-                IcyLogger.error(this.getClass(), "Error bestHyp null");
+            else {
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Error bestHyp null.");
+            }
         }
         else {
             println("no need to build hyp");
@@ -577,7 +586,8 @@ public class Cluster implements AutoCloseable {
                         thr.join();
                     }
                     catch (final InterruptedException e) {
-                        IcyLogger.error(this.getClass(), e);
+                        if (LOGGER.isLoggable(Level.SEVERE))
+                            LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
                     }
             }
         }
@@ -781,7 +791,8 @@ public class Cluster implements AutoCloseable {
                     thr.join();
                 }
                 catch (final InterruptedException e) {
-                    IcyLogger.error(this.getClass(), e);
+                    if (LOGGER.isLoggable(Level.SEVERE))
+                        LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
                 }
         }
     }
@@ -946,11 +957,9 @@ public class Cluster implements AutoCloseable {
                 tracker.addFamilies(c);
     }
 
-    boolean verbose = false;
-
     protected void println(final String text) {
-        if (verbose)
-            IcyLogger.trace(this.getClass(), text);
+        if (LOGGER.isLoggable(CustomLevel.TRACE))
+            LOGGER.log(CustomLevel.TRACE, text);
     }
 
     /*@Override

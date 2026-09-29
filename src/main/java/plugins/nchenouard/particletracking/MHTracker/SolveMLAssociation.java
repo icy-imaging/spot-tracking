@@ -18,13 +18,14 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Very simple (and inaccurate) solver for track-to-detection problems
@@ -37,6 +38,8 @@ import java.util.LinkedList;
  * license gpl v3.0
  */
 public class SolveMLAssociation {
+    private static final Logger LOGGER = Logger.getLogger(SolveMLAssociation.class.getName());
+
     static class Track {
         Family f;
         LinkedList<MHTrack2s> association = new LinkedList<>();
@@ -58,11 +61,8 @@ public class SolveMLAssociation {
             if (hSelected != null)
                 gh.addHypothesis(hSelected);
             else {
-                IcyLogger.error(
-                        this.getClass(),
-                        "problem in SolveMLAssociation, no selected hypothesis.",
-                        trk.association.getLast().followingSegments.isEmpty() + " " + lastT + " " + trk.association.getLast().association.t + trk.association.getLast().confirmed
-                );
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Problem in SolveMLAssociation, no selected hypothesis. " + trk.association.getLast().followingSegments.isEmpty() + " " + lastT + " " + trk.association.getLast().association.t + trk.association.getLast().confirmed);
                 return null;
             }
         }
@@ -98,8 +98,10 @@ public class SolveMLAssociation {
             trackList.add(trk);
             if (!trk.followingTracks.isEmpty())
                 currentTrackList.add(trk);
-            else if (!f.rootNode.terminated)
-                IcyLogger.error(this.getClass(), "Error in solveML: following tracks is empty.");
+            else if (!f.rootNode.terminated) {
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Following tracks are empty.");
+            }
         }
 
         for (int t = firstT + 1; t <= lastT; t++) {
@@ -145,7 +147,8 @@ public class SolveMLAssociation {
                     }
                 }
                 else {
-                    IcyLogger.error(this.getClass(), "Error in SolveMLAssociation: no best track.");
+                    if (LOGGER.isLoggable(Level.SEVERE))
+                        LOGGER.log(Level.SEVERE, "No best track.");
                 }
             }
         }
@@ -230,7 +233,8 @@ public class SolveMLAssociation {
                     }
                 }
                 else {
-                    IcyLogger.error(this.getClass(), "Error in SolveMLAssociation: no best track.");
+                    if (LOGGER.isLoggable(Level.SEVERE))
+                        LOGGER.log(Level.SEVERE, "No best track.");
                 }
             }
             //now try to create new tracks with real association that are missing

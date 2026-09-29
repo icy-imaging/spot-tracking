@@ -7,19 +7,16 @@
     <parent>
         <groupId>fr.icy</groupId>
 		<artifactId>pom-icy</artifactId>
-        <version>3.0.0-a.7</version>
+        <version>3.0.0-a.8-SNAPSHOT</version>
     </parent>
 
-    <groupId>fr.icy.extensions</groupId>
+    <groupId>fr.icy.extension</groupId>
     <artifactId>spot-tracking</artifactId>
-    <version>4.0.0-a.7</version>
+    <version>4.0.0-a.8-SNAPSHOT</version>
 
     <name>Spot Tracking</name>
-    <description>
-        This plugin ships automated methods for extracting trajectories of multiples objects in a sequence of 2D or 3D images.
-        Up to version 2 it was known as the ‘Probabilistic particle tracker’ plugin.
-    </description>
-    <url>https://icy.bioimageanalysis.org/</url>
+    <description>This plugin ships automated methods for extracting trajectories of multiples objects in a sequence of 2D or 3D images</description>
+    <url>http://icy.fr/</url>
     <inceptionYear>2011</inceptionYear>
 
     <scm>
@@ -62,12 +59,13 @@
     <contributors>
         <contributor>
             <name>Nicolas Chenouard</name>
-            <roles>
-                <role>founder</role>
-            </roles>
         </contributor>
         <contributor>
             <name>Stéphane Dallongeville</name>
+        </contributor>
+        <contributor>
+            <name>Thomas Musset</name>
+            <properties><id>Azargas</id></properties>
         </contributor>
     </contributors>
 
@@ -85,24 +83,24 @@
 	
     <dependencies>
         <dependency>
-            <groupId>fr.icy.extensions</groupId>
+            <groupId>fr.icy.extension</groupId>
             <artifactId>spot-detection-utilities</artifactId>
-            <version>2.0.0-a.7</version>
+            <version>${fr.icy.extension.spot-detection-utilities.version}</version>
         </dependency>
         <dependency>
-            <groupId>fr.icy.extensions</groupId>
+            <groupId>fr.icy.extension</groupId>
             <artifactId>track-manager</artifactId>
-            <version>2.0.0-a.7</version>
+            <version>${fr.icy.extension.track-manager.version}</version>
         </dependency>
         <dependency>
-            <groupId>fr.icy.extensions</groupId>
+            <groupId>fr.icy.extension</groupId>
             <artifactId>linear-programming</artifactId>
-            <version>2.0.0-a.7</version>
+            <version>${fr.icy.extension.linear-programming.version}</version>
         </dependency>
         <dependency>
-            <groupId>fr.icy.extensions</groupId>
+            <groupId>fr.icy.extension</groupId>
             <artifactId>spot-detector</artifactId>
-            <version>2.0.0-a.7</version>
+            <version>${fr.icy.extension.spot-detector.version}</version>
         </dependency>
 
         <dependency>

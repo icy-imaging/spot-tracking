@@ -21,7 +21,6 @@ package plugins.nchenouard.particletracking;
 import fr.icy.Icy;
 import fr.icy.gui.frame.progress.CancelableProgressFrame;
 import fr.icy.io.xml.XMLUtil;
-import fr.icy.system.logging.IcyLogger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
@@ -41,8 +40,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SpotTracking {
+    private static final Logger LOGGER = Logger.getLogger(SpotTracking.class.getName());
+
     public static String ID_CONFIG = "MHTconfiguration";
 
     /**
@@ -388,13 +391,10 @@ public class SpotTracking {
         else
             progress = null;
 
-        final boolean headless = Icy.getMainInterface().isHeadLess();
-
         for (int t = dr.getFirstFrameTime(); t <= dr.getLastFrameTime(); t++) {
-            IcyLogger.info(SpotTracking.class, "Track extraction at frame " + t);
-            /*if (headless) {
-                System.out.print("Track extraction at frame " + t + "\r");
-            }*/
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.log(Level.INFO, "Track extraction at frame " + t);
+            }
 
             if (progress != null) {
                 progress.setMessage("Track extraction at frame " + t);
@@ -408,10 +408,6 @@ public class SpotTracking {
             // process track for frame T
             mhtracker.track(t, dr.getDetectionsAtT(t));
         }
-
-        /*if (headless) {
-            System.out.println();
-        }*/
 
         if (progress != null)
             progress.close();

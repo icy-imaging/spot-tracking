@@ -18,7 +18,7 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import fr.icy.system.logging.IcyLogger;
+import fr.icy.shared.logging.CustomLevel;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import plugins.fab.trackmanager.TrackSegment;
@@ -33,6 +33,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Main class for the implementation of the Multiple Hypothesis Tracking Algorithm described in:
@@ -48,6 +50,8 @@ import java.util.concurrent.Executors;
  * license gpl v3.0
  */
 public class HMMMHTracker implements StoppableTracker, AutoCloseable {
+    private static final Logger LOGGER = Logger.getLogger(HMMMHTracker.class.getName());
+
     final int K;// decision delay
     final double gateFactor;
     final double volume;
@@ -160,7 +164,8 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
                 latch.await();
             }
             catch (final InterruptedException E) {
-                IcyLogger.error(this.getClass(), E);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Thread interrupted.", E);
             }
             // FixedThreadPool.Task[] runArray = new FixedThreadPool.Task[families.size()];
             // int cnt = 0;
@@ -457,12 +462,11 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         return tsList;
     }
 
-    boolean verbose = false;
     private double p1_0;
 
     protected void println(final String text) {
-        if (verbose)
-            IcyLogger.trace(this.getClass(), text);
+        if (LOGGER.isLoggable(CustomLevel.TRACE))
+            LOGGER.log(CustomLevel.TRACE, text);
     }
 
     static class BuildHypTask implements FixedThreadPool.Task {
@@ -519,7 +523,8 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
                 latch.await();
             }
             catch (final InterruptedException e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
             }
 
             // FixedThreadPool.Task[] runArray = new FixedThreadPool.Task[trackClusters.size()];
@@ -599,7 +604,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
             this.p1_0 = pNT0 / (pFA + pNT0);
         else
             this.p1_0 = pNT / (pFA + pNT);
-        if (verbose) {
+        if (LOGGER.isLoggable(CustomLevel.TRACE)) {
             println("******************************" + " T " + t + " ******************************");
             println("p1_0 " + this.p1_0);
             println("-- time " + t + " num spots " + spotsVector.size());
@@ -628,7 +633,7 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         //hypothesesFormationTime += (t2 - t1);
         setHypothesesFormationTime(getHypothesesFormationTime() + (t2 - t1));
 
-        if (verbose) {
+        if (LOGGER.isLoggable(CustomLevel.TRACE)) {
             int cnt = 0;
             for (final Family f : families)
                 cnt += f.hypotheses.size();
@@ -643,13 +648,14 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
         setCreateClustersTime(getCreateClustersTime() + (t2 - t1));
 
         println("-- time " + t + " num clusters " + trackClusters.size());
-        if (verbose)
+        if (LOGGER.isLoggable(CustomLevel.TRACE)) {
             for (final Cluster c : trackClusters) {
                 int tmp = 0;
                 for (final ArrayList<Family> a : c.concurrentFamilies.values())
                     tmp += a.size();
                 println("*num families " + tmp);
             }
+        }
         // -----build global hypotheses from clusters, select best ones
         println("begin BHFormation");
         t1 = System.currentTimeMillis();
@@ -713,7 +719,8 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
                 latch.await();
             }
             catch (final InterruptedException e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
             }
             // then try to create new candidate tracks just from previous and current spots
             // ExecutorService service2 = Executors.newSingleThreadExecutor();
@@ -744,7 +751,8 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
                 latch2.await();
             }
             catch (final InterruptedException e) {
-                IcyLogger.error(this.getClass(), e);
+                if (LOGGER.isLoggable(Level.SEVERE))
+                    LOGGER.log(Level.SEVERE, "Thread interrupted.", e);
             }
             // LinkedList<Thread> thrList = new LinkedList<Thread>();
             // for (Family f:families)
@@ -907,19 +915,18 @@ public class HMMMHTracker implements StoppableTracker, AutoCloseable {
     }
 
     public static void printMonitoring() {
-        IcyLogger.info(
-                HMMMHTracker.class,
-                "======= MHT monitoring =======",
-                "total time " + totalElapseTime + " | 100",
-                "tracks formation " + tracksFormationTime + " | " + ((double) tracksFormationTime / totalElapseTime),
-                "create Clusters " + createClustersTime + " | " + ((double) createClustersTime / totalElapseTime),
-                "hypotheses formation " + hypothesesFormationTime + " | " + ((double) hypothesesFormationTime / totalElapseTime),
-                "build Global hypotheses " + buildGHTime + " | " + ((double) buildGHTime / totalElapseTime),
-                "ml formation time " + MLFormationTime + " | " + ((double) MLFormationTime / totalElapseTime),
-                "compatible hypotheses time " + compatibleHypTime + " | " + ((double) compatibleHypTime / totalElapseTime),
-                "compatibility " + compatibleElapseTime + " | " + ((double) compatibleElapseTime / totalElapseTime),
-                "apply hyp " + applyHypTime + " | " + ((double) applyHypTime / totalElapseTime)
-        );
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "======= MHT monitoring =======");
+            LOGGER.log(Level.INFO, "total time " + totalElapseTime + " | 100");
+            LOGGER.log(Level.INFO, "tracks formation " + tracksFormationTime + " | " + ((double) tracksFormationTime / totalElapseTime));
+            LOGGER.log(Level.INFO, "create Clusters " + createClustersTime + " | " + ((double) createClustersTime / totalElapseTime));
+            LOGGER.log(Level.INFO, "hypotheses formation " + hypothesesFormationTime + " | " + ((double) hypothesesFormationTime / totalElapseTime));
+            LOGGER.log(Level.INFO, "build Global hypotheses " + buildGHTime + " | " + ((double) buildGHTime / totalElapseTime));
+            LOGGER.log(Level.INFO, "ml formation time " + MLFormationTime + " | " + ((double) MLFormationTime / totalElapseTime));
+            LOGGER.log(Level.INFO, "compatible hypotheses time " + compatibleHypTime + " | " + ((double) compatibleHypTime / totalElapseTime));
+            LOGGER.log(Level.INFO, "compatibility " + compatibleElapseTime + " | " + ((double) compatibleElapseTime / totalElapseTime));
+            LOGGER.log(Level.INFO, "apply hyp " + applyHypTime + " | " + ((double) applyHypTime / totalElapseTime));
+        }
     }
 
     @Override

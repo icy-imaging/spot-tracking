@@ -18,7 +18,6 @@
 
 package plugins.nchenouard.particletracking.MHTracker;
 
-import fr.icy.system.logging.IcyLogger;
 import plugins.nchenouard.linearprogrammingfullsimplex.CanonicalSimplexProgram;
 import plugins.nchenouard.linearprogrammingfullsimplex.SimplexLEXICO;
 import plugins.nchenouard.particletracking.MHTracker.LinearProgramming.HierarchicalLP;
@@ -28,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Specialized Cluster object which contains some Linear Programming (LP) methods to solve the tracking problem using a custom implementation of the optimizer
@@ -39,6 +40,8 @@ import java.util.Objects;
  * license gpl v3.0
  */
 public class ClusterSolveLPCustom extends Cluster {
+    private static final Logger LOGGER = Logger.getLogger(ClusterSolveLPCustom.class.getName());
+
     double pFA;
 
     public ClusterSolveLPCustom(final HMMMHTracker tracker, final int firstT, final int lastT, final int K, final double pFA) {
@@ -117,8 +120,10 @@ public class ClusterSolveLPCustom extends Cluster {
                     if (rootAssociation != null && !associations.contains(rootAssociation) && !mandatoryAssociations.contains(rootAssociation)) {
                         mandatoryAssociations.add(rootAssociation);
                     }
-                    else
-                        IcyLogger.error(this.getClass(), "Error: rootrack without association!");
+                    else {
+                        if (LOGGER.isLoggable(Level.SEVERE))
+                            LOGGER.log(Level.SEVERE,"Root track without association!");
+                    }
                 }
             }
             for (final Family f : flist) {
